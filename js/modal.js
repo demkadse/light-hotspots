@@ -52,14 +52,21 @@ modal.classList.remove("hidden");
 
 }
 
-document.getElementById("modal-close").onclick = ()=>{
+const closeButton = document.getElementById("modal-close");
+const overlay = document.querySelector(".modal-overlay");
+
+if(closeButton){
+closeButton.onclick = ()=>{
 
 document.getElementById("event-modal").classList.add("hidden");
 
 };
+}
 
-document.querySelector(".modal-overlay").onclick = ()=>{
+if(overlay){
+overlay.onclick = ()=>{
 
 document.getElementById("event-modal").classList.add("hidden");
 
 };
+}
