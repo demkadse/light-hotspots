@@ -4,6 +4,11 @@
   "description": "Discord bot for managing FFXIV RP events",
   "main": "index.js",
   "type": "module",
+
+  "scripts": {
+    "start": "node index.js"
+  },
+
   "dependencies": {
     "discord.js": "^14.14.1",
     "@octokit/rest": "^20.0.2",
