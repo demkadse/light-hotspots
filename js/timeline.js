@@ -1,14 +1,14 @@
-let currentSlide = 0;
+let slideIndex = 0;
 let days = [];
-let scrollLocked = false;
 
-function generateTimelineDays(){
+function buildDays(){
 
 const today = new Date();
 
 for(let i=0;i<14;i++){
 
 const d = new Date(today);
+
 d.setDate(today.getDate()+i);
 
 days.push(d);
@@ -17,9 +17,9 @@ days.push(d);
 
 }
 
-async function buildTimeline(){
+async function renderTimeline(){
 
-generateTimelineDays();
+buildDays();
 
 const track = document.getElementById("timeline-track");
 
@@ -31,13 +31,11 @@ slide.className="day-slide";
 const header = document.createElement("div");
 header.className="day-header";
 
-header.innerHTML =
-`<h2>${day.toLocaleDateString("de-DE",
-{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})}</h2>`;
+header.innerHTML = `<h2>${day.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})}</h2>`;
 
 slide.appendChild(header);
 
-const carousel = createCarousel(day);
+const carousel = await createCarousel(day);
 
 slide.appendChild(carousel);
 
@@ -51,48 +49,34 @@ function updateSlide(){
 
 const track = document.getElementById("timeline-track");
 
-track.style.transform = `translateY(-${currentSlide*100}vh)`;
+track.style.transform = `translateY(-${slideIndex*100}vh)`;
 
 }
 
-function nextDay(){
-
-if(currentSlide<days.length-1){
-
-currentSlide++;
-updateSlide();
-
-}
-
-}
-
-function previousDay(){
-
-if(currentSlide>0){
-
-currentSlide--;
-updateSlide();
-
-}
-
-}
-
-document.addEventListener("wheel",e=>{
-
-if(scrollLocked) return;
-
-scrollLocked = true;
+document.addEventListener("wheel",(e)=>{
 
 if(e.deltaY>0){
-nextDay();
-}else{
-previousDay();
+
+if(slideIndex<days.length-1){
+
+slideIndex++;
+
+updateSlide();
+
 }
 
-setTimeout(()=>{
-scrollLocked=false;
-},400);
+}else{
+
+if(slideIndex>0){
+
+slideIndex--;
+
+updateSlide();
+
+}
+
+}
 
 });
 
-buildTimeline();
+renderTimeline();

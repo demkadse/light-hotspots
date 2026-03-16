@@ -1,63 +1,36 @@
-const EVENTS_PATH = "events/data/";
+const DATA_PATH = "events/data/";
 
-let eventIndex = null;
+let indexCache = null;
 const eventCache = new Map();
 
-async function loadIndex(){
+async function getIndex(){
 
-if(eventIndex) return eventIndex;
+if(indexCache) return indexCache;
 
-try{
-
-const res = await fetch(`${EVENTS_PATH}index.json`);
-
-if(!res.ok){
-console.error("index.json konnte nicht geladen werden");
-return [];
-}
+const res = await fetch(DATA_PATH + "index.json");
 
 const data = await res.json();
 
-eventIndex = data.events;
+indexCache = data.events;
 
-return eventIndex;
-
-}catch(e){
-
-console.error("Fehler beim Laden der index.json",e);
-return [];
+return indexCache;
 
 }
 
-}
-
-async function loadEvent(file){
+async function getEvent(file){
 
 if(eventCache.has(file)){
+
 return eventCache.get(file);
+
 }
 
-try{
-
-const res = await fetch(`${EVENTS_PATH}${file}`);
-
-if(!res.ok){
-console.warn("Eventdatei fehlt:",file);
-return null;
-}
+const res = await fetch(DATA_PATH + file);
 
 const data = await res.json();
 
 eventCache.set(file,data);
 
 return data;
-
-}catch(e){
-
-console.warn("Fehler beim Laden:",file);
-
-return null;
-
-}
 
 }

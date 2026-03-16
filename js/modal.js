@@ -1,38 +1,9 @@
-function createEventCard(event){
-
-const card = document.createElement("div");
-card.className="event-card";
-
-card.innerHTML=`
-
-<img class="event-image" src="${event.image}">
-
-<div class="event-info">
-
-<h3>${event.title}</h3>
-
-<p>${event.date}</p>
-
-<p>${event.start_time}${event.end_time?` - ${event.end_time}`:''}</p>
-
-<p>${event.host}</p>
-
-</div>
-
-`;
-
-card.onclick = ()=>openModal(event);
-
-return card;
-
-}
+const modal = document.getElementById("event-modal");
+const modalContent = document.getElementById("modal-content");
 
 function openModal(event){
 
-const modal = document.getElementById("event-modal");
-const content = document.getElementById("modal-content");
-
-content.innerHTML=`
+modalContent.innerHTML = `
 
 <img src="${event.image}" style="width:100%">
 
@@ -42,31 +13,21 @@ content.innerHTML=`
 
 <p><b>Host:</b> ${event.host}</p>
 
-<p>${event.date} ${event.start_time}${event.end_time?` - ${event.end_time}`:''}</p>
+<p>${event.date} ${event.start_time}${event.end_time ? " - "+event.end_time : ""}</p>
 
 <p>${event.description}</p>
 
 `;
 
-modal.classList.remove("hidden");
+modal.classList.add("active");
 
 }
 
-const closeButton = document.getElementById("modal-close");
-const overlay = document.querySelector(".modal-overlay");
+function closeModal(){
 
-if(closeButton){
-closeButton.onclick = ()=>{
+modal.classList.remove("active");
 
-document.getElementById("event-modal").classList.add("hidden");
-
-};
 }
 
-if(overlay){
-overlay.onclick = ()=>{
-
-document.getElementById("event-modal").classList.add("hidden");
-
-};
-}
+document.getElementById("modal-close").onclick = closeModal;
+document.querySelector(".modal-overlay").onclick = closeModal;
