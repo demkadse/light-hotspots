@@ -1,0 +1,48 @@
+name: Initialize Repository Structure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-structure:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create project structure
+        run: |
+          mkdir -p bot/commands
+          mkdir -p bot/config
+          mkdir -p bot/github
+          mkdir -p bot/interactions
+          mkdir -p bot/services
+          mkdir -p bot/validators
+
+          mkdir -p events/data
+          mkdir -p events/images
+          mkdir -p events/templates
+
+          mkdir -p css
+          mkdir -p js
+
+          touch bot/commands/.gitkeep
+          touch bot/config/.gitkeep
+          touch bot/github/.gitkeep
+          touch bot/interactions/.gitkeep
+          touch bot/services/.gitkeep
+          touch bot/validators/.gitkeep
+
+          touch events/data/.gitkeep
+          touch events/images/.gitkeep
+          touch events/templates/.gitkeep
+
+      - name: Commit structure
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add .
+          git commit -m "Initialize repository structure" || echo "No changes"
+          git push
