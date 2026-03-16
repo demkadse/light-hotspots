@@ -7,9 +7,13 @@ const index = await getIndex();
 
 const target = formatDate(date);
 
+let foundEvents = false;
+
 for(const entry of index){
 
 if(entry.date === target){
+
+foundEvents = true;
 
 const event = await getEvent(entry.file);
 
@@ -18,6 +22,16 @@ const card = buildCard(event);
 track.appendChild(card);
 
 }
+
+}
+
+/* FALLBACK */
+
+if(!foundEvents){
+
+const emptyCard = buildEmptyCard();
+
+track.appendChild(emptyCard);
 
 }
 
@@ -47,6 +61,32 @@ card.innerHTML = `
 `;
 
 card.onclick = ()=> openModal(event);
+
+return card;
+
+}
+
+function buildEmptyCard(){
+
+const card = document.createElement("div");
+
+card.className="event-card";
+
+card.innerHTML = `
+
+<div class="event-info" style="height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+
+<h3>Keine Events eingetragen</h3>
+
+<p>Erstell DEINS über den Discord-Bot!</p>
+
+<a href="https://discord.gg/DEINLINK" target="_blank">
+Discord Server
+</a>
+
+</div>
+
+`;
 
 return card;
 
