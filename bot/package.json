@@ -1,0 +1,12 @@
+{
+  "name": "ffxiv-event-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for managing FFXIV RP events",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@octokit/rest": "^20.0.2",
+    "dotenv": "^16.4.5"
+  }
+}
