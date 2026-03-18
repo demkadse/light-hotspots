@@ -547,10 +547,6 @@ function bindNavigationControls() {
       return;
     }
 
-    if (event.target instanceof Element && event.target.closest(".carousel-track")) {
-      return;
-    }
-
     if (Math.abs(event.deltaY) < 20) {
       return;
     }

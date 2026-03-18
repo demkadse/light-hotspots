@@ -64,32 +64,42 @@ function updateCarouselButtons(track, prevButton, nextButton) {
   nextButton.disabled = track.scrollLeft >= maxScrollLeft - 8;
 }
 
-function bindCarouselWheel(track) {
-  track.addEventListener("wheel", event => {
-    if (window.matchMedia("(max-width: 768px)").matches) {
-      return;
-    }
+function buildCarouselNav(track) {
+  const controls = document.createElement("div");
+  controls.className = "carousel-nav";
 
-    const maxScrollLeft = Math.max(track.scrollWidth - track.clientWidth, 0);
-    if (maxScrollLeft <= 0) {
-      return;
-    }
+  const prevButton = document.createElement("button");
+  prevButton.type = "button";
+  prevButton.className = "carousel-nav-button carousel-nav-button-prev";
+  prevButton.setAttribute("aria-label", "Vorherige Events");
+  prevButton.innerHTML = "<span aria-hidden=\"true\">&lsaquo;</span>";
 
-    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ? event.deltaX
-      : event.deltaY;
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.className = "carousel-nav-button carousel-nav-button-next";
+  nextButton.setAttribute("aria-label", "Naechste Events");
+  nextButton.innerHTML = "<span aria-hidden=\"true\">&rsaquo;</span>";
 
-    if (Math.abs(delta) < 4) {
-      return;
-    }
-
-    event.preventDefault();
+  prevButton.addEventListener("click", event => {
     event.stopPropagation();
-    track.scrollBy({
-      left: delta,
-      behavior: "auto"
-    });
-  }, { passive: false });
+    scrollCarousel(track, -1);
+  });
+
+  nextButton.addEventListener("click", event => {
+    event.stopPropagation();
+    scrollCarousel(track, 1);
+  });
+
+  track.addEventListener("scroll", () => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  }, { passive: true });
+
+  requestAnimationFrame(() => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  });
+
+  controls.append(prevButton, nextButton);
+  return controls;
 }
 
 function buildCard(event) {
@@ -185,13 +195,13 @@ function createCarousel(eventsForDay) {
     track.appendChild(buildCard(event));
   });
 
-  bindCarouselWheel(track);
+  const nav = buildCarouselNav(track);
 
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
-  hint.textContent = "Scrolle oder wische fuer weitere Events";
+  hint.textContent = "Wische fuer weitere Events";
 
-  shell.append(track, hint);
+  shell.append(nav, track, hint);
 
   return shell;
 }
