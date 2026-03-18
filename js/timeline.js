@@ -451,12 +451,15 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
 
   copy.append(title, subtitle);
 
-  const headerSide = document.createElement("div");
-  headerSide.className = "day-header-side";
+  const headerMeta = document.createElement("div");
+  headerMeta.className = "day-header-meta";
 
   const count = document.createElement("div");
   count.className = "day-count";
   count.textContent = `${eventsForDay.length} Event${eventsForDay.length === 1 ? "" : "s"}`;
+
+  const headerNav = document.createElement("div");
+  headerNav.className = "day-header-nav";
 
   const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
   if (eventsForDay.length === 0 && inviteUrl) {
@@ -471,11 +474,11 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
     copy.appendChild(cta);
   }
 
-  headerSide.appendChild(count);
-  header.append(copy, headerSide);
+  headerMeta.appendChild(count);
+  header.append(copy, headerMeta, headerNav);
   slide.appendChild(header);
 
-  const carousel = createCarousel(eventsForDay, eventsForDay.length > 1 ? headerSide : null);
+  const carousel = createCarousel(eventsForDay, eventsForDay.length > 1 ? headerNav : null);
   if (carousel.childElementCount > 0 && eventsForDay.length > 0) {
     slide.appendChild(carousel);
   }

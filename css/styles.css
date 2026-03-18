@@ -452,8 +452,8 @@ min-height: 0;
 
 .day-header {
 display: grid;
-grid-template-columns: minmax(0, 1fr) auto;
-gap: 16px;
+grid-template-columns: minmax(0, 1fr) auto auto;
+gap: 12px;
 align-items: center;
 padding: 14px 18px;
 border-radius: 26px;
@@ -463,12 +463,17 @@ linear-gradient(135deg, rgba(243, 186, 108, 0.08), transparent 30%),
 rgba(255, 255, 255, 0.03);
 }
 
-.day-header-side {
+.day-header-meta {
 display: flex;
 align-items: center;
 justify-content: flex-end;
-gap: 10px;
-flex-wrap: wrap;
+}
+
+.day-header-nav {
+display: flex;
+align-items: center;
+justify-content: flex-end;
+min-width: 90px;
 }
 
 .day-marker {
@@ -1077,7 +1082,8 @@ padding: 18px;
 grid-template-columns: 1fr;
 }
 
-.day-header-side {
+.day-header-meta,
+.day-header-nav {
 justify-content: flex-start;
 }
 
