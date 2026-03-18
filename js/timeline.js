@@ -435,21 +435,8 @@ function setupHeroCta() {
   button.href = inviteUrl;
 }
 
-function setupSupportCta() {
-  const koFiUrl = window.SITE_CONFIG?.koFiUrl;
-  const link = document.getElementById("support-cta");
-
-  if (!koFiUrl) {
-    link.style.display = "none";
-    return;
-  }
-
-  link.href = koFiUrl;
-}
-
 async function initTimeline() {
   setupHeroCta();
-  setupSupportCta();
   buildDays();
   state.slideIndex = getTodayIndex();
   state.allEvents = await getAllIndexedEvents();

@@ -1,0 +1,23 @@
+{
+  "id": "astral-salon",
+  "title": "Astral Salon",
+  "type": "Debatte",
+  "venue": "Empyreum, Ward 5, Plot 42",
+  "host": "Maelle Aurifort",
+  "venue_lead": "Eren Montfort",
+  "date": "2026-03-18",
+  "start_time": "20:00",
+  "end_time": "22:45",
+  "image": "https://placehold.co/1200x800/png?text=Astral+Salon",
+  "description": "Ein gehobener Abend fuer Diskussionen ueber Magie, Politik und Geruechte aus Sharlayan und Ishgard.",
+  "discord_link": "https://discord.gg/n57CsPbxAX",
+  "link": "https://na.finalfantasyxiv.com/lodestone/community_finder/000000000000000002/",
+  "links": [
+    "https://discord.gg/n57CsPbxAX",
+    "https://na.finalfantasyxiv.com/lodestone/community_finder/000000000000000002/"
+  ],
+  "notes": "Dresscode elegant. Debatten gern hitzig, aber bitte ohne OOC-Streit.",
+  "created_by": "840120737527627796",
+  "created_at": "2026-03-18T18:01:00.000Z",
+  "file": "2026/03/astral-salon-2026-03-18.json"
+}

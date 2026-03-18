@@ -1,3 +1,36 @@
 {
-  "events": []
+  "events": [
+    {
+      "file": "2026/03/amber-atelier-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/astral-salon-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/crescent-courtyard-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/gilded-lantern-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/harbor-nocturne-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/lotus-afterglow-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/moonlit-market-2026-03-18.json",
+      "date": "2026-03-18"
+    },
+    {
+      "file": "2026/03/starlight-supper-club-2026-03-18.json",
+      "date": "2026-03-18"
+    }
+  ]
 }

@@ -287,21 +287,6 @@ justify-self: end;
 text-align: right;
 }
 
-.support-link {
-display: inline-flex;
-margin-top: 12px;
-max-width: 320px;
-justify-self: end;
-color: rgba(245, 241, 232, 0.76);
-text-decoration: none;
-line-height: 1.45;
-font-size: 0.92rem;
-}
-
-.support-link:hover {
-color: #ffe4be;
-}
-
 .timeline-stage {
 display: grid;
 grid-template-columns: 70px minmax(0, 1fr);
@@ -813,11 +798,6 @@ grid-template-columns: 1fr 1fr;
 .toolbar-status {
 justify-self: start;
 text-align: left;
-}
-
-.support-link {
-justify-self: start;
-max-width: none;
 }
 }
 
