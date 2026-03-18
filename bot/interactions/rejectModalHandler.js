@@ -1,5 +1,8 @@
 import { rejectTemplate, getTemplate } from "../services/templateService.js";
-import { replyAndExpire } from "../services/interactionResponseService.js";
+import {
+  deferEphemeral,
+  replyAndExpire
+} from "../services/interactionResponseService.js";
 import { assertAdminUser } from "../services/permissionService.js";
 import { assertActionCooldown } from "../services/cooldownService.js";
 import { recordAuditEntry } from "../services/auditService.js";
@@ -8,6 +11,7 @@ export async function handleRejectModal(interaction, client) {
   try {
     assertAdminUser(interaction);
     assertActionCooldown(interaction.user.id, `reject-modal:${interaction.customId}`, 30000);
+    await deferEphemeral(interaction);
 
     const templateId = interaction.customId.split("_").pop();
     const reason = interaction.fields.getTextInputValue("reason");

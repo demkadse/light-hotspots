@@ -7,9 +7,13 @@ import {
 
 import {
   createOrUpdateTemplate,
+  findReusableTemplateDraft,
   findPotentialDuplicates
 } from "../services/templateService.js";
-import { replyAndExpire } from "../services/interactionResponseService.js";
+import {
+  deferEphemeral,
+  replyAndExpire
+} from "../services/interactionResponseService.js";
 import { validateEventInput } from "../validators/eventValidator.js";
 import { recordAuditEntry } from "../services/auditService.js";
 
@@ -194,7 +198,8 @@ async function replyWithPreview(interaction, template, stage, client, auditActio
 
 export async function handleModal(interaction, client) {
   if (interaction.customId === "event_modal_step1_create" || interaction.customId.startsWith("event_modal_step1_")) {
-    const templateId = getTemplateIdFromModal(interaction.customId);
+    await deferEphemeral(interaction);
+
     const data = {
       title: interaction.fields.getTextInputValue("title").trim(),
       venue: interaction.fields.getTextInputValue("venue").trim(),
@@ -204,6 +209,8 @@ export async function handleModal(interaction, client) {
       status: "draft"
     };
 
+    let templateId = getTemplateIdFromModal(interaction.customId);
+
     const errors = validateEventInput(data);
     if (errors.length > 0) {
       await replyAndExpire(interaction, {
@@ -211,6 +218,13 @@ export async function handleModal(interaction, client) {
         ephemeral: true
       }, 45000);
       return;
+    }
+
+    if (!templateId) {
+      const reusableTemplate = await findReusableTemplateDraft(interaction.user.id, data);
+      if (reusableTemplate) {
+        templateId = reusableTemplate.id;
+      }
     }
 
     const template = await createOrUpdateTemplate(data, interaction.user.id, templateId);
@@ -226,6 +240,8 @@ export async function handleModal(interaction, client) {
   }
 
   if (interaction.customId.startsWith("event_modal_step2_")) {
+    await deferEphemeral(interaction);
+
     const templateId = getTemplateIdFromModal(interaction.customId);
     const data = {
       end_time: normalizeOptional(interaction.fields.getTextInputValue("end_time")),
@@ -254,6 +270,8 @@ export async function handleModal(interaction, client) {
   }
 
   if (interaction.customId.startsWith("event_modal_step3_")) {
+    await deferEphemeral(interaction);
+
     const templateId = getTemplateIdFromModal(interaction.customId);
     const data = {
       discord_link: normalizeOptional(interaction.fields.getTextInputValue("discord_link")),

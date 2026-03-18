@@ -48,6 +48,22 @@ async function writeTemplates(templates) {
   await writeJSON(TEMPLATE_PATH, templates);
 }
 
+function normalizeTemplateField(value) {
+  return (value || "").trim().toLowerCase();
+}
+
+function isReusableDraftTemplate(template) {
+  return template.status === "draft" || template.status === "rejected";
+}
+
+function hasSameCoreContent(template, data) {
+  return normalizeTemplateField(template.title) === normalizeTemplateField(data.title) &&
+    normalizeTemplateField(template.venue) === normalizeTemplateField(data.venue) &&
+    normalizeTemplateField(template.date) === normalizeTemplateField(data.date) &&
+    normalizeTemplateField(template.time) === normalizeTemplateField(data.time) &&
+    normalizeTemplateField(template.description) === normalizeTemplateField(data.description);
+}
+
 export async function getAllTemplates() {
   return readTemplates();
 }
@@ -309,6 +325,26 @@ export async function getTemplatesByUser(userId) {
 export async function getTemplate(templateId) {
   const templates = await readTemplates();
   return templates.find(t => t.id === templateId);
+}
+
+export async function findReusableTemplateDraft(userId, data, withinMinutes = 180) {
+  const templates = await readTemplates();
+  const cutoffMs = withinMinutes * 60 * 1000;
+  const now = Date.now();
+
+  return templates
+    .filter(template => template.created_by === userId)
+    .filter(isReusableDraftTemplate)
+    .filter(template => hasSameCoreContent(template, data))
+    .filter(template => {
+      const referenceTime = template.updated_at || template.created_at;
+      if (!referenceTime) {
+        return false;
+      }
+
+      return now - new Date(referenceTime).getTime() <= cutoffMs;
+    })
+    .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())[0] || null;
 }
 
 export async function submitTemplateForApproval(templateId) {
