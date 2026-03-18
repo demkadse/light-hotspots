@@ -5,13 +5,15 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
   EmbedBuilder
 } from "discord.js";
 
 import {
+  getTemplatesByUser,
   submitTemplateForApproval,
-  getTemplate,
-  approveTemplate
+  approveTemplate,
+  getTemplate
 } from "../services/templateService.js";
 
 import { CHANNELS } from "../config/channels.js";
@@ -21,39 +23,44 @@ export async function handleButton(interaction, client) {
 
   try {
 
-    // CREATE EVENT
+    // 🟢 TEMPLATE AUSWAHL
     if (id === "event:create") {
 
-      const modal = new ModalBuilder()
-        .setCustomId("event_modal_create")
-        .setTitle("Event erstellen");
+      const templates = await getTemplatesByUser(interaction.user.id);
 
-      const fields = [
-        ["title", "Titel", "z.B. Club Night"],
-        ["venue", "Location", "z.B. Limsa Lominsa"],
-        ["date", "Datum", "z.B. 20.03.2026"],
-        ["time", "Uhrzeit", "z.B. 20:00"],
-        ["description", "Beschreibung", "Kurze Beschreibung", TextInputStyle.Paragraph]
+      const options = [
+        {
+          label: "➕ Neues Event erstellen",
+          value: "new",
+          description: "Starte ein neues Event"
+        }
       ];
 
-      modal.addComponents(
-        ...fields.map(([id, label, placeholder, style = TextInputStyle.Short]) =>
-          new ActionRowBuilder().addComponents(
-            new TextInputBuilder()
-              .setCustomId(id)
-              .setLabel(label)
-              .setPlaceholder(placeholder)
-              .setStyle(style)
-              .setRequired(true)
-          )
-        )
-      );
+      templates.slice(0, 24).forEach(t => {
+        options.push({
+          label: t.title || "Unbenannt",
+          value: t.id,
+          description: `${t.date || "kein Datum"} | ${t.status}`
+        });
+      });
 
-      await interaction.showModal(modal);
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("event:selectTemplate")
+        .setPlaceholder("Template auswählen")
+        .addOptions(options);
+
+      const row = new ActionRowBuilder().addComponents(select);
+
+      await interaction.reply({
+        content: "📂 Wähle ein Template:",
+        components: [row],
+        ephemeral: true
+      });
+
       return;
     }
 
-    // IMAGE
+    // 🟢 IMAGE SETZEN
     if (id.startsWith("event:setImage:")) {
       const templateId = id.split(":")[2];
 
@@ -66,7 +73,7 @@ export async function handleButton(interaction, client) {
           new TextInputBuilder()
             .setCustomId("image")
             .setLabel("Bild URL (.jpg, .png, .gif)")
-            .setPlaceholder("https://...")
+            .setPlaceholder("https://example.com/image.jpg")
             .setStyle(TextInputStyle.Short)
             .setRequired(true)
         )
@@ -76,20 +83,22 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // SUBMIT → mit Preview
+    // 🟢 SUBMIT → APPROVAL
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
 
       const template = await submitTemplateForApproval(templateId);
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
 
+      if (!channel) throw new Error("Approval Channel nicht gefunden");
+
       const embed = new EmbedBuilder()
         .setTitle(template.title)
         .setDescription(template.description)
         .addFields(
-          { name: "📍 Ort", value: template.venue, inline: true },
-          { name: "📅 Datum", value: template.date, inline: true },
-          { name: "⏰ Zeit", value: template.time, inline: true }
+          { name: "📍 Ort", value: template.venue || "-", inline: true },
+          { name: "📅 Datum", value: template.date || "-", inline: true },
+          { name: "⏰ Zeit", value: template.time || "-", inline: true }
         )
         .setFooter({
           text: `Erstellt von ${template.created_by}`
@@ -125,7 +134,7 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // APPROVE
+    // 🟢 APPROVE
     if (id.startsWith("event:approve:")) {
       const templateId = id.split(":")[2];
 
@@ -144,12 +153,11 @@ export async function handleButton(interaction, client) {
 
 🎉 Dein Event wurde erfolgreich geprüft und freigegeben.
 
-**Details:**
 📌 ${template.title}  
 📍 ${template.venue}  
 📅 ${template.date} um ${template.time}
 
-Viel Erfolg bei deinem Event – wir wünschen dir viele Besucher! 🚀`
+Viel Erfolg bei deinem Event! 🚀`
         );
 
       } catch (err) {
@@ -159,7 +167,7 @@ Viel Erfolg bei deinem Event – wir wünschen dir viele Besucher! 🚀`
       return;
     }
 
-    // REJECT → Modal
+    // 🟢 REJECT → Modal öffnen
     if (id.startsWith("event:reject:")) {
       const templateId = id.split(":")[2];
 

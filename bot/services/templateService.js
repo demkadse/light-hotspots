@@ -4,11 +4,8 @@ import crypto from "crypto";
 
 const DATA_PATH = path.resolve("data/templates.json");
 
-// ---------- Helper ----------
-
 async function ensureDataFile() {
   const dir = path.dirname(DATA_PATH);
-
   await fs.mkdir(dir, { recursive: true });
 
   try {
@@ -28,8 +25,6 @@ async function writeTemplates(data) {
   await ensureDataFile();
   await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf-8");
 }
-
-// ---------- Core ----------
 
 export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const templates = await readTemplates();
@@ -52,6 +47,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     id: crypto.randomUUID(),
     ...data,
     created_by: userId,
+    status: data.status || "draft",
     created_at: new Date().toISOString(),
     updated_at: null
   };
@@ -64,9 +60,12 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
 export async function getTemplate(templateId) {
   const templates = await readTemplates();
-  const template = templates.find(t => t.id === templateId);
-  if (!template) throw new Error("Template nicht gefunden");
-  return template;
+  return templates.find(t => t.id === templateId);
+}
+
+export async function getTemplatesByUser(userId) {
+  const templates = await readTemplates();
+  return templates.filter(t => t.created_by === userId);
 }
 
 export async function submitTemplateForApproval(templateId) {
@@ -82,7 +81,6 @@ export async function submitTemplateForApproval(templateId) {
   return templates[index];
 }
 
-// 🔥 HIER WAR DER FEHLENDE TEIL
 export async function approveTemplate(templateId) {
   const templates = await readTemplates();
 

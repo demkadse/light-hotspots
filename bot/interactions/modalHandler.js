@@ -8,8 +8,17 @@ import { createOrUpdateTemplate } from "../services/templateService.js";
 
 export async function handleModal(interaction, client) {
 
-  // EVENT CREATE
-  if (interaction.customId === "event_modal_create") {
+  let templateId = null;
+
+  // EDIT erkennen
+  if (interaction.customId.startsWith("event_modal_edit_")) {
+    templateId = interaction.customId.split("_").pop();
+  }
+
+  if (
+    interaction.customId === "event_modal_create" ||
+    interaction.customId.startsWith("event_modal_edit_")
+  ) {
 
     const data = {
       title: interaction.fields.getTextInputValue("title"),
@@ -21,7 +30,11 @@ export async function handleModal(interaction, client) {
       status: "draft"
     };
 
-    const template = await createOrUpdateTemplate(data, interaction.user.id);
+    const template = await createOrUpdateTemplate(
+      data,
+      interaction.user.id,
+      templateId
+    );
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -36,7 +49,7 @@ export async function handleModal(interaction, client) {
     );
 
     await interaction.reply({
-      content: "✅ Entwurf gespeichert.",
+      content: "✅ Event gespeichert.",
       components: [row],
       ephemeral: true
     });
@@ -57,7 +70,11 @@ export async function handleModal(interaction, client) {
       });
     }
 
-    await createOrUpdateTemplate({ image }, interaction.user.id, templateId);
+    await createOrUpdateTemplate(
+      { image },
+      interaction.user.id,
+      templateId
+    );
 
     await interaction.reply({
       content: "🖼 Bild gespeichert.",
