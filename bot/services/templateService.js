@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { syncRepoFiles } from "./gitSyncService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,6 +79,10 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     };
 
     await writeTemplates(templates);
+    await syncRepoFiles(
+      [TEMPLATE_PATH],
+      `Update event template ${templates[index].id}`
+    );
     return templates[index];
   }
 
@@ -91,6 +96,10 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
   templates.push(newTemplate);
   await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH],
+    `Create event template ${newTemplate.id}`
+  );
 
   return newTemplate;
 }
@@ -121,6 +130,10 @@ export async function submitTemplateForApproval(templateId) {
   };
 
   await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH],
+    `Submit event template ${templates[index].id}`
+  );
   return templates[index];
 }
 
@@ -140,6 +153,10 @@ export async function rejectTemplate(templateId, reason) {
   };
 
   await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH],
+    `Reject event template ${templates[index].id}`
+  );
   return templates[index];
 }
 
@@ -217,6 +234,10 @@ export async function approveTemplate(templateId) {
   };
 
   await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH, indexPath, filePath],
+    `Publish event ${eventData.file}`
+  );
 
   return eventData;
 }
