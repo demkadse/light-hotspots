@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 
 import { handleButton } from "./interactions/buttonHandler.js";
 import { handleModal } from "./interactions/modalHandler.js";
-import { data as setupData, execute as setupExecute } from "./commands/setupEventPanel.js";
+import { handleSelect } from "./interactions/selectHandler.js";
+import { execute as setupExecute } from "./commands/setupEventPanel.js";
 
 dotenv.config();
 
@@ -19,38 +20,32 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
 
-    // Slash Commands
     if (interaction.isChatInputCommand()) {
-
       if (interaction.commandName === "setup-events") {
         await setupExecute(interaction);
       }
-
     }
 
-    // Button
     if (interaction.isButton()) {
       await handleButton(interaction);
     }
 
-    // Modal
+    if (interaction.isStringSelectMenu()) {
+      await handleSelect(interaction);
+    }
+
     if (interaction.isModalSubmit()) {
       await handleModal(interaction, client);
     }
 
   } catch (error) {
 
-    console.error("Interaction Fehler:", error);
+    console.error("Global Interaction Error:", error);
 
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: "❌ Fehler bei der Verarbeitung.",
-        ephemeral: true
-      });
-    } else {
+    if (!interaction.replied) {
       await interaction.reply({
-        content: "❌ Fehler bei der Verarbeitung.",
-        ephemeral: true
+        content: "❌ Unerwarteter Fehler",
+        flags: 64
       });
     }
 

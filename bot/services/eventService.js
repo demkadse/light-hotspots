@@ -1,24 +1,80 @@
-import { commitFile } from "./github.js";
-import { CONFIG } from "../config/config.js";
+import { Octokit } from "@octokit/rest";
 
-export async function createEvent(event){
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN
+});
 
-const date = event.date;
+const OWNER = process.env.GITHUB_OWNER;
+const REPO = process.env.GITHUB_REPO;
 
-const [year,month] = date.split("-");
+function generateId(title, date) {
+  const slug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
-const fileName = `${event.id}.json`;
+  return `${slug}-${date}`;
+}
 
-const path = `${CONFIG.EVENT_DATA_PATH}/${year}/${month}/${fileName}`;
+function getPath(date, id) {
+  const [year, month] = date.split("-");
+  return `events/data/${year}/${month}/${id}.json`;
+}
 
-const content = JSON.stringify(event,null,2);
+function validateEvent(event) {
 
-await commitFile(
+  if (!event.title || event.title.length < 3) {
+    throw new Error("Ungültiger Event-Titel");
+  }
 
-path,
-content,
-`Add event: ${event.title}`
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(event.date)) {
+    throw new Error("Datum muss YYYY-MM-DD sein");
+  }
 
-);
+  if (!/^\d{2}:\d{2}$/.test(event.start_time)) {
+    throw new Error("Startzeit muss HH:MM sein");
+  }
+
+}
+
+export async function createEvent(event) {
+
+  validateEvent(event);
+
+  const id = generateId(event.title, event.date);
+  const path = getPath(event.date, id);
+
+  const fullEvent = {
+    ...event,
+    id
+  };
+
+  try {
+
+    await octokit.repos.getContent({
+      owner: OWNER,
+      repo: REPO,
+      path
+    });
+
+    throw new Error("Event existiert bereits");
+
+  } catch (err) {
+
+    if (err.status !== 404) throw err;
+
+    await octokit.repos.createOrUpdateFileContents({
+      owner: OWNER,
+      repo: REPO,
+      path,
+      message: `Create event ${id}`,
+      content: Buffer.from(
+        JSON.stringify(fullEvent, null, 2)
+      ).toString("base64")
+    });
+
+  }
+
+  return fullEvent;
 
 }

@@ -1,55 +1,91 @@
 import {
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  StringSelectMenuBuilder
 } from "discord.js";
+
+import { getTemplates } from "../services/templateService.js";
+import { CHANNELS } from "../config/channels.js";
 
 export async function handleButton(interaction) {
 
   if (interaction.customId !== "create_event") return;
 
-  const modal = new ModalBuilder()
-    .setCustomId("event_modal")
-    .setTitle("Event erstellen");
+  try {
 
-  const title = new TextInputBuilder()
-    .setCustomId("title")
-    .setLabel("Event Name")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
+    // Sicherheitscheck: nur im Event-Channel erlaubt
+    if (CHANNELS.EVENT_CHANNEL && interaction.channelId !== CHANNELS.EVENT_CHANNEL) {
+      return await interaction.reply({
+        content: "❌ Dieser Button kann nur im Event-Channel genutzt werden.",
+        flags: 64
+      });
+    }
 
-  const venue = new TextInputBuilder()
-    .setCustomId("venue")
-    .setLabel("Venue")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
+    // Defer für bessere UX (verhindert Timeout)
+    await interaction.deferReply({ flags: 64 });
 
-  const date = new TextInputBuilder()
-    .setCustomId("date")
-    .setLabel("Datum (YYYY-MM-DD)")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
+    const templates = await getTemplates();
 
-  const time = new TextInputBuilder()
-    .setCustomId("time")
-    .setLabel("Startzeit (HH:MM)")
-    .setStyle(TextInputStyle.Short)
-    .setRequired(true);
+    // Fallback wenn keine Templates existieren
+    if (!templates || templates.length === 0) {
 
-  const description = new TextInputBuilder()
-    .setCustomId("description")
-    .setLabel("Beschreibung")
-    .setStyle(TextInputStyle.Paragraph)
-    .setRequired(true);
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("template_select")
+        .setPlaceholder("Template auswählen")
+        .addOptions([
+          {
+            label: "➕ Neues Template erstellen",
+            value: "new_template"
+          }
+        ]);
 
-  modal.addComponents(
-    new ActionRowBuilder().addComponents(title),
-    new ActionRowBuilder().addComponents(venue),
-    new ActionRowBuilder().addComponents(date),
-    new ActionRowBuilder().addComponents(time),
-    new ActionRowBuilder().addComponents(description)
-  );
+      const row = new ActionRowBuilder().addComponents(select);
 
-  await interaction.showModal(modal);
+      return await interaction.editReply({
+        content: "Es existieren noch keine Templates. Erstelle dein erstes:",
+        components: [row]
+      });
+    }
+
+    // Templates limitieren (Discord Limit: 25)
+    const options = templates.slice(0, 24).map(t => ({
+      label: t.title?.substring(0, 100) || "Unbenannt",
+      value: t.id
+    }));
+
+    // Option für neues Template
+    options.unshift({
+      label: "➕ Neues Template erstellen",
+      value: "new_template"
+    });
+
+    const select = new StringSelectMenuBuilder()
+      .setCustomId("template_select")
+      .setPlaceholder("Template auswählen")
+      .addOptions(options);
+
+    const row = new ActionRowBuilder().addComponents(select);
+
+    await interaction.editReply({
+      content: "Wähle ein Template oder erstelle ein neues:",
+      components: [row]
+    });
+
+  } catch (error) {
+
+    console.error("Button Handler Fehler:", error);
+
+    if (interaction.deferred) {
+      await interaction.editReply({
+        content: "❌ Fehler beim Laden der Templates.",
+        components: []
+      });
+    } else {
+      await interaction.reply({
+        content: "❌ Fehler beim Laden der Templates.",
+        flags: 64
+      });
+    }
+
+  }
+
 }
