@@ -1,42 +1,267 @@
-let slideIndex = 0;
-let days = [];
-let touchStartY = null;
+const TIMELINE_DAYS = 14;
+
+const state = {
+  slideIndex: 0,
+  days: [],
+  allEvents: [],
+  filters: {
+    scope: "all",
+    type: "",
+    venue: ""
+  },
+  touchStartY: null
+};
+
+function startOfDay(date) {
+  const value = new Date(date);
+  value.setHours(0, 0, 0, 0);
+  return value;
+}
+
+function normalizeDateKey(value) {
+  if (!value) return "";
+
+  const trimmed = value.trim();
+
+  if (trimmed.includes(".")) {
+    const [day, month, year] = trimmed.split(".");
+    return `${year}-${month}-${day}`;
+  }
+
+  return trimmed.slice(0, 10);
+}
 
 function buildDays() {
-  days = [];
-  const today = new Date();
+  const today = startOfDay(new Date());
+  state.days = [];
 
-  for (let index = 0; index < 14; index += 1) {
+  for (let index = 0; index < TIMELINE_DAYS; index += 1) {
     const day = new Date(today);
     day.setDate(today.getDate() + index);
-    days.push(day);
+    state.days.push(day);
   }
+}
+
+function getDayKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function isWeekend(date) {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
+function getDayMarker(day, index) {
+  if (index === 0) return "Heute";
+  if (index === 1) return "Morgen";
+  if (isWeekend(day)) return "Wochenende";
+  return "Diese Woche";
+}
+
+function getDaySubtitle(eventsForDay) {
+  if (eventsForDay.length === 0) {
+    return "Noch keine Eintraege fuer diesen Tag.";
+  }
+
+  if (eventsForDay.length === 1) {
+    return "Ein sichtbares Event fuer diesen Tag.";
+  }
+
+  return `${eventsForDay.length} sichtbare Events fuer diesen Tag.`;
+}
+
+function getEventType(event) {
+  return (event.type || event.event_type || "").trim();
+}
+
+function eventMatchesFilters(event, day) {
+  const { scope, type, venue } = state.filters;
+  const dayStart = startOfDay(day);
+
+  if (scope === "today" && dayStart.getTime() !== startOfDay(new Date()).getTime()) {
+    return false;
+  }
+
+  if (scope === "weekend" && !isWeekend(dayStart)) {
+    return false;
+  }
+
+  if (type && getEventType(event) !== type) {
+    return false;
+  }
+
+  if (venue && (event.venue || "") !== venue) {
+    return false;
+  }
+
+  return true;
+}
+
+function getEventsForDay(day) {
+  const dayKey = getDayKey(day);
+
+  return state.allEvents
+    .filter(event => normalizeDateKey(event.date) === dayKey)
+    .filter(event => eventMatchesFilters(event, day));
+}
+
+function updateHeroStats() {
+  const todayKey = getDayKey(startOfDay(new Date()));
+  const visibleEvents = state.allEvents.filter(event => {
+    const eventDate = normalizeDateKey(event.date);
+    const matchingDay = state.days.find(day => getDayKey(day) === eventDate);
+    return matchingDay ? eventMatchesFilters(event, matchingDay) : false;
+  });
+
+  const todayVisible = visibleEvents.filter(event => normalizeDateKey(event.date) === todayKey);
+  const types = new Set(visibleEvents.map(getEventType).filter(Boolean));
+
+  document.getElementById("today-count").textContent = String(todayVisible.length);
+  document.getElementById("week-count").textContent = String(visibleEvents.length);
+  document.getElementById("type-count").textContent = String(types.size);
+  document.getElementById("result-count").textContent = `${visibleEvents.length} sichtbare Events`;
+}
+
+function updateActiveDayMeta() {
+  const activeDay = state.days[state.slideIndex] || state.days[0];
+  const eventsForDay = activeDay ? getEventsForDay(activeDay) : [];
+
+  if (!activeDay) {
+    return;
+  }
+
+  document.getElementById("active-day-label").textContent = activeDay.toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long"
+  });
+  document.getElementById("active-day-subtitle").textContent = getDaySubtitle(eventsForDay);
+  document.getElementById("slide-position").textContent = `${state.slideIndex + 1} / ${state.days.length}`;
+}
+
+function renderTimelineDots(dayCounts) {
+  const dots = document.getElementById("timeline-dots");
+  dots.replaceChildren();
+
+  state.days.forEach((day, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "timeline-dot";
+    button.setAttribute("aria-label", day.toLocaleDateString("de-DE", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit"
+    }));
+
+    if ((dayCounts[index] || 0) > 0) {
+      button.classList.add("has-events");
+    }
+
+    if (index === state.slideIndex) {
+      button.classList.add("active");
+    }
+
+    button.addEventListener("click", () => {
+      state.slideIndex = index;
+      updateSlide();
+    });
+
+    dots.appendChild(button);
+  });
 }
 
 function updateSlide() {
   const track = document.getElementById("timeline-track");
+  const viewport = document.querySelector(".timeline-viewport");
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
   if (isMobile) {
     track.style.transform = "";
-    return;
+  } else {
+    track.style.transform = `translateY(-${state.slideIndex * viewport.clientHeight}px)`;
   }
 
-  track.style.transform = `translateY(-${slideIndex * (window.innerHeight - 92)}px)`;
+  Array.from(document.querySelectorAll(".timeline-dot")).forEach((dot, index) => {
+    dot.classList.toggle("active", index === state.slideIndex);
+  });
+
+  updateActiveDayMeta();
 }
 
 function changeSlide(direction) {
   const nextIndex = Math.min(
-    Math.max(slideIndex + direction, 0),
-    Math.max(days.length - 1, 0)
+    Math.max(state.slideIndex + direction, 0),
+    Math.max(state.days.length - 1, 0)
   );
 
-  if (nextIndex === slideIndex) {
+  if (nextIndex === state.slideIndex) {
     return;
   }
 
-  slideIndex = nextIndex;
+  state.slideIndex = nextIndex;
   updateSlide();
+}
+
+function populateFilterOptions() {
+  const typeSelect = document.getElementById("type-filter");
+  const venueSelect = document.getElementById("venue-filter");
+
+  const uniqueTypes = [...new Set(state.allEvents.map(getEventType).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const uniqueVenues = [...new Set(state.allEvents.map(event => event.venue).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+  typeSelect.innerHTML = '<option value="">Alle Typen</option>';
+  venueSelect.innerHTML = '<option value="">Alle Venues</option>';
+
+  uniqueTypes.forEach(type => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = type;
+    typeSelect.appendChild(option);
+  });
+
+  uniqueVenues.forEach(venue => {
+    const option = document.createElement("option");
+    option.value = venue;
+    option.textContent = venue;
+    venueSelect.appendChild(option);
+  });
+}
+
+function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
+  const slide = document.createElement("section");
+  slide.className = "day-slide";
+
+  const header = document.createElement("header");
+  header.className = "day-header";
+
+  const copy = document.createElement("div");
+  const marker = document.createElement("span");
+  marker.className = "day-marker";
+  marker.textContent = getDayMarker(day, index);
+
+  const title = document.createElement("h2");
+  title.className = "day-title";
+  title.textContent = day.toLocaleDateString("de-DE", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  });
+
+  const subtitle = document.createElement("p");
+  subtitle.className = "day-subtitle";
+  subtitle.textContent = getDaySubtitle(eventsForDay);
+
+  copy.append(marker, title, subtitle);
+
+  const count = document.createElement("div");
+  count.className = "day-count";
+  count.textContent = `${eventsForDay.length} Event${eventsForDay.length === 1 ? "" : "s"}`;
+
+  header.append(copy, count);
+  slide.append(header, createCarousel(eventsForDay, { isFiltered: hasActiveFilters }));
+
+  return slide;
 }
 
 async function renderTimeline() {
@@ -44,77 +269,119 @@ async function renderTimeline() {
 
   const track = document.getElementById("timeline-track");
   track.replaceChildren();
-  slideIndex = 0;
 
-  for (const day of days) {
-    const slide = document.createElement("section");
-    slide.className = "day-slide";
+  const hasActiveFilters = Boolean(state.filters.type || state.filters.venue || state.filters.scope !== "all");
+  const dayCounts = [];
 
-    const header = document.createElement("div");
-    header.className = "day-header";
+  state.days.forEach((day, index) => {
+    const eventsForDay = getEventsForDay(day);
+    dayCounts.push(eventsForDay.length);
+    track.appendChild(renderDaySlide(day, index, eventsForDay, hasActiveFilters));
+  });
 
-    const title = document.createElement("h2");
-    title.textContent = day.toLocaleDateString("de-DE", {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric"
-    });
-
-    header.appendChild(title);
-    slide.appendChild(header);
-    slide.appendChild(await createCarousel(day));
-    track.appendChild(slide);
-  }
-
+  renderTimelineDots(dayCounts);
+  updateHeroStats();
   updateSlide();
 }
 
-document.getElementById("nav-prev").addEventListener("click", () => changeSlide(-1));
-document.getElementById("nav-next").addEventListener("click", () => changeSlide(1));
+function bindFilterControls() {
+  document.querySelectorAll(".scope-button").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".scope-button").forEach(item => item.classList.remove("active"));
+      button.classList.add("active");
+      state.filters.scope = button.dataset.scope || "all";
+      state.slideIndex = 0;
+      void renderTimeline();
+    });
+  });
 
-document.addEventListener("wheel", event => {
-  if (window.matchMedia("(max-width: 768px)").matches) {
+  document.getElementById("type-filter").addEventListener("change", event => {
+    state.filters.type = event.target.value;
+    state.slideIndex = 0;
+    void renderTimeline();
+  });
+
+  document.getElementById("venue-filter").addEventListener("change", event => {
+    state.filters.venue = event.target.value;
+    state.slideIndex = 0;
+    void renderTimeline();
+  });
+
+  document.getElementById("jump-today").addEventListener("click", () => {
+    state.slideIndex = 0;
+    updateSlide();
+  });
+}
+
+function bindNavigationControls() {
+  document.getElementById("nav-prev").addEventListener("click", () => changeSlide(-1));
+  document.getElementById("nav-next").addEventListener("click", () => changeSlide(1));
+
+  document.addEventListener("wheel", event => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    if (Math.abs(event.deltaY) < 20) {
+      return;
+    }
+
+    changeSlide(event.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "ArrowDown" || event.key === "PageDown") {
+      changeSlide(1);
+    }
+
+    if (event.key === "ArrowUp" || event.key === "PageUp") {
+      changeSlide(-1);
+    }
+  });
+
+  document.addEventListener("touchstart", event => {
+    state.touchStartY = event.touches[0]?.clientY ?? null;
+  }, { passive: true });
+
+  document.addEventListener("touchend", event => {
+    if (state.touchStartY === null || window.matchMedia("(max-width: 768px)").matches) {
+      state.touchStartY = null;
+      return;
+    }
+
+    const endY = event.changedTouches[0]?.clientY ?? state.touchStartY;
+    const deltaY = state.touchStartY - endY;
+
+    if (Math.abs(deltaY) > 40) {
+      changeSlide(deltaY > 0 ? 1 : -1);
+    }
+
+    state.touchStartY = null;
+  }, { passive: true });
+
+  window.addEventListener("resize", updateSlide);
+}
+
+function setupHeroCta() {
+  const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
+  const button = document.getElementById("discord-cta");
+
+  if (!inviteUrl) {
+    button.style.display = "none";
     return;
   }
 
-  if (event.deltaY > 0) {
-    changeSlide(1);
-  } else if (event.deltaY < 0) {
-    changeSlide(-1);
-  }
-}, { passive: true });
+  button.href = inviteUrl;
+}
 
-document.addEventListener("keydown", event => {
-  if (event.key === "ArrowDown" || event.key === "PageDown") {
-    changeSlide(1);
-  }
+async function initTimeline() {
+  setupHeroCta();
+  buildDays();
+  state.allEvents = await getAllIndexedEvents();
+  populateFilterOptions();
+  bindFilterControls();
+  bindNavigationControls();
+  await renderTimeline();
+}
 
-  if (event.key === "ArrowUp" || event.key === "PageUp") {
-    changeSlide(-1);
-  }
-});
-
-document.addEventListener("touchstart", event => {
-  touchStartY = event.touches[0]?.clientY ?? null;
-}, { passive: true });
-
-document.addEventListener("touchend", event => {
-  if (touchStartY === null || window.matchMedia("(max-width: 768px)").matches) {
-    touchStartY = null;
-    return;
-  }
-
-  const endY = event.changedTouches[0]?.clientY ?? touchStartY;
-  const deltaY = touchStartY - endY;
-
-  if (Math.abs(deltaY) > 40) {
-    changeSlide(deltaY > 0 ? 1 : -1);
-  }
-
-  touchStartY = null;
-}, { passive: true });
-
-window.addEventListener("resize", updateSlide);
-
-void renderTimeline();
+void initTimeline();

@@ -45,50 +45,8 @@ function appendMetaItem(parent, label, value) {
   parent.appendChild(item);
 }
 
-async function createCarousel(date) {
-  const track = document.createElement("div");
-  track.className = "carousel-track";
-
-  const index = await getIndex();
-  const target = formatDate(date).trim();
-  const matchingEntries = index.filter(entry => normalizeDate(entry.date).trim() === target);
-
-  if (didIndexLoadFail()) {
-    track.appendChild(buildInfoCard(
-      "Events konnten nicht geladen werden",
-      "Bitte spaeter erneut versuchen."
-    ));
-    return track;
-  }
-
-  if (matchingEntries.length === 0) {
-    track.appendChild(buildInfoCard(
-      "Keine Events eingetragen",
-      "Erstell deins ueber den Discord-Bot!"
-    ));
-    return track;
-  }
-
-  const events = await Promise.all(matchingEntries.map(entry => getEvent(entry.file)));
-  const validEvents = events.filter(Boolean);
-
-  if (validEvents.length === 0) {
-    track.appendChild(buildInfoCard(
-      "Events konnten nicht geladen werden",
-      "Mindestens eine Event-Datei ist fehlerhaft."
-    ));
-    return track;
-  }
-
-  validEvents.forEach(event => {
-    track.appendChild(buildCard(event));
-  });
-
-  return track;
-}
-
 function buildCard(event) {
-  const card = document.createElement("div");
+  const card = document.createElement("article");
   card.className = "event-card";
 
   if (event.image) {
@@ -96,6 +54,7 @@ function buildCard(event) {
     image.className = "event-image";
     image.src = event.image;
     image.alt = event.title || "Eventbild";
+    image.loading = "lazy";
     card.appendChild(image);
   }
 
@@ -134,14 +93,14 @@ function buildCard(event) {
   info.append(headerRow, title, meta, description);
 
   if (event.link) {
-    const linkButton = document.createElement("span");
-    linkButton.className = "event-link-hint";
-    linkButton.textContent = "Mehr Infos im Detailfenster";
-    info.appendChild(linkButton);
+    const linkHint = document.createElement("span");
+    linkHint.className = "event-link-hint";
+    linkHint.textContent = "Mit externem Link";
+    info.appendChild(linkHint);
   }
 
   card.appendChild(info);
-  card.onclick = () => openModal(event);
+  card.addEventListener("click", () => openModal(event));
 
   return card;
 }
@@ -159,8 +118,7 @@ function buildInfoCard(titleText, bodyText) {
   const text = document.createElement("p");
   text.textContent = bodyText;
 
-  info.appendChild(title);
-  info.appendChild(text);
+  info.append(title, text);
 
   const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
   if (inviteUrl && titleText === "Keine Events eingetragen") {
@@ -176,23 +134,31 @@ function buildInfoCard(titleText, bodyText) {
   return card;
 }
 
-function formatDate(date) {
-  return `${date.getFullYear()}-${
-    String(date.getMonth() + 1).padStart(2, "0")
-  }-${
-    String(date.getDate()).padStart(2, "0")
-  }`;
-}
+function createCarousel(eventsForDay, context = {}) {
+  const track = document.createElement("div");
+  track.className = "carousel-track";
 
-function normalizeDate(value) {
-  if (!value) return "";
-
-  const trimmed = value.trim();
-
-  if (trimmed.includes(".")) {
-    const [day, month, year] = trimmed.split(".");
-    return `${year}-${month}-${day}`;
+  if (didIndexLoadFail()) {
+    track.appendChild(buildInfoCard(
+      "Events konnten nicht geladen werden",
+      "Bitte spaeter erneut versuchen."
+    ));
+    return track;
   }
 
-  return trimmed;
+  if (!eventsForDay || eventsForDay.length === 0) {
+    track.appendChild(buildInfoCard(
+      context.isFiltered ? "Keine Treffer fuer diese Filter" : "Keine Events eingetragen",
+      context.isFiltered
+        ? "Passe Typ, Venue oder Zeitraum an."
+        : "Erstell deins ueber den Discord-Bot!"
+    ));
+    return track;
+  }
+
+  eventsForDay.forEach(event => {
+    track.appendChild(buildCard(event));
+  });
+
+  return track;
 }

@@ -4,23 +4,89 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FFXIV RP Events</title>
+<meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert fuer diese Woche.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<header class="site-header">
+<div class="site-shell">
+<header class="hero">
+<div class="hero-copy">
+<p class="eyebrow">Crystal Data Center · Roleplay Calendar</p>
 <h1>FFXIV RP Events</h1>
-<p>Diese Woche fuer euch</p>
+<p class="hero-text">
+Ein kuratierter Wochenblick auf Tavernen, Clubabende, offene RP-Treffs und Community-Events.
+</p>
+<div class="hero-actions">
+<a id="discord-cta" class="hero-button hero-button-primary" href="#" target="_blank" rel="noreferrer noopener">Discord beitreten</a>
+<button id="jump-today" class="hero-button hero-button-secondary" type="button">Zu heute</button>
+</div>
+</div>
+<div class="hero-panel">
+<div class="hero-panel-section">
+<span class="panel-label">Aktueller Fokus</span>
+<strong id="active-day-label">Heute</strong>
+<p id="active-day-subtitle">Die aktuellen Termine der Woche.</p>
+</div>
+<div class="hero-stats">
+<div class="hero-stat">
+<span class="panel-label">Heute</span>
+<strong id="today-count">0</strong>
+</div>
+<div class="hero-stat">
+<span class="panel-label">Diese Woche</span>
+<strong id="week-count">0</strong>
+</div>
+<div class="hero-stat">
+<span class="panel-label">Typen</span>
+<strong id="type-count">0</strong>
+</div>
+</div>
+</div>
 </header>
 
-<main>
-<div id="timeline-container">
+<main class="layout">
+<section class="toolbar" aria-label="Filter und Status">
+<div class="scope-switch" role="group" aria-label="Zeitfenster">
+<button class="scope-button active" data-scope="all" type="button">Alle Tage</button>
+<button class="scope-button" data-scope="today" type="button">Heute</button>
+<button class="scope-button" data-scope="weekend" type="button">Wochenende</button>
+</div>
+
+<div class="filter-group">
+<label class="filter-label" for="type-filter">Typ</label>
+<select id="type-filter" class="filter-select">
+<option value="">Alle Typen</option>
+</select>
+</div>
+
+<div class="filter-group">
+<label class="filter-label" for="venue-filter">Venue</label>
+<select id="venue-filter" class="filter-select">
+<option value="">Alle Venues</option>
+</select>
+</div>
+
+<div class="toolbar-status">
+<span class="panel-label">Navigation</span>
+<strong id="slide-position">1 / 14</strong>
+<p id="result-count">0 sichtbare Events</p>
+</div>
+</section>
+
+<section id="timeline-container" class="timeline-stage" aria-label="Event-Timeline">
+<div class="timeline-rail" aria-hidden="true">
+<div id="timeline-dots" class="timeline-dots"></div>
+</div>
+<div class="timeline-viewport">
 <div id="timeline-track"></div>
 </div>
+</section>
 </main>
 
 <div class="timeline-controls" aria-label="Tagesnavigation">
-<button id="nav-prev" type="button" aria-label="Vorheriger Tag">Zurueck</button>
-<button id="nav-next" type="button" aria-label="Naechster Tag">Weiter</button>
+<button id="nav-prev" type="button" aria-label="Vorheriger Tag">Vorheriger Tag</button>
+<button id="nav-next" type="button" aria-label="Naechster Tag">Naechster Tag</button>
+</div>
 </div>
 
 <div id="event-modal" aria-hidden="true">

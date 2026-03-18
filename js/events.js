@@ -45,6 +45,12 @@ async function getEvent(file) {
   }
 }
 
+async function getAllIndexedEvents() {
+  const index = await getIndex();
+  const events = await Promise.all(index.map(entry => getEvent(entry.file)));
+  return events.filter(Boolean);
+}
+
 function didIndexLoadFail() {
   return indexLoadFailed;
 }
