@@ -33,6 +33,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
+function formatTemplateSummary(template) {
+  return [
+    `**${template.title || "Unbenannt"}**`,
+    template.venue ? `Ort: ${template.venue}` : null,
+    template.date ? `Datum: ${template.date}` : null,
+    template.time ? `Zeit: ${buildTimeLabel(template)}` : null
+  ].filter(Boolean).join("\n");
+}
+
+async function sendTemplateDm(client, userId, message) {
+  try {
+    const user = await client.users.fetch(userId);
+    await user.send(message);
+  } catch (error) {
+    console.warn("DM fehlgeschlagen:", error.message);
+  }
+}
+
 function buildTimeLabel(template) {
   if (template.time && template.end_time) {
     return `${template.time} - ${template.end_time}`;
@@ -353,6 +371,12 @@ export async function handleButton(interaction, client) {
         summary: template.title || "Unbenannt"
       });
 
+      await sendTemplateDm(
+        client,
+        template.created_by,
+        `Dein Event wird gerade ueberprueft.\n\n${formatTemplateSummary(template)}\n\nDu wirst benachrichtigt, sobald es ein Update gibt.`
+      );
+
       await replyAndExpire(interaction, {
         content: "Event wurde zur Pruefung gesendet.",
         ephemeral: true
@@ -385,13 +409,19 @@ export async function handleButton(interaction, client) {
         try {
           const logChannel = await client.channels.fetch(CHANNELS.EVENT_LOG);
           if (logChannel?.isTextBased()) {
-            await logChannel.send(
+          await logChannel.send(
               `Event "${template.title}" wurde freigegeben von <@${interaction.user.id}>`
             );
           }
         } catch (error) {
           console.error("EVENT_LOG Fehler:", error);
         }
+
+        await sendTemplateDm(
+          client,
+          template.created_by,
+          `Dein Event wurde bestaetigt. Viel Erfolg!\n\n${formatTemplateSummary(template)}\n\nEs ist jetzt fuer die Community sichtbar.`
+        );
 
         await recordAuditEntry(client, {
           action: "template.approved",
