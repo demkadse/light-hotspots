@@ -1,0 +1,3 @@
+export const ADMIN_USER_IDS = [
+  "840120737527627796"
+];

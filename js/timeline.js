@@ -1,82 +1,120 @@
 let slideIndex = 0;
 let days = [];
+let touchStartY = null;
 
-function buildDays(){
+function buildDays() {
+  days = [];
+  const today = new Date();
 
-const today = new Date();
-
-for(let i=0;i<14;i++){
-
-const d = new Date(today);
-
-d.setDate(today.getDate()+i);
-
-days.push(d);
-
+  for (let index = 0; index < 14; index += 1) {
+    const day = new Date(today);
+    day.setDate(today.getDate() + index);
+    days.push(day);
+  }
 }
 
+function updateSlide() {
+  const track = document.getElementById("timeline-track");
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (isMobile) {
+    track.style.transform = "";
+    return;
+  }
+
+  track.style.transform = `translateY(-${slideIndex * (window.innerHeight - 92)}px)`;
 }
 
-async function renderTimeline(){
+function changeSlide(direction) {
+  const nextIndex = Math.min(
+    Math.max(slideIndex + direction, 0),
+    Math.max(days.length - 1, 0)
+  );
 
-buildDays();
+  if (nextIndex === slideIndex) {
+    return;
+  }
 
-const track = document.getElementById("timeline-track");
-
-for(const day of days){
-
-const slide = document.createElement("section");
-slide.className="day-slide";
-
-const header = document.createElement("div");
-header.className="day-header";
-
-header.innerHTML = `<h2>${day.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})}</h2>`;
-
-slide.appendChild(header);
-
-const carousel = await createCarousel(day);
-
-slide.appendChild(carousel);
-
-track.appendChild(slide);
-
+  slideIndex = nextIndex;
+  updateSlide();
 }
 
+async function renderTimeline() {
+  buildDays();
+
+  const track = document.getElementById("timeline-track");
+  track.replaceChildren();
+  slideIndex = 0;
+
+  for (const day of days) {
+    const slide = document.createElement("section");
+    slide.className = "day-slide";
+
+    const header = document.createElement("div");
+    header.className = "day-header";
+
+    const title = document.createElement("h2");
+    title.textContent = day.toLocaleDateString("de-DE", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    header.appendChild(title);
+    slide.appendChild(header);
+    slide.appendChild(await createCarousel(day));
+    track.appendChild(slide);
+  }
+
+  updateSlide();
 }
 
-function updateSlide(){
+document.getElementById("nav-prev").addEventListener("click", () => changeSlide(-1));
+document.getElementById("nav-next").addEventListener("click", () => changeSlide(1));
 
-const track = document.getElementById("timeline-track");
+document.addEventListener("wheel", event => {
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    return;
+  }
 
-track.style.transform = `translateY(-${slideIndex*100}vh)`;
+  if (event.deltaY > 0) {
+    changeSlide(1);
+  } else if (event.deltaY < 0) {
+    changeSlide(-1);
+  }
+}, { passive: true });
 
-}
+document.addEventListener("keydown", event => {
+  if (event.key === "ArrowDown" || event.key === "PageDown") {
+    changeSlide(1);
+  }
 
-document.addEventListener("wheel",(e)=>{
-
-if(e.deltaY>0){
-
-if(slideIndex<days.length-1){
-
-slideIndex++;
-
-updateSlide();
-
-}
-
-}else{
-
-if(slideIndex>0){
-
-slideIndex--;
-
-updateSlide();
-
-}
-
-}
-
+  if (event.key === "ArrowUp" || event.key === "PageUp") {
+    changeSlide(-1);
+  }
 });
 
-renderTimeline();
+document.addEventListener("touchstart", event => {
+  touchStartY = event.touches[0]?.clientY ?? null;
+}, { passive: true });
+
+document.addEventListener("touchend", event => {
+  if (touchStartY === null || window.matchMedia("(max-width: 768px)").matches) {
+    touchStartY = null;
+    return;
+  }
+
+  const endY = event.changedTouches[0]?.clientY ?? touchStartY;
+  const deltaY = touchStartY - endY;
+
+  if (Math.abs(deltaY) > 40) {
+    changeSlide(deltaY > 0 ? 1 : -1);
+  }
+
+  touchStartY = null;
+}, { passive: true });
+
+window.addEventListener("resize", updateSlide);
+
+void renderTimeline();

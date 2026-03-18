@@ -1,46 +1,49 @@
 import { rejectTemplate, getTemplate } from "../services/templateService.js";
 import { replyAndExpire } from "../services/interactionResponseService.js";
+import { assertAdminUser } from "../services/permissionService.js";
+import { assertActionCooldown } from "../services/cooldownService.js";
+import { recordAuditEntry } from "../services/auditService.js";
 
 export async function handleRejectModal(interaction, client) {
   try {
+    assertAdminUser(interaction);
+    assertActionCooldown(interaction.user.id, `reject-modal:${interaction.customId}`, 30000);
+
     const templateId = interaction.customId.split("_").pop();
     const reason = interaction.fields.getTextInputValue("reason");
-
     const template = await getTemplate(templateId);
 
     await rejectTemplate(templateId, reason);
-
     await replyAndExpire(interaction, {
-      content: "❌ Event wurde abgelehnt.",
+      content: "Event wurde abgelehnt.",
       ephemeral: true
+    });
+
+    await recordAuditEntry(client, {
+      action: "template.rejected",
+      actor_id: interaction.user.id,
+      target_id: templateId,
+      summary: `${template?.title || "Unbenannt"} | ${reason}`
     });
 
     try {
       const user = await client.users.fetch(template.created_by);
-
       await user.send(
-`❌ **Dein Event wurde abgelehnt**
+`Dein Event wurde abgelehnt.
 
-Leider konnte dein Event in der aktuellen Form nicht freigegeben werden.
+Event:
+${template.title}
 
-**Event:**
-📌 ${template.title}
-
-**Grund der Ablehnung:**
+Grund der Ablehnung:
 ${reason}
 
-👉 Bitte erstelle dein Event erneut und korrigiere die oben genannten Punkte.  
-Du kannst dein bestehendes Template als Grundlage nutzen.
-
-Wenn du unsicher bist, melde dich gern – wir helfen dir weiter!`
+Bitte korrigiere die genannten Punkte und reiche das Event erneut ein.`
       );
-
-    } catch (err) {
-      console.warn("DM fehlgeschlagen:", err.message);
+    } catch (error) {
+      console.warn("DM fehlgeschlagen:", error.message);
     }
-
-  } catch (err) {
-    console.error("Reject Error:", err);
-    throw err;
+  } catch (error) {
+    console.error("Reject Error:", error);
+    throw error;
   }
 }

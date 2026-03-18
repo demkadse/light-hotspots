@@ -48,6 +48,16 @@ async function writeTemplates(templates) {
   await writeJSON(TEMPLATE_PATH, templates);
 }
 
+export async function getAllTemplates() {
+  return readTemplates();
+}
+
+async function readEventIndex() {
+  const indexPath = path.join(EVENTS_BASE_PATH, "index.json");
+  const index = await readJSON(indexPath, { events: [] });
+  return { indexPath, index };
+}
+
 function slugify(text) {
   return text
     .toLowerCase()
@@ -59,6 +69,188 @@ function slugify(text) {
 function parseDate(dateStr) {
   const [day, month, year] = dateStr.split(".");
   return { day, month, year };
+}
+
+function buildPublishedFileInfo(template) {
+  const { day, month, year } = parseDate(template.date);
+  const slug = slugify(template.title);
+  const fileName = `${slug}-${year}-${month}-${day}.json`;
+  const file = `${year}/${month}/${fileName}`;
+  const filePath = path.join(EVENTS_BASE_PATH, file);
+
+  return {
+    day,
+    month,
+    year,
+    slug,
+    fileName,
+    file,
+    filePath
+  };
+}
+
+export async function findPotentialDuplicates(event, limit = 3) {
+  const { index } = await readEventIndex();
+  const title = event.title?.trim().toLowerCase();
+  const venue = event.venue?.trim().toLowerCase();
+  const date = event.date?.includes(".")
+    ? (() => {
+        const { day, month, year } = parseDate(event.date);
+        return `${year}-${month}-${day}`;
+      })()
+    : event.date;
+
+  const duplicates = [];
+
+  for (const entry of index.events) {
+    if (entry.date !== date) continue;
+
+    const publishedEvent = await readJSON(path.join(EVENTS_BASE_PATH, entry.file), null);
+    if (!publishedEvent) continue;
+
+    const titleMatch = publishedEvent.title?.trim().toLowerCase() === title;
+    const venueMatch = publishedEvent.venue?.trim().toLowerCase() === venue;
+
+    if (!titleMatch && !venueMatch) continue;
+
+    duplicates.push({
+      title: publishedEvent.title,
+      venue: publishedEvent.venue,
+      date: publishedEvent.date,
+      file: entry.file
+    });
+
+    if (duplicates.length >= limit) break;
+  }
+
+  return duplicates;
+}
+
+export async function processPendingReminders({
+  thresholdHours = 24,
+  reminderGapHours = 24
+} = {}) {
+  const templates = await readTemplates();
+  const now = Date.now();
+  const thresholdMs = thresholdHours * 60 * 60 * 1000;
+  const reminderGapMs = reminderGapHours * 60 * 60 * 1000;
+  const reminded = [];
+
+  for (let index = 0; index < templates.length; index += 1) {
+    const template = templates[index];
+
+    if (template.status !== "pending") {
+      continue;
+    }
+
+    const referenceTime = template.updated_at || template.created_at;
+    if (!referenceTime) {
+      continue;
+    }
+
+    const ageMs = now - new Date(referenceTime).getTime();
+    if (ageMs < thresholdMs) {
+      continue;
+    }
+
+    if (template.reminder_sent_at) {
+      const reminderAge = now - new Date(template.reminder_sent_at).getTime();
+      if (reminderAge < reminderGapMs) {
+        continue;
+      }
+    }
+
+    templates[index] = {
+      ...template,
+      reminder_sent_at: new Date(now).toISOString()
+    };
+
+    reminded.push(templates[index]);
+  }
+
+  if (reminded.length === 0) {
+    return [];
+  }
+
+  await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH],
+    `Update pending reminders ${new Date(now).toISOString()}`
+  );
+
+  return reminded;
+}
+
+export async function resyncEventIndex({ applyFixes = false } = {}) {
+  const eventFiles = [];
+
+  async function walk(dirPath) {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+        continue;
+      }
+
+      if (!entry.name.endsWith(".json") || entry.name === "index.json") {
+        continue;
+      }
+
+      eventFiles.push(fullPath);
+    }
+  }
+
+  await walk(EVENTS_BASE_PATH);
+
+  const actualEntries = [];
+  for (const filePath of eventFiles) {
+    const event = await readJSON(filePath, null);
+    if (!event?.date) {
+      continue;
+    }
+
+    const relativeFile = path.relative(EVENTS_BASE_PATH, filePath).replace(/\\/g, "/");
+    actualEntries.push({
+      file: relativeFile,
+      date: event.date
+    });
+  }
+
+  actualEntries.sort((a, b) => a.file.localeCompare(b.file));
+
+  const { indexPath, index } = await readEventIndex();
+  const existingEntries = [...index.events].sort((a, b) => a.file.localeCompare(b.file));
+
+  const missingFromIndex = actualEntries.filter(
+    actual => !existingEntries.some(existing => existing.file === actual.file)
+  );
+  const staleInIndex = existingEntries.filter(
+    existing => !actualEntries.some(actual => actual.file === existing.file)
+  );
+  const dateMismatches = actualEntries.filter(actual => {
+    const existing = existingEntries.find(entry => entry.file === actual.file);
+    return existing && existing.date !== actual.date;
+  });
+
+  if (applyFixes) {
+    await writeJSON(indexPath, { events: actualEntries });
+    await syncRepoFiles(
+      [indexPath],
+      "Resync events index"
+    );
+  }
+
+  return {
+    missingFromIndex,
+    staleInIndex,
+    dateMismatches,
+    totalActual: actualEntries.length,
+    totalIndexed: existingEntries.length,
+    appliedFixes: applyFixes
+  };
 }
 
 // =========================
@@ -173,13 +365,9 @@ export async function approveTemplate(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
-  const { day, month, year } = parseDate(template.date);
-
-  const slug = slugify(template.title);
-  const fileName = `${slug}-${year}-${month}-${day}.json`;
+  const { day, month, year, slug, fileName, file, filePath } = buildPublishedFileInfo(template);
 
   const dirPath = path.join(EVENTS_BASE_PATH, year, month);
-  const filePath = path.join(dirPath, fileName);
 
   await fs.mkdir(dirPath, { recursive: true });
 
@@ -199,7 +387,7 @@ export async function approveTemplate(templateId) {
     created_at: new Date().toISOString()
   };
 
-  eventData.file = `${year}/${month}/${fileName}`;
+  eventData.file = file;
 
   await writeJSON(filePath, eventData);
 
@@ -207,10 +395,7 @@ export async function approveTemplate(templateId) {
   // INDEX
   // =========================
 
-  const indexPath = path.join(EVENTS_BASE_PATH, "index.json");
-
-  let index = await readJSON(indexPath, { events: [] });
-
+  const { indexPath, index } = await readEventIndex();
   const relativeFile = eventData.file;
 
   const existing = index.events.find(e => e.file === relativeFile);
@@ -240,4 +425,45 @@ export async function approveTemplate(templateId) {
   );
 
   return eventData;
+}
+
+export async function unpublishTemplate(templateId) {
+  const templates = await readTemplates();
+  const templateIndex = templates.findIndex(t => t.id === templateId);
+  const template = templates[templateIndex];
+
+  if (!template) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  const fileInfo = buildPublishedFileInfo(template);
+  const { indexPath, index } = await readEventIndex();
+
+  try {
+    await fs.unlink(fileInfo.filePath);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  index.events = index.events.filter(entry => entry.file !== fileInfo.file);
+  await writeJSON(indexPath, index);
+
+  templates[templateIndex] = {
+    ...template,
+    status: "unpublished",
+    updated_at: new Date().toISOString()
+  };
+
+  await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH, indexPath, fileInfo.filePath],
+    `Unpublish event ${fileInfo.file}`
+  );
+
+  return {
+    title: template.title,
+    file: fileInfo.file
+  };
 }

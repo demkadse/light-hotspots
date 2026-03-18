@@ -1,6 +1,6 @@
 console.log("SCRIPT STARTET");
 
-import { REST, Routes, SlashCommandBuilder } from "discord.js";
+import { REST, Routes, SlashCommandBuilder, ChannelType } from "discord.js";
 import { CONFIG, validateConfig } from "./config/config.js";
 
 validateConfig();
@@ -8,7 +8,26 @@ validateConfig();
 const commands = [
   new SlashCommandBuilder()
     .setName("setup-events")
-    .setDescription("Erstellt das Event Panel")
+    .setDescription("Erstellt das Event Panel"),
+  new SlashCommandBuilder()
+    .setName("setup-cleanup")
+    .setDescription("Erstellt das Cleanup Panel")
+    .addChannelOption(option =>
+      option
+        .setName("channel")
+        .setDescription("Channel fuer das Cleanup-Panel")
+        .addChannelTypes(ChannelType.GuildText)
+        .setRequired(false)
+    ),
+  new SlashCommandBuilder()
+    .setName("resync-events")
+    .setDescription("Prueft oder repariert events/data/index.json")
+    .addBooleanOption(option =>
+      option
+        .setName("fix")
+        .setDescription("Index automatisch reparieren")
+        .setRequired(false)
+    )
 ];
 
 const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);

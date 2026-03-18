@@ -1,36 +1,50 @@
 const DATA_PATH = "events/data/";
 
 let indexCache = null;
+let indexLoadFailed = false;
 const eventCache = new Map();
 
-async function getIndex(){
+async function fetchJson(path) {
+  const response = await fetch(path);
 
-if(indexCache) return indexCache;
+  if (!response.ok) {
+    throw new Error(`Fetch fehlgeschlagen: ${path} (${response.status})`);
+  }
 
-const res = await fetch(DATA_PATH + "index.json");
-
-const data = await res.json();
-
-indexCache = data.events;
-
-return indexCache;
-
+  return response.json();
 }
 
-async function getEvent(file){
+async function getIndex() {
+  if (indexCache) return indexCache;
 
-if(eventCache.has(file)){
+  try {
+    const data = await fetchJson(DATA_PATH + "index.json");
+    indexCache = Array.isArray(data.events) ? data.events : [];
+    indexLoadFailed = false;
+  } catch (error) {
+    console.error("Index konnte nicht geladen werden:", error);
+    indexCache = [];
+    indexLoadFailed = true;
+  }
 
-return eventCache.get(file);
-
+  return indexCache;
 }
 
-const res = await fetch(DATA_PATH + file);
+async function getEvent(file) {
+  if (eventCache.has(file)) {
+    return eventCache.get(file);
+  }
 
-const data = await res.json();
+  try {
+    const data = await fetchJson(DATA_PATH + file);
+    eventCache.set(file, data);
+    return data;
+  } catch (error) {
+    console.error(`Event konnte nicht geladen werden: ${file}`, error);
+    return null;
+  }
+}
 
-eventCache.set(file,data);
-
-return data;
-
+function didIndexLoadFail() {
+  return indexLoadFailed;
 }
