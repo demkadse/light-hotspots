@@ -1,4 +1,5 @@
 const STORAGE_KEY = "light-hotspots.timeline-state";
+const FEATURED_PRIORITY_TITLES = ["futomaki", "noxis"];
 
 const state = {
   slideIndex: 0,
@@ -104,6 +105,27 @@ function compareEvents(a, b) {
   const timeA = a.start_time || a.time || "";
   const timeB = b.start_time || b.time || "";
   return timeA.localeCompare(timeB) || (a.title || "").localeCompare(b.title || "");
+}
+
+function getFeaturedPriority(event) {
+  const title = (event.title || "").trim().toLowerCase();
+  const priorityIndex = FEATURED_PRIORITY_TITLES.indexOf(title);
+  return priorityIndex >= 0 ? priorityIndex : Number.POSITIVE_INFINITY;
+}
+
+function pickFeaturedEvent(events) {
+  if (!events || events.length === 0) {
+    return null;
+  }
+
+  return [...events].sort((a, b) => {
+    const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    return compareEvents(a, b);
+  })[0];
 }
 
 function eventMatchesFilters(event, day) {
@@ -253,7 +275,7 @@ function updateFeaturedEvent(activeDayEvents) {
   const copy = document.getElementById("featured-event-copy");
   const button = document.getElementById("featured-event-open");
   const visibleEvents = getVisibleEvents();
-  const featured = activeDayEvents[0] || visibleEvents[0] || null;
+  const featured = pickFeaturedEvent(activeDayEvents) || pickFeaturedEvent(visibleEvents);
 
   state.featuredEvent = featured;
 
@@ -539,9 +561,6 @@ function bindFilterControls() {
 }
 
 function bindNavigationControls() {
-  document.getElementById("nav-prev").addEventListener("click", () => changeSlide(-1));
-  document.getElementById("nav-next").addEventListener("click", () => changeSlide(1));
-
   document.addEventListener("wheel", event => {
     if (window.matchMedia("(max-width: 768px)").matches) {
       return;
