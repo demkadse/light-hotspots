@@ -23,7 +23,7 @@ export async function handleButton(interaction, client) {
 
   try {
 
-    // 🟢 TEMPLATE AUSWAHL
+    // TEMPLATE AUSWAHL
     if (id === "event:create") {
 
       const templates = await getTemplatesByUser(interaction.user.id);
@@ -60,7 +60,7 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // 🟢 IMAGE SETZEN
+    // IMAGE SETZEN
     if (id.startsWith("event:setImage:")) {
       const templateId = id.split(":")[2];
 
@@ -83,7 +83,7 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // 🟢 SUBMIT → APPROVAL
+    // SUBMIT
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
 
@@ -134,12 +134,13 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // 🟢 APPROVE
+    // APPROVE (BESTEHEND + ERWEITERT)
     if (id.startsWith("event:approve:")) {
       const templateId = id.split(":")[2];
 
       const template = await approveTemplate(templateId);
 
+      // 🔴 WICHTIG: DEIN BESTEHENDER CODE BLEIBT UNVERÄNDERT
       await interaction.reply({
         content: "✅ Event angenommen.",
         ephemeral: true
@@ -164,10 +165,67 @@ Viel Erfolg bei deinem Event! 🚀`
         console.warn("DM fehlgeschlagen:", err.message);
       }
 
+      // 🟢 AB HIER NUR ERWEITERUNG
+
+      try {
+        const fs = await import("fs/promises");
+        const path = await import("path");
+
+        const EVENTS_PATH = path.resolve("data/events.json");
+
+        try {
+          await fs.access(EVENTS_PATH);
+        } catch {
+          await fs.mkdir(path.dirname(EVENTS_PATH), { recursive: true });
+          await fs.writeFile(EVENTS_PATH, "[]", "utf-8");
+        }
+
+        const raw = await fs.readFile(EVENTS_PATH, "utf-8");
+        const events = JSON.parse(raw);
+
+        if (!events.find(e => e.id === template.id)) {
+
+          const newEvent = {
+            id: template.id,
+            title: template.title,
+            venue: template.venue,
+            date: template.date,
+            time: template.time,
+            description: template.description,
+            image: template.image,
+            created_by: template.created_by
+          };
+
+          events.push(newEvent);
+
+          await fs.writeFile(
+            EVENTS_PATH,
+            JSON.stringify(events, null, 2),
+            "utf-8"
+          );
+        }
+
+      } catch (err) {
+        console.error("Event speichern fehlgeschlagen:", err);
+      }
+
+      try {
+        const logChannel = await client.channels.fetch(CHANNELS.LOG_CHANNEL);
+
+        if (logChannel) {
+          await logChannel.send(
+`📅 Neues Event veröffentlicht: ${template.title} (${template.date} ${template.time})`
+          );
+        }
+
+      } catch (err) {
+        console.warn("Log fehlgeschlagen:", err.message);
+      }
+
       return;
     }
 
-    // 🟢 REJECT → Modal öffnen
+    // REJECT
     if (id.startsWith("event:reject:")) {
       const templateId = id.split(":")[2];
 
