@@ -1,7 +1,7 @@
 import { ROLES } from "../config/roles.js";
 
 export function getUserRoleLevel(member) {
-  if (member.permissions.has("Administrator")) return "admin";
+  if (member.roles.cache.has(ROLES.ADMIN)) return "admin";
   if (member.roles.cache.has(ROLES.VENUE_HEAD)) return "head";
   if (member.roles.cache.has(ROLES.VENUE_STAFF)) return "staff";
   return "user";
