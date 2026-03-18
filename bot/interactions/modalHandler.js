@@ -1,8 +1,13 @@
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} from "discord.js";
+
 import { createOrUpdateTemplate } from "../services/templateService.js";
 import { CHANNELS } from "../config/channels.js";
 
 export async function handleModal(interaction, client) {
-
   if (!interaction.customId.startsWith("event_modal_")) return;
 
   try {
@@ -23,49 +28,53 @@ export async function handleModal(interaction, client) {
       image
     }, interaction.user.id);
 
-    // DM an User (Submit)
+    // ✅ DM (mit Logging)
     try {
       await interaction.user.send(
         "📨 Dein Event wurde eingereicht!\n\nBitte warte, bis ein Administrator es geprüft hat."
       );
-    } catch {}
+    } catch (err) {
+      console.warn("DM konnte nicht gesendet werden:", err.message);
+    }
 
-    // Approval Channel
+    // ✅ Channel holen + prüfen
     const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+
+    if (!channel) {
+      throw new Error("Approval Channel nicht gefunden");
+    }
+
+    // ✅ Buttons sauber gebaut (kein raw API mehr)
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`event:approve:${template.id}`)
+        .setLabel("Annehmen")
+        .setStyle(ButtonStyle.Success),
+
+      new ButtonBuilder()
+        .setCustomId(`event:reject:${template.id}`)
+        .setLabel("Ablehnen")
+        .setStyle(ButtonStyle.Danger)
+    );
 
     await channel.send({
       content: `📦 Neues Template von <@${interaction.user.id}>`,
-      components: [{
-        type: 1,
-        components: [
-          {
-            type: 2,
-            label: "Annehmen",
-            style: 3,
-            custom_id: `approve_${template.id}`
-          },
-          {
-            type: 2,
-            label: "Ablehnen",
-            style: 4,
-            custom_id: `reject_${template.id}`
-          }
-        ]
-      }]
+      components: [row]
     });
 
     await interaction.reply({
       content: "✅ Eingereicht und wartet auf Prüfung.",
-      flags: 64
+      ephemeral: true
     });
 
   } catch (err) {
+    console.error("Modal Error:", err);
 
-    await interaction.reply({
-      content: "❌ Fehler beim Einreichen.",
-      flags: 64
-    });
-
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: "❌ Fehler beim Einreichen.",
+        ephemeral: true
+      });
+    }
   }
-
 }

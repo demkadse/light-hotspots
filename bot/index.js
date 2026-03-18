@@ -5,6 +5,8 @@ import { handleModal } from "./interactions/modalHandler.js";
 import { handleButton } from "./interactions/buttonHandler.js";
 import { handleRejectModal } from "./interactions/rejectModalHandler.js";
 
+import { execute as setupEvents } from "./commands/setupEventPanel.js";
+
 dotenv.config();
 
 const client = new Client({
@@ -16,15 +18,21 @@ client.once("clientReady", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-
   try {
 
-    // BUTTONS
+    // ✅ SLASH COMMANDS
+    if (interaction.isChatInputCommand()) {
+      if (interaction.commandName === "setup-events") {
+        return await setupEvents(interaction);
+      }
+    }
+
+    // ✅ BUTTONS
     if (interaction.isButton()) {
       return await handleButton(interaction, client);
     }
 
-    // MODALS (wichtig: sauber trennen!)
+    // ✅ MODALS
     if (interaction.isModalSubmit()) {
 
       if (interaction.customId.startsWith("reject_modal_")) {
@@ -34,24 +42,22 @@ client.on("interactionCreate", async (interaction) => {
       if (interaction.customId.startsWith("event_modal_")) {
         return await handleModal(interaction, client);
       }
-
     }
 
   } catch (err) {
-
     console.error("INTERACTION ERROR:", err);
 
     try {
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: "❌ Fehler bei der Verarbeitung.",
-          flags: 64
+          ephemeral: true
         });
       }
-    } catch {}
-
+    } catch (replyErr) {
+      console.error("Reply failed:", replyErr);
+    }
   }
-
 });
 
 client.login(process.env.DISCORD_TOKEN);
