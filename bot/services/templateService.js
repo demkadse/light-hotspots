@@ -32,6 +32,15 @@ async function writeJSON(filePath, data) {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
 }
 
+async function readTemplates() {
+  await ensureFile(TEMPLATE_PATH);
+  return readJSON(TEMPLATE_PATH, []);
+}
+
+async function writeTemplates(templates) {
+  await writeJSON(TEMPLATE_PATH, templates);
+}
+
 function slugify(text) {
   return text
     .toLowerCase()
@@ -50,10 +59,7 @@ function parseDate(dateStr) {
 // =========================
 
 export async function createOrUpdateTemplate(data, userId, templateId = null) {
-
-  await ensureFile(TEMPLATE_PATH);
-
-  const templates = await readJSON(TEMPLATE_PATH, []);
+  const templates = await readTemplates();
 
   if (templateId) {
     const index = templates.findIndex(t => t.id === templateId);
@@ -65,7 +71,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
       updated_at: new Date().toISOString()
     };
 
-    await writeJSON(TEMPLATE_PATH, templates);
+    await writeTemplates(templates);
     return templates[index];
   }
 
@@ -78,16 +84,57 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   };
 
   templates.push(newTemplate);
-  await writeJSON(TEMPLATE_PATH, templates);
+  await writeTemplates(templates);
 
   return newTemplate;
 }
 
-export async function getTemplate(templateId) {
-  await ensureFile(TEMPLATE_PATH);
+export async function getTemplatesByUser(userId) {
+  const templates = await readTemplates();
+  return templates.filter(template => template.created_by === userId);
+}
 
-  const templates = await readJSON(TEMPLATE_PATH, []);
+export async function getTemplate(templateId) {
+  const templates = await readTemplates();
   return templates.find(t => t.id === templateId);
+}
+
+export async function submitTemplateForApproval(templateId) {
+  const templates = await readTemplates();
+  const index = templates.findIndex(template => template.id === templateId);
+
+  if (index === -1) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  templates[index] = {
+    ...templates[index],
+    status: "pending",
+    rejection_reason: null,
+    updated_at: new Date().toISOString()
+  };
+
+  await writeTemplates(templates);
+  return templates[index];
+}
+
+export async function rejectTemplate(templateId, reason) {
+  const templates = await readTemplates();
+  const index = templates.findIndex(template => template.id === templateId);
+
+  if (index === -1) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  templates[index] = {
+    ...templates[index],
+    status: "rejected",
+    rejection_reason: reason,
+    updated_at: new Date().toISOString()
+  };
+
+  await writeTemplates(templates);
+  return templates[index];
 }
 
 // =========================
@@ -95,8 +142,9 @@ export async function getTemplate(templateId) {
 // =========================
 
 export async function approveTemplate(templateId) {
-
-  const template = await getTemplate(templateId);
+  const templates = await readTemplates();
+  const templateIndex = templates.findIndex(t => t.id === templateId);
+  const template = templates[templateIndex];
 
   if (!template) {
     throw new Error("Template nicht gefunden");
@@ -152,6 +200,15 @@ export async function approveTemplate(templateId) {
   }
 
   await writeJSON(indexPath, index);
+
+  templates[templateIndex] = {
+    ...template,
+    status: "approved",
+    rejection_reason: null,
+    updated_at: new Date().toISOString()
+  };
+
+  await writeTemplates(templates);
 
   return eventData;
 }

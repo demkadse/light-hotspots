@@ -26,7 +26,6 @@ export async function handleModal(interaction, client) {
       date: interaction.fields.getTextInputValue("date"),
       time: interaction.fields.getTextInputValue("time"),
       description: interaction.fields.getTextInputValue("description"),
-      image: null,
       status: "draft"
     };
 

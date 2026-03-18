@@ -164,13 +164,10 @@ export async function handleButton(interaction, client) {
           const fs = await import("fs/promises");
           const path = await import("path");
 
-          const [day, month, year] = template.date.split(".");
-          const safeName = template.title
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "-");
+          const [year, month] = template.date.split("-");
 
           const filePath = path.resolve(
-            `../events/data/${year}/${month}/${safeName}.json`
+            `../events/data/${year}/${month}/${template.id}.json`
           );
 
           const content = await fs.readFile(filePath, "utf-8");

@@ -11,9 +11,9 @@ modalContent.innerHTML = `
 
 <p><b>Venue:</b> ${event.venue || "-"}</p>
 
-<p><b>Host:</b> ${event.created_by || "-"}</p>
+<p><b>Host:</b> ${event.host || event.created_by || "-"}</p>
 
-<p>${event.date || ""} ${event.time || ""}</p>
+<p>${event.date || ""} ${event.start_time || event.time || ""}</p>
 
 <p>${event.description || ""}</p>
 
