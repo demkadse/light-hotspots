@@ -8,24 +8,20 @@ import { createOrUpdateTemplate } from "../services/templateService.js";
 
 export async function handleModal(interaction, client) {
 
-  // 🟢 EVENT MODAL (STEP 1)
-  if (interaction.customId.startsWith("event_modal_")) {
+  // EVENT CREATE
+  if (interaction.customId === "event_modal_create") {
 
-    const title = interaction.fields.getTextInputValue("title");
-    const venue = interaction.fields.getTextInputValue("venue");
-    const date = interaction.fields.getTextInputValue("date");
-    const time = interaction.fields.getTextInputValue("time");
-    const description = interaction.fields.getTextInputValue("description");
-
-    const template = await createOrUpdateTemplate({
-      title,
-      venue,
-      date,
-      time,
-      description,
+    const data = {
+      title: interaction.fields.getTextInputValue("title"),
+      venue: interaction.fields.getTextInputValue("venue"),
+      date: interaction.fields.getTextInputValue("date"),
+      time: interaction.fields.getTextInputValue("time"),
+      description: interaction.fields.getTextInputValue("description"),
       image: null,
       status: "draft"
-    }, interaction.user.id);
+    };
+
+    const template = await createOrUpdateTemplate(data, interaction.user.id);
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -40,7 +36,7 @@ export async function handleModal(interaction, client) {
     );
 
     await interaction.reply({
-      content: "✅ Event gespeichert (Entwurf).\nDu kannst jetzt optional ein Bild hinzufügen oder es direkt einreichen.",
+      content: "✅ Entwurf gespeichert.",
       components: [row],
       ephemeral: true
     });
@@ -48,28 +44,23 @@ export async function handleModal(interaction, client) {
     return;
   }
 
-  // 🟢 IMAGE MODAL (STEP 2)
+  // IMAGE MODAL
   if (interaction.customId.startsWith("event_image_modal_")) {
 
     const templateId = interaction.customId.split("_").pop();
     const image = interaction.fields.getTextInputValue("image");
 
-    const isValid = /\.(jpg|jpeg|png|gif)$/i.test(image);
-
-    if (!isValid) {
+    if (!/\.(jpg|jpeg|png|gif)$/i.test(image)) {
       return await interaction.reply({
-        content: "❌ Ungültige Bild-URL (.jpg, .png, .gif)",
+        content: "❌ Ungültige Bild-URL.",
         ephemeral: true
       });
     }
 
-    // 👉 speichern
-    await createOrUpdateTemplate({
-      image
-    }, interaction.user.id, templateId);
+    await createOrUpdateTemplate({ image }, interaction.user.id, templateId);
 
     await interaction.reply({
-      content: "🖼 Bild gespeichert!",
+      content: "🖼 Bild gespeichert.",
       ephemeral: true
     });
 

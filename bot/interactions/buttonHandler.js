@@ -15,56 +15,38 @@ export async function handleButton(interaction, client) {
 
   try {
 
-    // 🟢 EVENT CREATE → Modal öffnen
+    // CREATE EVENT
     if (id === "event:create") {
 
       const modal = new ModalBuilder()
         .setCustomId("event_modal_create")
         .setTitle("Event erstellen");
 
-      const titleInput = new TextInputBuilder()
-        .setCustomId("title")
-        .setLabel("Titel")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const venueInput = new TextInputBuilder()
-        .setCustomId("venue")
-        .setLabel("Location / Venue")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const dateInput = new TextInputBuilder()
-        .setCustomId("date")
-        .setLabel("Datum (z.B. 20.03.2026)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const timeInput = new TextInputBuilder()
-        .setCustomId("time")
-        .setLabel("Uhrzeit")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      const descriptionInput = new TextInputBuilder()
-        .setCustomId("description")
-        .setLabel("Beschreibung")
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true);
+      const fields = [
+        ["title", "Titel"],
+        ["venue", "Location / Venue"],
+        ["date", "Datum"],
+        ["time", "Uhrzeit"],
+        ["description", "Beschreibung", TextInputStyle.Paragraph]
+      ];
 
       modal.addComponents(
-        new ActionRowBuilder().addComponents(titleInput),
-        new ActionRowBuilder().addComponents(venueInput),
-        new ActionRowBuilder().addComponents(dateInput),
-        new ActionRowBuilder().addComponents(timeInput),
-        new ActionRowBuilder().addComponents(descriptionInput)
+        ...fields.map(([id, label, style = TextInputStyle.Short]) =>
+          new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+              .setCustomId(id)
+              .setLabel(label)
+              .setStyle(style)
+              .setRequired(true)
+          )
+        )
       );
 
       await interaction.showModal(modal);
       return;
     }
 
-    // 🟢 IMAGE MODAL öffnen
+    // SET IMAGE
     if (id.startsWith("event:setImage:")) {
       const templateId = id.split(":")[2];
 
@@ -72,31 +54,26 @@ export async function handleButton(interaction, client) {
         .setCustomId(`event_image_modal_${templateId}`)
         .setTitle("Bild hinzufügen");
 
-      const imageInput = new TextInputBuilder()
-        .setCustomId("image")
-        .setLabel("Bild URL (.jpg, .png, .gif)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
       modal.addComponents(
-        new ActionRowBuilder().addComponents(imageInput)
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("image")
+            .setLabel("Bild URL (.jpg, .png, .gif)")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
       );
 
       await interaction.showModal(modal);
       return;
     }
 
-    // 🟢 SUBMIT → Approval Channel
+    // SUBMIT
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
 
       const template = await submitTemplateForApproval(templateId);
-
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
-
-      if (!channel) {
-        throw new Error("Approval Channel nicht gefunden");
-      }
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -116,10 +93,41 @@ export async function handleButton(interaction, client) {
       });
 
       await interaction.reply({
-        content: "📨 Event wurde zur Prüfung gesendet!",
+        content: "📨 Event eingereicht.",
         ephemeral: true
       });
 
+      return;
+    }
+
+    // APPROVE
+    if (id.startsWith("event:approve:")) {
+      await interaction.reply({
+        content: "✅ Event angenommen (noch ohne Veröffentlichung).",
+        ephemeral: true
+      });
+      return;
+    }
+
+    // REJECT → öffnet Modal
+    if (id.startsWith("event:reject:")) {
+      const templateId = id.split(":")[2];
+
+      const modal = new ModalBuilder()
+        .setCustomId(`reject_modal_${templateId}`)
+        .setTitle("Event ablehnen");
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("reason")
+            .setLabel("Grund")
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired(true)
+        )
+      );
+
+      await interaction.showModal(modal);
       return;
     }
 

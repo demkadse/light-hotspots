@@ -20,42 +20,33 @@ client.once("clientReady", () => {
 client.on("interactionCreate", async (interaction) => {
   try {
 
-    // ✅ SLASH COMMANDS
     if (interaction.isChatInputCommand()) {
       if (interaction.commandName === "setup-events") {
         return await setupEvents(interaction);
       }
     }
 
-    // ✅ BUTTONS
     if (interaction.isButton()) {
       return await handleButton(interaction, client);
     }
 
-    // ✅ MODALS
     if (interaction.isModalSubmit()) {
 
       if (interaction.customId.startsWith("reject_modal_")) {
         return await handleRejectModal(interaction, client);
       }
 
-      if (interaction.customId.startsWith("event_modal_")) {
-        return await handleModal(interaction, client);
-      }
+      return await handleModal(interaction, client);
     }
 
   } catch (err) {
     console.error("INTERACTION ERROR:", err);
 
-    try {
-      if (!interaction.replied && !interaction.deferred) {
-        await interaction.reply({
-          content: "❌ Fehler bei der Verarbeitung.",
-          ephemeral: true
-        });
-      }
-    } catch (replyErr) {
-      console.error("Reply failed:", replyErr);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: "❌ Fehler.",
+        ephemeral: true
+      });
     }
   }
 });
