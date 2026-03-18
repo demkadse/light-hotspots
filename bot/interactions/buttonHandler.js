@@ -1,37 +1,136 @@
-// SUBMIT BUTTON
-if (id.startsWith("event:submit:")) {
-  const templateId = id.split(":")[2];
+import {
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} from "discord.js";
 
-  const { submitTemplateForApproval } = await import("../services/templateService.js");
-  const { CHANNELS } = await import("../config/channels.js");
+import { submitTemplateForApproval } from "../services/templateService.js";
+import { CHANNELS } from "../config/channels.js";
 
-  const template = await submitTemplateForApproval(templateId);
+export async function handleButton(interaction, client) {
+  const id = interaction.customId;
 
-  const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+  try {
 
-  if (!channel) throw new Error("Approval Channel fehlt");
+    // 🟢 EVENT CREATE → Modal öffnen
+    if (id === "event:create") {
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`event:approve:${template.id}`)
-      .setLabel("Annehmen")
-      .setStyle(ButtonStyle.Success),
+      const modal = new ModalBuilder()
+        .setCustomId("event_modal_create")
+        .setTitle("Event erstellen");
 
-    new ButtonBuilder()
-      .setCustomId(`event:reject:${template.id}`)
-      .setLabel("Ablehnen")
-      .setStyle(ButtonStyle.Danger)
-  );
+      const titleInput = new TextInputBuilder()
+        .setCustomId("title")
+        .setLabel("Titel")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-  await channel.send({
-    content: `📦 Neues Event von <@${template.created_by}>`,
-    components: [row]
-  });
+      const venueInput = new TextInputBuilder()
+        .setCustomId("venue")
+        .setLabel("Location / Venue")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-  await interaction.reply({
-    content: "📨 Event wurde zur Prüfung gesendet!",
-    ephemeral: true
-  });
+      const dateInput = new TextInputBuilder()
+        .setCustomId("date")
+        .setLabel("Datum (z.B. 20.03.2026)")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-  return;
+      const timeInput = new TextInputBuilder()
+        .setCustomId("time")
+        .setLabel("Uhrzeit")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+      const descriptionInput = new TextInputBuilder()
+        .setCustomId("description")
+        .setLabel("Beschreibung")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(titleInput),
+        new ActionRowBuilder().addComponents(venueInput),
+        new ActionRowBuilder().addComponents(dateInput),
+        new ActionRowBuilder().addComponents(timeInput),
+        new ActionRowBuilder().addComponents(descriptionInput)
+      );
+
+      await interaction.showModal(modal);
+      return;
+    }
+
+    // 🟢 IMAGE MODAL öffnen
+    if (id.startsWith("event:setImage:")) {
+      const templateId = id.split(":")[2];
+
+      const modal = new ModalBuilder()
+        .setCustomId(`event_image_modal_${templateId}`)
+        .setTitle("Bild hinzufügen");
+
+      const imageInput = new TextInputBuilder()
+        .setCustomId("image")
+        .setLabel("Bild URL (.jpg, .png, .gif)")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(imageInput)
+      );
+
+      await interaction.showModal(modal);
+      return;
+    }
+
+    // 🟢 SUBMIT → Approval Channel
+    if (id.startsWith("event:submit:")) {
+      const templateId = id.split(":")[2];
+
+      const template = await submitTemplateForApproval(templateId);
+
+      const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+
+      if (!channel) {
+        throw new Error("Approval Channel nicht gefunden");
+      }
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`event:approve:${template.id}`)
+          .setLabel("Annehmen")
+          .setStyle(ButtonStyle.Success),
+
+        new ButtonBuilder()
+          .setCustomId(`event:reject:${template.id}`)
+          .setLabel("Ablehnen")
+          .setStyle(ButtonStyle.Danger)
+      );
+
+      await channel.send({
+        content: `📦 Neues Event von <@${template.created_by}>`,
+        components: [row]
+      });
+
+      await interaction.reply({
+        content: "📨 Event wurde zur Prüfung gesendet!",
+        ephemeral: true
+      });
+
+      return;
+    }
+
+  } catch (err) {
+    console.error("Button Error:", err);
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({
+        content: "❌ Fehler beim Button.",
+        ephemeral: true
+      });
+    }
+  }
 }
