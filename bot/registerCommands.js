@@ -13,7 +13,7 @@ const commands = [
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
 // ⚠️ HIER DEINE APPLICATION ID EINTRAGEN
-const CLIENT_ID = "DEINE_APPLICATION_ID";
+const CLIENT_ID = "1483031945825747034";
 
 async function register() {
 
