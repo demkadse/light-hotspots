@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FFXIV RP Events</title>
-<meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert fuer den aktuellen Monat.">
+<meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert für den aktuellen Monat.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -29,7 +29,7 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 </div>
 <div id="featured-event-card" class="featured-event">
 <span class="panel-label">Heute im Fokus</span>
-<strong id="featured-event-title">Noch kein Event ausgewaehlt</strong>
+<strong id="featured-event-title">Noch kein Event ausgewählt</strong>
 <p id="featured-event-copy">Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.</p>
 <div class="featured-event-actions">
 <button id="featured-event-open" class="hero-button hero-button-secondary" type="button" hidden>Details ansehen</button>
@@ -58,7 +58,7 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <button class="scope-button active" data-scope="all" type="button">Alle Tage</button>
 <button class="scope-button" data-scope="today" type="button">Heute</button>
 <button class="scope-button" data-scope="weekend" type="button">Wochenende</button>
-<div id="quick-jumps" class="quick-jumps" aria-label="Schnellspruenge"></div>
+<div id="quick-jumps" class="quick-jumps" aria-label="Schnellsprünge"></div>
 </div>
 
 <div class="filter-stack">
@@ -103,7 +103,7 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <div id="event-modal" aria-hidden="true">
 <div class="modal-overlay"></div>
 <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-<button id="modal-close" type="button" aria-label="Modal schliessen">x</button>
+<button id="modal-close" type="button" aria-label="Modal schließen">x</button>
 <div id="modal-content"></div>
 </div>
 </div>
@@ -111,16 +111,16 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <div id="legal-notice-modal" aria-hidden="true">
 <div class="modal-overlay legal-modal-overlay"></div>
 <div class="legal-modal-window" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
-<button id="legal-notice-close" type="button" aria-label="Rechtshinweis schliessen">x</button>
+<button id="legal-notice-close" type="button" aria-label="Rechtshinweis schließen">x</button>
 <h2 id="legal-modal-title">Rechtshinweis</h2>
 <p class="legal-copy">
-Diese Plattform, ihr Design, ihre Struktur, die Auswahl und Anordnung der Inhalte sowie ihre technische Umsetzung sind urheberrechtlich geschuetzt. Die ausschliesslichen Nutzungs- und Verwertungsrechte hieran liegen beim Betreiber. Eine Vervielfaeltigung, Uebernahme, Nachahmung, Weiterverbreitung oder sonstige Nutzung ganz oder in Teilen ohne vorherige ausdrueckliche Zustimmung ist nicht gestattet.
+Diese Plattform ist in ihrer konkreten gestalterischen und technischen Ausgestaltung urheberrechtlich geschuetzt. Das betrifft insbesondere Design, Struktur, Seitenaufbau, Auswahl und Anordnung der Inhalte sowie die konkrete technische Umsetzung, soweit darin eine persoenliche geistige Schoepfung im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__2.html" target="_blank" rel="noreferrer noopener">§ 2 UrhG</a> beziehungsweise ein schutzfaehiges Sammel- oder Datenbankwerk im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__4.html" target="_blank" rel="noreferrer noopener">§ 4 UrhG</a> liegt.
 </p>
 <p class="legal-copy">
-Dies gilt insbesondere fuer die gestalterische und technische Gesamtumsetzung der Plattform, einschliesslich Seitenaufbau, Darstellungskonzept, Interaktionslogik, Datenaufbereitung und praegender Gestaltungselemente.
+Urheber ist grundsaetzlich der Schoepfer des jeweiligen Werkes nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__7.html" target="_blank" rel="noreferrer noopener">§ 7 UrhG</a>. Dem Urheber stehen die gesetzlichen Schutz- und Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__11.html" target="_blank" rel="noreferrer noopener">§ 11 UrhG</a> und die ausschliesslichen Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__15.html" target="_blank" rel="noreferrer noopener">§ 15 UrhG</a> zu. Eine Vervielfaeltigung, Uebernahme, Nachahmung, Weiterverbreitung oder sonstige Nutzung der konkreten Plattformgestaltung und -umsetzung ganz oder in Teilen ohne vorherige ausdrueckliche Zustimmung ist daher nicht gestattet.
 </p>
 <p class="legal-copy legal-copy-muted">
-Davon unberuehrt bleiben die Inhalte, Angaben und Beschreibungen, die Nutzer ueber den Discord-Bot fuer ihre eigenen Events einreichen. Diese verbleiben, soweit sie urheberrechtlich geschuetzt sind, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern.
+Davon unberuehrt bleiben die Inhalte, Angaben und Beschreibungen, die Nutzer ueber den Discord-Bot fuer ihre eigenen Events einreichen. Diese verbleiben, soweit sie ihrerseits urheberrechtlich geschuetzt sind, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern. Geschuetzt ist also nicht die abstrakte Idee eines Eventkalenders, sondern die konkrete Ausgestaltung dieser Plattform und die jeweils eingereichten individuellen Inhalte.
 </p>
 </div>
 </div>

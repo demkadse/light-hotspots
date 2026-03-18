@@ -931,6 +931,16 @@ margin-top: 14px;
 color: rgba(245, 241, 232, 0.72);
 }
 
+.legal-link {
+color: #ffe4be;
+text-decoration: underline;
+text-underline-offset: 0.18em;
+}
+
+.legal-link:hover {
+color: #fff1d8;
+}
+
 .modal-window img {
 display: block;
 width: 100%;
