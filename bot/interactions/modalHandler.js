@@ -5,19 +5,17 @@ import {
 } from "discord.js";
 
 import { createOrUpdateTemplate } from "../services/templateService.js";
-import { CHANNELS } from "../config/channels.js";
 
 export async function handleModal(interaction, client) {
-  if (!interaction.customId.startsWith("event_modal_")) return;
 
-  try {
+  // 🟢 EVENT MODAL (STEP 1)
+  if (interaction.customId.startsWith("event_modal_")) {
 
     const title = interaction.fields.getTextInputValue("title");
     const venue = interaction.fields.getTextInputValue("venue");
     const date = interaction.fields.getTextInputValue("date");
     const time = interaction.fields.getTextInputValue("time");
     const description = interaction.fields.getTextInputValue("description");
-    const image = interaction.fields.getTextInputValue("image") || null;
 
     const template = await createOrUpdateTemplate({
       title,
@@ -25,56 +23,56 @@ export async function handleModal(interaction, client) {
       date,
       time,
       description,
-      image
+      image: null,
+      status: "draft"
     }, interaction.user.id);
 
-    // ✅ DM (mit Logging)
-    try {
-      await interaction.user.send(
-        "📨 Dein Event wurde eingereicht!\n\nBitte warte, bis ein Administrator es geprüft hat."
-      );
-    } catch (err) {
-      console.warn("DM konnte nicht gesendet werden:", err.message);
-    }
-
-    // ✅ Channel holen + prüfen
-    const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
-
-    if (!channel) {
-      throw new Error("Approval Channel nicht gefunden");
-    }
-
-    // ✅ Buttons sauber gebaut (kein raw API mehr)
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`event:approve:${template.id}`)
-        .setLabel("Annehmen")
-        .setStyle(ButtonStyle.Success),
+        .setCustomId(`event:setImage:${template.id}`)
+        .setLabel("🖼 Bild hinzufügen")
+        .setStyle(ButtonStyle.Secondary),
 
       new ButtonBuilder()
-        .setCustomId(`event:reject:${template.id}`)
-        .setLabel("Ablehnen")
-        .setStyle(ButtonStyle.Danger)
+        .setCustomId(`event:submit:${template.id}`)
+        .setLabel("📨 Zur Prüfung senden")
+        .setStyle(ButtonStyle.Success)
     );
 
-    await channel.send({
-      content: `📦 Neues Template von <@${interaction.user.id}>`,
-      components: [row]
-    });
-
     await interaction.reply({
-      content: "✅ Eingereicht und wartet auf Prüfung.",
+      content: "✅ Event gespeichert (Entwurf).\nDu kannst jetzt optional ein Bild hinzufügen oder es direkt einreichen.",
+      components: [row],
       ephemeral: true
     });
 
-  } catch (err) {
-    console.error("Modal Error:", err);
+    return;
+  }
 
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
-        content: "❌ Fehler beim Einreichen.",
+  // 🟢 IMAGE MODAL (STEP 2)
+  if (interaction.customId.startsWith("event_image_modal_")) {
+
+    const templateId = interaction.customId.split("_").pop();
+    const image = interaction.fields.getTextInputValue("image");
+
+    const isValid = /\.(jpg|jpeg|png|gif)$/i.test(image);
+
+    if (!isValid) {
+      return await interaction.reply({
+        content: "❌ Ungültige Bild-URL (.jpg, .png, .gif)",
         ephemeral: true
       });
     }
+
+    // 👉 speichern
+    await createOrUpdateTemplate({
+      image
+    }, interaction.user.id, templateId);
+
+    await interaction.reply({
+      content: "🖼 Bild gespeichert!",
+      ephemeral: true
+    });
+
+    return;
   }
 }

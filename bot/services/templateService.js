@@ -1,106 +1,151 @@
-import { Octokit } from "@octokit/rest";
+import fs from "fs/promises";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
+const DATA_PATH = path.resolve("bot/data/templates.json");
 
-const OWNER = process.env.GITHUB_OWNER;
-const REPO = process.env.GITHUB_REPO;
+// ---------- Helper ----------
 
-const PATH = "events/templates";
-
-function encode(data) {
-  return Buffer.from(JSON.stringify(data, null, 2)).toString("base64");
+async function readTemplates() {
+  try {
+    const data = await fs.readFile(DATA_PATH, "utf-8");
+    return JSON.parse(data);
+  } catch (err) {
+    // Datei existiert noch nicht → neu erstellen
+    if (err.code === "ENOENT") {
+      await writeTemplates([]);
+      return [];
+    }
+    throw err;
+  }
 }
 
-export async function createOrUpdateTemplate(template, userId) {
+async function writeTemplates(data) {
+  await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf-8");
+}
 
-  const id = template.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+// ---------- Core Functions ----------
 
-  const path = `${PATH}/${id}.json`;
+// 🟢 CREATE / UPDATE (Draft + Image Update)
+export async function createOrUpdateTemplate(data, userId, templateId = null) {
+  const templates = await readTemplates();
 
-  let sha = null;
+  // 🔹 UPDATE
+  if (templateId) {
+    const index = templates.findIndex(t => t.id === templateId);
 
-  try {
-    const existing = await octokit.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
-      path
-    });
+    if (index === -1) {
+      throw new Error("Template nicht gefunden");
+    }
 
-    sha = existing.data.sha;
+    templates[index] = {
+      ...templates[index],
+      ...data,
+      updated_at: new Date().toISOString()
+    };
 
-  } catch (err) {
-    if (err.status !== 404) throw err;
+    await writeTemplates(templates);
+    return templates[index];
   }
 
-  const full = {
-    ...template,
-    id,
-    status: "pending",
-    rejection_reason: null,
+  // 🔹 CREATE (Draft)
+  const newTemplate = {
+    id: uuidv4(),
+    title: data.title,
+    venue: data.venue,
+    date: data.date,
+    time: data.time,
+    description: data.description,
+    image: data.image || null,
+    status: data.status || "draft",
+
     created_by: userId,
-    updated_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    updated_at: null
   };
 
-  await octokit.repos.createOrUpdateFileContents({
-    owner: OWNER,
-    repo: REPO,
-    path,
-    message: `${sha ? "Update" : "Create"} template ${id}`,
-    content: encode(full),
-    ...(sha && { sha })
-  });
+  templates.push(newTemplate);
+  await writeTemplates(templates);
 
-  return full;
+  return newTemplate;
 }
 
-export async function updateTemplateStatus(id, updates) {
+// 🟢 GET SINGLE
+export async function getTemplate(templateId) {
+  const templates = await readTemplates();
 
-  const path = `${PATH}/${id}.json`;
+  const template = templates.find(t => t.id === templateId);
 
-  const file = await octokit.repos.getContent({
-    owner: OWNER,
-    repo: REPO,
-    path
-  });
+  if (!template) {
+    throw new Error("Template nicht gefunden");
+  }
 
-  const data = JSON.parse(
-    Buffer.from(file.data.content, "base64").toString()
-  );
-
-  const updated = {
-    ...data,
-    ...updates,
-    updated_at: new Date().toISOString()
-  };
-
-  await octokit.repos.createOrUpdateFileContents({
-    owner: OWNER,
-    repo: REPO,
-    path,
-    message: `Update template status ${id}`,
-    content: encode(updated),
-    sha: file.data.sha
-  });
-
-  return updated;
+  return template;
 }
 
-export async function getTemplateById(id) {
+// 🟢 SUBMIT FOR APPROVAL
+export async function submitTemplateForApproval(templateId) {
+  const templates = await readTemplates();
 
-  const path = `${PATH}/${id}.json`;
+  const index = templates.findIndex(t => t.id === templateId);
 
-  const file = await octokit.repos.getContent({
-    owner: OWNER,
-    repo: REPO,
-    path
-  });
+  if (index === -1) {
+    throw new Error("Template nicht gefunden");
+  }
 
-  return JSON.parse(
-    Buffer.from(file.data.content, "base64").toString()
-  );
+  // 🔥 Validierung vor Submit
+  const template = templates[index];
+
+  if (!template.title || !template.date || !template.time) {
+    throw new Error("Template unvollständig");
+  }
+
+  templates[index].status = "pending";
+  templates[index].updated_at = new Date().toISOString();
+
+  await writeTemplates(templates);
+
+  return templates[index];
+}
+
+// 🟢 APPROVE
+export async function approveTemplate(templateId) {
+  const templates = await readTemplates();
+
+  const index = templates.findIndex(t => t.id === templateId);
+
+  if (index === -1) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  templates[index].status = "approved";
+  templates[index].updated_at = new Date().toISOString();
+
+  await writeTemplates(templates);
+
+  return templates[index];
+}
+
+// 🟢 REJECT
+export async function rejectTemplate(templateId, reason = null) {
+  const templates = await readTemplates();
+
+  const index = templates.findIndex(t => t.id === templateId);
+
+  if (index === -1) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  templates[index].status = "rejected";
+  templates[index].rejection_reason = reason;
+  templates[index].updated_at = new Date().toISOString();
+
+  await writeTemplates(templates);
+
+  return templates[index];
+}
+
+// 🟢 GET ALL (optional)
+export async function getAllTemplates() {
+  return await readTemplates();
 }

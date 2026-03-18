@@ -1,81 +1,37 @@
-import {
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder
-} from "discord.js";
+// SUBMIT BUTTON
+if (id.startsWith("event:submit:")) {
+  const templateId = id.split(":")[2];
 
-export async function handleButton(interaction) {
-  const id = interaction.customId;
+  const { submitTemplateForApproval } = await import("../services/templateService.js");
+  const { CHANNELS } = await import("../config/channels.js");
 
-  try {
+  const template = await submitTemplateForApproval(templateId);
 
-    // ✅ EVENT ERSTELLEN → Modal öffnen
-    if (id === "event:create") {
+  const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
 
-      const modal = new ModalBuilder()
-        .setCustomId("event_modal_create")
-        .setTitle("Event erstellen");
+  if (!channel) throw new Error("Approval Channel fehlt");
 
-      const titleInput = new TextInputBuilder()
-        .setCustomId("title")
-        .setLabel("Titel")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`event:approve:${template.id}`)
+      .setLabel("Annehmen")
+      .setStyle(ButtonStyle.Success),
 
-      const venueInput = new TextInputBuilder()
-        .setCustomId("venue")
-        .setLabel("Location / Venue")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+    new ButtonBuilder()
+      .setCustomId(`event:reject:${template.id}`)
+      .setLabel("Ablehnen")
+      .setStyle(ButtonStyle.Danger)
+  );
 
-      const dateInput = new TextInputBuilder()
-        .setCustomId("date")
-        .setLabel("Datum (z.B. 20.03.2026)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+  await channel.send({
+    content: `📦 Neues Event von <@${template.created_by}>`,
+    components: [row]
+  });
 
-      const timeInput = new TextInputBuilder()
-        .setCustomId("time")
-        .setLabel("Uhrzeit")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+  await interaction.reply({
+    content: "📨 Event wurde zur Prüfung gesendet!",
+    ephemeral: true
+  });
 
-      const descriptionInput = new TextInputBuilder()
-        .setCustomId("description")
-        .setLabel("Beschreibung")
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(true);
-
-      const imageInput = new TextInputBuilder()
-        .setCustomId("image")
-        .setLabel("Bild URL (optional)")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(false);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(titleInput),
-        new ActionRowBuilder().addComponents(venueInput),
-        new ActionRowBuilder().addComponents(dateInput),
-        new ActionRowBuilder().addComponents(timeInput),
-        new ActionRowBuilder().addComponents(descriptionInput),
-        new ActionRowBuilder().addComponents(imageInput)
-      );
-
-      await interaction.showModal(modal);
-      return;
-    }
-
-    // (approve / reject kommt später sauber rein)
-
-  } catch (err) {
-    console.error("Button Error:", err);
-
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
-        content: "❌ Fehler beim Button.",
-        ephemeral: true
-      });
-    }
-  }
+  return;
 }
