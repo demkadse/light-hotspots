@@ -60,7 +60,7 @@ function getDayMarker(day, index) {
 
 function getDaySubtitle(eventsForDay) {
   if (eventsForDay.length === 0) {
-    return "Noch keine Eintraege fuer diesen Tag.";
+    return "Noch keine sichtbaren Events fuer diesen Tag.";
   }
 
   if (eventsForDay.length === 1) {
@@ -258,8 +258,27 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   count.className = "day-count";
   count.textContent = `${eventsForDay.length} Event${eventsForDay.length === 1 ? "" : "s"}`;
 
+  const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
+  if (eventsForDay.length === 0 && inviteUrl) {
+    const cta = document.createElement("a");
+    cta.className = "day-empty-cta";
+    cta.href = inviteUrl;
+    cta.target = "_blank";
+    cta.rel = "noreferrer noopener";
+    cta.textContent = hasActiveFilters
+      ? "Keine Treffer? Filter anpassen oder im Discord selbst ein Event anlegen."
+      : "Nichts los? Erstell hier selbst ein Event im Discord.";
+    copy.appendChild(cta);
+  }
+
   header.append(copy, count);
-  slide.append(header, createCarousel(eventsForDay, { isFiltered: hasActiveFilters }));
+
+  const carousel = createCarousel(eventsForDay, { isFiltered: hasActiveFilters });
+  if (carousel.childElementCount > 0) {
+    slide.append(header, carousel);
+  } else {
+    slide.appendChild(header);
+  }
 
   return slide;
 }

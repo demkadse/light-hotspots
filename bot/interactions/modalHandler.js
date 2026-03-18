@@ -67,6 +67,13 @@ function buildPreviewEmbed(template, duplicates) {
     });
   }
 
+  if (template.discord_link) {
+    embed.addFields({
+      name: "Discord",
+      value: template.discord_link
+    });
+  }
+
   if (template.notes) {
     embed.addFields({
       name: "Hinweise",
@@ -171,7 +178,7 @@ async function replyWithPreview(interaction, template, stage, client, auditActio
 
   const contentByStage = {
     step1: "Basisdaten gespeichert. Du kannst jetzt die restlichen Angaben erfassen.",
-    step2: "Details gespeichert. Optional kannst du jetzt noch Link und Hinweise pflegen.",
+    step2: "Details gespeichert. Optional kannst du jetzt noch Links und Hinweise pflegen.",
     step3: "Extras gespeichert."
   };
 
@@ -249,11 +256,15 @@ export async function handleModal(interaction, client) {
   if (interaction.customId.startsWith("event_modal_step3_")) {
     const templateId = getTemplateIdFromModal(interaction.customId);
     const data = {
+      discord_link: normalizeOptional(interaction.fields.getTextInputValue("discord_link")),
       link: normalizeOptional(interaction.fields.getTextInputValue("link")),
       notes: normalizeOptional(interaction.fields.getTextInputValue("notes"))
     };
 
-    const errors = validateEventInput({ link: data.link });
+    const errors = validateEventInput({
+      link: data.link,
+      discord_link: data.discord_link
+    });
     if (errors.length > 0) {
       await replyAndExpire(interaction, {
         content: errors.join("\n"),

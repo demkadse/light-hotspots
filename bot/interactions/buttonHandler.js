@@ -79,6 +79,13 @@ function buildApprovalEmbed(template, duplicates) {
     });
   }
 
+  if (template.discord_link) {
+    embed.addFields({
+      name: "Discord",
+      value: template.discord_link
+    });
+  }
+
   if (template.notes) {
     embed.addFields({
       name: "Hinweise",
@@ -240,6 +247,15 @@ export async function handleButton(interaction, client) {
         .setTitle("Event | Extras");
 
       modal.addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("discord_link")
+            .setLabel("Discord-Link (optional)")
+            .setPlaceholder("https://discord.gg/...")
+            .setValue(template?.discord_link || "")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        ),
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("link")

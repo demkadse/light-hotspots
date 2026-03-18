@@ -111,15 +111,35 @@ function openModal(event) {
     modalContent.appendChild(notes);
   }
 
-  if (event.link || (Array.isArray(event.links) && event.links[0])) {
-    const targetLink = event.link || event.links[0];
+  const linkRow = document.createElement("div");
+  linkRow.className = "modal-link-row";
+
+  if (event.discord_link) {
     const cta = document.createElement("a");
     cta.className = "modal-link-button";
-    cta.href = targetLink;
+    cta.href = event.discord_link;
+    cta.target = "_blank";
+    cta.rel = "noreferrer noopener";
+    cta.textContent = "Event-Discord oeffnen";
+    linkRow.appendChild(cta);
+  }
+
+  const externalLink = event.link || (Array.isArray(event.links)
+    ? event.links.find(link => link && link !== event.discord_link)
+    : null);
+
+  if (externalLink) {
+    const cta = document.createElement("a");
+    cta.className = "modal-link-button";
+    cta.href = externalLink;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
     cta.textContent = "Externe Infos oeffnen";
-    modalContent.appendChild(cta);
+    linkRow.appendChild(cta);
+  }
+
+  if (linkRow.childElementCount > 0) {
+    modalContent.appendChild(linkRow);
   }
 
   modal.classList.add("active");

@@ -49,14 +49,29 @@ function buildCard(event) {
   const card = document.createElement("article");
   card.className = "event-card";
 
+  const media = document.createElement("div");
+  media.className = "event-media";
+
   if (event.image) {
     const image = document.createElement("img");
     image.className = "event-image";
     image.src = event.image;
     image.alt = event.title || "Eventbild";
     image.loading = "lazy";
-    card.appendChild(image);
+    media.appendChild(image);
+  } else {
+    const fallback = document.createElement("div");
+    fallback.className = "event-image event-image-fallback";
+    fallback.textContent = formatTypeLabel(event);
+    media.appendChild(fallback);
   }
+
+  const titleBanner = document.createElement("div");
+  titleBanner.className = "event-title-banner";
+
+  const title = document.createElement("h3");
+  title.textContent = event.title || "Unbenannt";
+  titleBanner.appendChild(title);
 
   const info = document.createElement("div");
   info.className = "event-info";
@@ -74,9 +89,6 @@ function buildCard(event) {
 
   headerRow.append(chip, timeChip);
 
-  const title = document.createElement("h3");
-  title.textContent = event.title || "Unbenannt";
-
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
@@ -90,69 +102,30 @@ function buildCard(event) {
   description.className = "event-summary";
   description.textContent = event.description || "Keine Beschreibung vorhanden.";
 
-  info.append(headerRow, title, meta, description);
+  info.append(headerRow, meta, description);
 
-  if (event.link) {
+  if (event.discord_link || event.link) {
     const linkHint = document.createElement("span");
     linkHint.className = "event-link-hint";
-    linkHint.textContent = "Mit externem Link";
+    linkHint.textContent = event.discord_link ? "Mit Event-Discord" : "Mit externem Link";
     info.appendChild(linkHint);
   }
 
-  card.appendChild(info);
+  card.append(media, titleBanner, info);
   card.addEventListener("click", () => openModal(event));
 
   return card;
 }
 
-function buildInfoCard(titleText, bodyText) {
-  const card = document.createElement("div");
-  card.className = "event-card info-card";
-
-  const info = document.createElement("div");
-  info.className = "event-info";
-
-  const title = document.createElement("h3");
-  title.textContent = titleText;
-
-  const text = document.createElement("p");
-  text.textContent = bodyText;
-
-  info.append(title, text);
-
-  const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
-  if (inviteUrl && titleText === "Keine Events eingetragen") {
-    const link = document.createElement("a");
-    link.href = inviteUrl;
-    link.target = "_blank";
-    link.rel = "noreferrer noopener";
-    link.textContent = "Discord Server";
-    info.appendChild(link);
-  }
-
-  card.appendChild(info);
-  return card;
-}
-
-function createCarousel(eventsForDay, context = {}) {
+function createCarousel(eventsForDay) {
   const track = document.createElement("div");
   track.className = "carousel-track";
 
   if (didIndexLoadFail()) {
-    track.appendChild(buildInfoCard(
-      "Events konnten nicht geladen werden",
-      "Bitte spaeter erneut versuchen."
-    ));
     return track;
   }
 
   if (!eventsForDay || eventsForDay.length === 0) {
-    track.appendChild(buildInfoCard(
-      context.isFiltered ? "Keine Treffer fuer diese Filter" : "Keine Events eingetragen",
-      context.isFiltered
-        ? "Passe Typ, Venue oder Zeitraum an."
-        : "Erstell deins ueber den Discord-Bot!"
-    ));
     return track;
   }
 

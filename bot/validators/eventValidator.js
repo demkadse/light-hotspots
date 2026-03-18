@@ -69,5 +69,15 @@ export function validateEventInput(event) {
     errors.push("Link muss mit http:// oder https:// beginnen.");
   }
 
+  if (event.discord_link?.trim()) {
+    const discordLink = event.discord_link.trim();
+
+    if (!isValidHttpUrl(discordLink)) {
+      errors.push("Discord-Link muss mit http:// oder https:// beginnen.");
+    } else if (!/discord\.(gg|com)$/i.test(new URL(discordLink).hostname)) {
+      errors.push("Discord-Link muss auf discord.gg oder discord.com zeigen.");
+    }
+  }
+
   return errors;
 }

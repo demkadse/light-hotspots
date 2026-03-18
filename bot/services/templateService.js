@@ -383,8 +383,9 @@ export async function approveTemplate(templateId) {
     end_time: template.end_time || null,
     image: template.image || null,
     description: template.description,
+    discord_link: template.discord_link || null,
     link: template.link || null,
-    links: template.link ? [template.link] : [],
+    links: [template.discord_link, template.link].filter(Boolean),
     notes: template.notes || null,
     created_by: template.created_by,
     created_at: new Date().toISOString()
