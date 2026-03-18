@@ -19,25 +19,36 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
 
+    // BUTTONS
     if (interaction.isButton()) {
-      await handleButton(interaction, client);
+      return await handleButton(interaction, client);
     }
 
+    // MODALS (wichtig: sauber trennen!)
     if (interaction.isModalSubmit()) {
-      await handleRejectModal(interaction, client);
-      await handleModal(interaction, client);
+
+      if (interaction.customId.startsWith("reject_modal_")) {
+        return await handleRejectModal(interaction, client);
+      }
+
+      if (interaction.customId.startsWith("event_modal_")) {
+        return await handleModal(interaction, client);
+      }
+
     }
 
   } catch (err) {
 
-    console.error(err);
+    console.error("INTERACTION ERROR:", err);
 
-    if (!interaction.replied) {
-      await interaction.reply({
-        content: "❌ Fehler",
-        flags: 64
-      });
-    }
+    try {
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({
+          content: "❌ Fehler bei der Verarbeitung.",
+          flags: 64
+        });
+      }
+    } catch {}
 
   }
 
