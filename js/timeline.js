@@ -411,6 +411,44 @@ function renderQuickJumps() {
   });
 }
 
+function buildDayHeaderControls(track) {
+  const controls = document.createElement("div");
+  controls.className = "day-carousel-controls";
+
+  const prevButton = document.createElement("button");
+  prevButton.type = "button";
+  prevButton.className = "carousel-arrow";
+  prevButton.setAttribute("aria-label", "Vorherige Events");
+  prevButton.textContent = "<";
+
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.className = "carousel-arrow";
+  nextButton.setAttribute("aria-label", "Naechste Events");
+  nextButton.textContent = ">";
+
+  prevButton.addEventListener("click", event => {
+    event.stopPropagation();
+    scrollCarousel(track, -1);
+  });
+
+  nextButton.addEventListener("click", event => {
+    event.stopPropagation();
+    scrollCarousel(track, 1);
+  });
+
+  track.addEventListener("scroll", () => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  }, { passive: true });
+
+  requestAnimationFrame(() => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  });
+
+  controls.append(prevButton, nextButton);
+  return controls;
+}
+
 function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   const slide = document.createElement("section");
   slide.className = "day-slide";
@@ -478,7 +516,10 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   header.append(copy, headerMeta, headerNav);
   slide.appendChild(header);
 
-  const carousel = createCarousel(eventsForDay, eventsForDay.length > 1 ? headerNav : null);
+  const carousel = createCarousel(eventsForDay, { suppressControls: eventsForDay.length > 1 });
+  if (eventsForDay.length > 1 && carousel.track) {
+    headerNav.appendChild(buildDayHeaderControls(carousel.track));
+  }
   if (carousel.childElementCount > 0 && eventsForDay.length > 0) {
     slide.appendChild(carousel);
   }

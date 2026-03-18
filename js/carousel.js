@@ -174,12 +174,14 @@ function buildCard(event) {
   return card;
 }
 
-function createCarousel(eventsForDay, controlsHost = null) {
+function createCarousel(eventsForDay, options = {}) {
+  const { suppressControls = false } = options;
   const shell = document.createElement("div");
   shell.className = "carousel-shell";
 
   const track = document.createElement("div");
   track.className = "carousel-track";
+  shell.track = track;
 
   if (didIndexLoadFail()) {
     shell.appendChild(track);
@@ -195,18 +197,14 @@ function createCarousel(eventsForDay, controlsHost = null) {
     track.appendChild(buildCard(event));
   });
 
-  const controls = buildCarouselControls(
-    track,
-    controlsHost ? "day-carousel-controls" : "carousel-controls"
-  );
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
   hint.textContent = "Wische fuer weitere Events";
 
-  if (controlsHost) {
-    controlsHost.appendChild(controls);
+  if (suppressControls) {
     shell.append(track, hint);
   } else {
+    const controls = buildCarouselControls(track, "carousel-controls");
     shell.append(track, controls, hint);
   }
 
