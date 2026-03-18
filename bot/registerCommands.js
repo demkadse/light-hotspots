@@ -27,7 +27,10 @@ const commands = [
         .setName("fix")
         .setDescription("Index automatisch reparieren")
         .setRequired(false)
-    )
+    ),
+  new SlashCommandBuilder()
+    .setName("unpublish-event")
+    .setDescription("Waehlt ein veroeffentlichtes Event zum Zuruecknehmen aus")
 ];
 
 const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);

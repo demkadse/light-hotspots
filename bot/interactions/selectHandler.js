@@ -2,13 +2,51 @@ import {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
 } from "discord.js";
 
 import { getTemplate } from "../services/templateService.js";
+import { replyAndExpire } from "../services/interactionResponseService.js";
+import { assertAdminUser } from "../services/permissionService.js";
 
 export async function handleSelect(interaction) {
   if (!interaction.isStringSelectMenu()) return;
+
+  if (interaction.customId === "admin:selectUnpublishEvent") {
+    assertAdminUser(interaction);
+
+    const templateId = interaction.values[0];
+    const template = await getTemplate(templateId);
+
+    if (!template) {
+      await replyAndExpire(interaction, {
+        content: "Das ausgewaehlte Event wurde nicht gefunden.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`event:unpublish:${template.id}`)
+        .setLabel("Veroeffentlichung zuruecknehmen")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("event:unpublish_cancel:selection")
+        .setLabel("Abbrechen")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    await replyAndExpire(interaction, {
+      content: `Ausgewaehlt: ${template.title} (${template.date})`,
+      components: [row],
+      ephemeral: true
+    }, 120000);
+    return;
+  }
+
   if (interaction.customId !== "event:selectTemplate") return;
 
   const value = interaction.values[0];

@@ -8,6 +8,7 @@ import { handleSelect } from "./interactions/selectHandler.js";
 import { execute as setupEvents } from "./commands/setupEventPanel.js";
 import { execute as setupCleanup } from "./commands/setupCleanupPanel.js";
 import { execute as resyncEvents } from "./commands/resyncEvents.js";
+import { execute as unpublishEvent } from "./commands/unpublishEvent.js";
 import { CONFIG, validateConfig } from "./config/config.js";
 import { replyAndExpire } from "./services/interactionResponseService.js";
 import { processPendingReminders } from "./services/templateService.js";
@@ -61,6 +62,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (interaction.commandName === "resync-events") {
         return await resyncEvents(interaction);
+      }
+
+      if (interaction.commandName === "unpublish-event") {
+        return await unpublishEvent(interaction);
       }
     }
 

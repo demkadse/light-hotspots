@@ -52,6 +52,11 @@ export async function getAllTemplates() {
   return readTemplates();
 }
 
+export async function getPublishedTemplates() {
+  const templates = await readTemplates();
+  return templates.filter(template => template.status === "approved");
+}
+
 async function readEventIndex() {
   const indexPath = path.join(EVENTS_BASE_PATH, "index.json");
   const index = await readJSON(indexPath, { events: [] });
