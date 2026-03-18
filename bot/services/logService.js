@@ -1,15 +1,12 @@
 import { Octokit } from "@octokit/rest";
+import { CONFIG, validateGitHubConfig } from "../config/config.js";
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
-
-const OWNER = process.env.GITHUB_OWNER;
-const REPO = process.env.GITHUB_REPO;
-
-// ======================
-// GitHub Logging
-// ======================
+function getGitHubClient() {
+  validateGitHubConfig();
+  return new Octokit({
+    auth: CONFIG.GITHUB_TOKEN
+  });
+}
 
 function getTodayFile() {
   const date = new Date().toISOString().split("T")[0];
@@ -17,70 +14,51 @@ function getTodayFile() {
 }
 
 export async function logEvent(entry) {
-
   const path = getTodayFile();
-
-  let content = [];
+  const octokit = getGitHubClient();
 
   try {
-
     const { data } = await octokit.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
+      owner: CONFIG.GITHUB_OWNER,
+      repo: CONFIG.GITHUB_REPO,
       path
     });
 
-    const decoded = JSON.parse(
+    const existingEntries = JSON.parse(
       Buffer.from(data.content, "base64").toString()
     );
 
-    content = decoded;
-
     await octokit.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
+      owner: CONFIG.GITHUB_OWNER,
+      repo: CONFIG.GITHUB_REPO,
       path,
       message: `Update log ${path}`,
       content: Buffer.from(
-        JSON.stringify([...content, entry], null, 2)
+        JSON.stringify([...existingEntries, entry], null, 2)
       ).toString("base64"),
       sha: data.sha
     });
-
-  } catch (err) {
-
-    // Datei existiert noch nicht → neu erstellen
+  } catch (error) {
     await octokit.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
+      owner: CONFIG.GITHUB_OWNER,
+      repo: CONFIG.GITHUB_REPO,
       path,
       message: `Create log ${path}`,
       content: Buffer.from(
         JSON.stringify([entry], null, 2)
       ).toString("base64")
     });
-
   }
 }
 
-// ======================
-// Discord Logging
-// ======================
-
 export async function logToDiscord(client, channelId, message) {
-
   try {
-
     const channel = await client.channels.fetch(channelId);
 
     if (!channel) return;
 
     await channel.send(message);
-
   } catch (error) {
-
     console.error("Discord Logging Fehler:", error);
-
   }
-
 }

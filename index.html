@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FFXIV RP Events</title>
-<meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert fuer diese Woche.">
+<meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert fuer den aktuellen Monat.">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
 <p class="eyebrow">Light Data Center - Roleplay Calendar</p>
 <h1>FFXIV RP Events</h1>
 <p class="hero-text">
-Ein kuratierter Wochenblick auf Tavernen, Clubabende, offene RP-Treffs und Community-Events.
+Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Community-Events.
 </p>
 <div class="hero-actions">
 <a id="discord-cta" class="hero-button hero-button-primary" href="#" target="_blank" rel="noreferrer noopener">Nichts los? Erstell selbst ein Event im Discord</a>
@@ -27,13 +27,21 @@ Ein kuratierter Wochenblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <strong id="active-day-label">Heute</strong>
 <p id="active-day-subtitle">Die aktuellen Termine der Woche.</p>
 </div>
+<div id="featured-event-card" class="featured-event">
+<span class="panel-label">Heute im Fokus</span>
+<strong id="featured-event-title">Noch kein Event ausgewaehlt</strong>
+<p id="featured-event-copy">Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.</p>
+<div class="featured-event-actions">
+<button id="featured-event-open" class="hero-button hero-button-secondary" type="button" hidden>Details ansehen</button>
+</div>
+</div>
 <div class="hero-stats">
 <div class="hero-stat">
 <span class="panel-label">Heute</span>
 <strong id="today-count">0</strong>
 </div>
 <div class="hero-stat">
-<span class="panel-label">Diese Woche</span>
+<span class="panel-label">Sichtbar</span>
 <strong id="week-count">0</strong>
 </div>
 <div class="hero-stat">
@@ -52,11 +60,14 @@ Ein kuratierter Wochenblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <button class="scope-button" data-scope="weekend" type="button">Wochenende</button>
 </div>
 
+<div id="quick-jumps" class="quick-jumps" aria-label="Schnellspruenge"></div>
+
 <div class="filter-group">
 <label class="filter-label" for="type-filter">Typ</label>
 <select id="type-filter" class="filter-select">
 <option value="">Alle Typen</option>
 </select>
+<div id="type-chip-row" class="type-chip-row" aria-label="Typ-Schnellfilter"></div>
 </div>
 
 <div class="filter-group">

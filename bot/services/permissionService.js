@@ -6,7 +6,7 @@ export function isAdminUser(userId) {
 
 export function assertAdminUser(interaction) {
   if (!isAdminUser(interaction.user.id)) {
-    const error = new Error("Nur Admins dürfen diese Aktion ausführen.");
+    const error = new Error("Nur Admins duerfen diese Aktion ausfuehren.");
     error.code = "ADMIN_ONLY";
     throw error;
   }

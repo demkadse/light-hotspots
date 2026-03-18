@@ -12,7 +12,7 @@ dotenv.config({ path: path.join(BOT_ROOT, ".env") });
 
 function validateDiscordId(name, value) {
   if (!value || !/^\d{17,20}$/.test(value)) {
-    throw new Error(`Ungültige oder fehlende Discord-ID für ${name}`);
+    throw new Error(`Ungueltige oder fehlende Discord-ID fuer ${name}`);
   }
 }
 

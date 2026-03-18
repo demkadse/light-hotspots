@@ -45,6 +45,25 @@ function appendMetaItem(parent, label, value) {
   parent.appendChild(item);
 }
 
+function scrollCarousel(track, direction) {
+  const firstCard = track.querySelector(".event-card");
+  const step = firstCard
+    ? firstCard.getBoundingClientRect().width + 22
+    : track.clientWidth * 0.8;
+
+  track.scrollBy({
+    left: direction * step,
+    behavior: "smooth"
+  });
+}
+
+function updateCarouselButtons(track, prevButton, nextButton) {
+  const maxScrollLeft = Math.max(track.scrollWidth - track.clientWidth, 0);
+
+  prevButton.disabled = track.scrollLeft <= 8;
+  nextButton.disabled = track.scrollLeft >= maxScrollLeft - 8;
+}
+
 function buildCard(event) {
   const card = document.createElement("article");
   card.className = "event-card";
@@ -118,20 +137,65 @@ function buildCard(event) {
 }
 
 function createCarousel(eventsForDay) {
+  const shell = document.createElement("div");
+  shell.className = "carousel-shell";
+
   const track = document.createElement("div");
   track.className = "carousel-track";
 
   if (didIndexLoadFail()) {
-    return track;
+    shell.appendChild(track);
+    return shell;
   }
 
   if (!eventsForDay || eventsForDay.length === 0) {
-    return track;
+    shell.appendChild(track);
+    return shell;
   }
 
   eventsForDay.forEach(event => {
     track.appendChild(buildCard(event));
   });
 
-  return track;
+  const controls = document.createElement("div");
+  controls.className = "carousel-controls";
+
+  const prevButton = document.createElement("button");
+  prevButton.type = "button";
+  prevButton.className = "carousel-arrow";
+  prevButton.setAttribute("aria-label", "Vorherige Events");
+  prevButton.textContent = "<";
+
+  const nextButton = document.createElement("button");
+  nextButton.type = "button";
+  nextButton.className = "carousel-arrow";
+  nextButton.setAttribute("aria-label", "Naechste Events");
+  nextButton.textContent = ">";
+
+  prevButton.addEventListener("click", event => {
+    event.stopPropagation();
+    scrollCarousel(track, -1);
+  });
+
+  nextButton.addEventListener("click", event => {
+    event.stopPropagation();
+    scrollCarousel(track, 1);
+  });
+
+  track.addEventListener("scroll", () => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  }, { passive: true });
+
+  controls.append(prevButton, nextButton);
+  const hint = document.createElement("span");
+  hint.className = "carousel-hint";
+  hint.textContent = "Wische fuer weitere Events";
+
+  shell.append(track, controls, hint);
+
+  requestAnimationFrame(() => {
+    updateCarouselButtons(track, prevButton, nextButton);
+  });
+
+  return shell;
 }

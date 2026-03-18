@@ -1,21 +1,20 @@
 import { Octokit } from "@octokit/rest";
+import { CONFIG, validateGitHubConfig } from "../config/config.js";
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
-
-const OWNER = process.env.GITHUB_OWNER;
-const REPO = process.env.GITHUB_REPO;
+function getGitHubClient() {
+  validateGitHubConfig();
+  return new Octokit({
+    auth: CONFIG.GITHUB_TOKEN
+  });
+}
 
 function generateId(title, date) {
   return `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${date}`;
 }
 
 export async function createEventFromTemplate(template) {
-
   const id = generateId(template.title, template.date);
   const [year, month] = template.date.split("-");
-
   const path = `events/data/${year}/${month}/${id}.json`;
 
   const event = {
@@ -30,9 +29,11 @@ export async function createEventFromTemplate(template) {
     created_at: new Date().toISOString()
   };
 
+  const octokit = getGitHubClient();
+
   await octokit.repos.createOrUpdateFileContents({
-    owner: OWNER,
-    repo: REPO,
+    owner: CONFIG.GITHUB_OWNER,
+    repo: CONFIG.GITHUB_REPO,
     path,
     message: `Create event ${id}`,
     content: Buffer.from(JSON.stringify(event, null, 2)).toString("base64")

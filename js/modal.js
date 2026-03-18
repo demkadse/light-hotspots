@@ -60,6 +60,16 @@ function appendSectionTitle(parent, text) {
   parent.appendChild(title);
 }
 
+function buildRelatedEvents(event) {
+  const allEvents = window.EVENT_CONTEXT?.visibleEvents || window.EVENT_CONTEXT?.allEvents || [];
+
+  return allEvents
+    .filter(entry => entry.id !== event.id)
+    .filter(entry => entry.date === event.date)
+    .filter(entry => entry.venue === event.venue || entry.type === event.type)
+    .slice(0, 3);
+}
+
 function openModal(event) {
   modalContent.replaceChildren();
 
@@ -140,6 +150,29 @@ function openModal(event) {
 
   if (linkRow.childElementCount > 0) {
     modalContent.appendChild(linkRow);
+  }
+
+  const relatedEvents = buildRelatedEvents(event);
+  if (relatedEvents.length > 0) {
+    const related = document.createElement("section");
+    related.className = "modal-related";
+
+    appendSectionTitle(related, "Am selben Abend");
+
+    const list = document.createElement("div");
+    list.className = "modal-related-list";
+
+    relatedEvents.forEach(entry => {
+      const pill = document.createElement("button");
+      pill.type = "button";
+      pill.className = "modal-related-pill";
+      pill.textContent = `${entry.title} · ${entry.start_time || entry.time || "Zeit offen"}`;
+      pill.addEventListener("click", () => openModal(entry));
+      list.appendChild(pill);
+    });
+
+    related.appendChild(list);
+    modalContent.appendChild(related);
   }
 
   modal.classList.add("active");
