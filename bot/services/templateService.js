@@ -9,9 +9,7 @@ const DATA_PATH = path.resolve("data/templates.json");
 async function ensureDataFile() {
   const dir = path.dirname(DATA_PATH);
 
-  try {
-    await fs.mkdir(dir, { recursive: true });
-  } catch {}
+  await fs.mkdir(dir, { recursive: true });
 
   try {
     await fs.access(DATA_PATH);
@@ -38,7 +36,6 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
   if (templateId) {
     const index = templates.findIndex(t => t.id === templateId);
-
     if (index === -1) throw new Error("Template nicht gefunden");
 
     templates[index] = {
@@ -79,6 +76,20 @@ export async function submitTemplateForApproval(templateId) {
   if (index === -1) throw new Error("Template nicht gefunden");
 
   templates[index].status = "pending";
+  templates[index].updated_at = new Date().toISOString();
+
+  await writeTemplates(templates);
+  return templates[index];
+}
+
+// 🔥 HIER WAR DER FEHLENDE TEIL
+export async function approveTemplate(templateId) {
+  const templates = await readTemplates();
+
+  const index = templates.findIndex(t => t.id === templateId);
+  if (index === -1) throw new Error("Template nicht gefunden");
+
+  templates[index].status = "approved";
   templates[index].updated_at = new Date().toISOString();
 
   await writeTemplates(templates);
