@@ -17,14 +17,14 @@ export async function execute(interaction) {
   assertActionCooldown(interaction.user.id, "setup-events", 10000);
 
   const button = new ButtonBuilder()
-    .setCustomId("event:create")
-    .setLabel("Event erstellen")
+    .setCustomId("event:start")
+    .setLabel("Start")
     .setStyle(ButtonStyle.Primary);
 
   const row = new ActionRowBuilder().addComponents(button);
 
   await interaction.reply({
-    content: "📅 **Event-System**\nErstelle hier neue Events.",
+    content: "**Event-System**\nStarte hier den Event-Flow.",
     components: [row]
   });
 }

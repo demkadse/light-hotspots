@@ -50,17 +50,10 @@ export async function handleSelect(interaction) {
   if (interaction.customId !== "event:selectTemplate") return;
 
   const value = interaction.values[0];
-
-  let template = null;
-  let modalId = "event_modal_step1_create";
-
-  if (value !== "new") {
-    template = await getTemplate(value);
-    modalId = `event_modal_step1_${value}`;
-  }
+  const template = await getTemplate(value);
 
   const modal = new ModalBuilder()
-    .setCustomId(modalId)
+    .setCustomId(`event_modal_step1_${value}`)
     .setTitle("Event erstellen | Basis");
 
   const createInput = (id, label, placeholder, val = "") =>

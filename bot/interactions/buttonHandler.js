@@ -51,6 +51,37 @@ async function sendTemplateDm(client, userId, message) {
   }
 }
 
+function buildStepOneModal(template = null, modalId = "event_modal_step1_create") {
+  const modal = new ModalBuilder()
+    .setCustomId(modalId)
+    .setTitle("Event erstellen | Basis");
+
+  const createInput = (id, label, placeholder, value = "") =>
+    new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId(id)
+        .setLabel(label)
+        .setPlaceholder(placeholder)
+        .setValue(value || "")
+        .setStyle(
+          id === "description"
+            ? TextInputStyle.Paragraph
+            : TextInputStyle.Short
+        )
+        .setRequired(true)
+    );
+
+  modal.addComponents(
+    createInput("title", "Titel", "z.B. Club Night", template?.title),
+    createInput("venue", "Location", "z.B. Limsa", template?.venue),
+    createInput("date", "Datum", "z.B. 20.03.2026", template?.date),
+    createInput("time", "Uhrzeit", "z.B. 20:00", template?.time),
+    createInput("description", "Beschreibung", "Worum geht es?", template?.description)
+  );
+
+  return modal;
+}
+
 function buildTimeLabel(template) {
   if (template.time && template.end_time) {
     return `${template.time} - ${template.end_time}`;
@@ -194,34 +225,59 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    if (id === "event:create") {
+    if (id === "event:start") {
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("event:new")
+          .setLabel("Neues Event erstellen")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("event:edit")
+          .setLabel("Bestehendes Event bearbeiten")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await replyAndExpire(interaction, {
+        content: "Wenn du schon einmal ein Event erstellt hast, kannst du es hier einfach bearbeiten und musst kein neues anlegen. Wenn du noch kein Event erstellt hast, waehle `Neues Event erstellen`.",
+        components: [row],
+        ephemeral: true
+      }, 120000);
+
+      return;
+    }
+
+    if (id === "event:new") {
+      const modal = buildStepOneModal();
+      await interaction.showModal(modal);
+      return;
+    }
+
+    if (id === "event:edit") {
       const templates = await getTemplatesByUser(interaction.user.id);
 
-      const options = [
-        {
-          label: "Neues Event erstellen",
-          value: "new",
-          description: "Starte ein neues Event"
-        }
-      ];
+      if (templates.length === 0) {
+        await replyAndExpire(interaction, {
+          content: "Du hast aktuell noch kein bestehendes Event. Waehle stattdessen `Neues Event erstellen`.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
 
-      templates.slice(0, 24).forEach(template => {
-        options.push({
-          label: template.title || "Unbenannt",
-          value: template.id,
-          description: `${template.date || "kein Datum"} | ${template.status}`
-        });
-      });
+      const options = templates.slice(0, 25).map(template => ({
+        label: template.title || "Unbenannt",
+        value: template.id,
+        description: `${template.date || "kein Datum"} | ${template.status}`
+      }));
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("event:selectTemplate")
-        .setPlaceholder("Template auswaehlen")
+        .setPlaceholder("Bestehendes Event auswaehlen")
         .addOptions(options);
 
       const row = new ActionRowBuilder().addComponents(select);
 
       await replyAndExpire(interaction, {
-        content: "Waehle ein Template:",
+        content: "Waehle das Event aus, das du bearbeiten moechtest:",
         components: [row],
         ephemeral: true
       }, 120000);

@@ -256,6 +256,29 @@ flex: 1;
 min-height: 0;
 }
 
+.site-footer {
+width: 100%;
+max-width: 1460px;
+margin: 12px auto 0;
+padding: 12px 18px 0;
+border-top: 1px solid rgba(201, 228, 255, 0.08);
+font-size: 0.82rem;
+line-height: 1.55;
+color: rgba(245, 241, 232, 0.72);
+}
+
+.site-footer-copy {
+margin: 0;
+}
+
+.site-footer-copy + .site-footer-copy {
+margin-top: 6px;
+}
+
+.site-footer-copy-muted {
+color: rgba(245, 241, 232, 0.58);
+}
+
 .toolbar {
 display: grid;
 grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.95fr) auto;
