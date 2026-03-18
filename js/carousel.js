@@ -11,7 +11,7 @@ let foundEvents = false;
 
 for(const entry of index){
 
-if(entry.date === target){
+if(normalizeDate(entry.date) === target){
 
 foundEvents = true;
 
@@ -46,15 +46,15 @@ card.className="event-card";
 
 card.innerHTML = `
 
-<img class="event-image" src="${event.image}">
+<img class="event-image" src="${event.image || ""}">
 
 <div class="event-info">
 
-<h3>${event.title}</h3>
+<h3>${event.title || "Unbenannt"}</h3>
 
-<p>${event.start_time}${event.end_time ? " - "+event.end_time : ""}</p>
+<p>${event.time || "Keine Zeit angegeben"}</p>
 
-<p>${event.host}</p>
+<p>${event.created_by || "Unbekannt"}</p>
 
 </div>
 
@@ -99,5 +99,19 @@ return date.getFullYear() + "-" +
 String(date.getMonth()+1).padStart(2,"0") + "-" +
 
 String(date.getDate()).padStart(2,"0");
+
+}
+
+// 🔥 NEU: Backend-Format anpassen
+function normalizeDate(d){
+
+if(!d) return "";
+
+if(d.includes(".")){
+const [day, month, year] = d.split(".");
+return `${year}-${month}-${day}`;
+}
+
+return d;
 
 }
