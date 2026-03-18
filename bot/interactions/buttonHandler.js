@@ -60,7 +60,7 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // IMAGE SETZEN
+    // IMAGE
     if (id.startsWith("event:setImage:")) {
       const templateId = id.split(":")[2];
 
@@ -99,14 +99,9 @@ export async function handleButton(interaction, client) {
           { name: "📍 Ort", value: template.venue || "-", inline: true },
           { name: "📅 Datum", value: template.date || "-", inline: true },
           { name: "⏰ Zeit", value: template.time || "-", inline: true }
-        )
-        .setFooter({
-          text: `Erstellt von ${template.created_by}`
-        });
+        );
 
-      if (template.image) {
-        embed.setImage(template.image);
-      }
+      if (template.image) embed.setImage(template.image);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -134,92 +129,87 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // APPROVE (BESTEHEND + ERWEITERT)
+    // APPROVE + LOGGING
     if (id.startsWith("event:approve:")) {
       const templateId = id.split(":")[2];
 
-      const template = await approveTemplate(templateId);
-
-      // 🔴 WICHTIG: DEIN BESTEHENDER CODE BLEIBT UNVERÄNDERT
-      await interaction.reply({
-        content: "✅ Event angenommen.",
-        ephemeral: true
-      });
-
       try {
-        const user = await client.users.fetch(template.created_by);
 
-        await user.send(
-`✅ **Dein Event wurde angenommen!**
+        const template = await approveTemplate(templateId);
 
-🎉 Dein Event wurde erfolgreich geprüft und freigegeben.
+        // 👉 bestehende Antwort bleibt UNVERÄNDERT
+        await interaction.reply({
+          content: "✅ Event angenommen.",
+          ephemeral: true
+        });
 
-📌 ${template.title}  
-📍 ${template.venue}  
-📅 ${template.date} um ${template.time}
-
-Viel Erfolg bei deinem Event! 🚀`
-        );
-
-      } catch (err) {
-        console.warn("DM fehlgeschlagen:", err.message);
-      }
-
-      // 🟢 AB HIER NUR ERWEITERUNG
-
-      try {
-        const fs = await import("fs/promises");
-        const path = await import("path");
-
-        const EVENTS_PATH = path.resolve("data/events.json");
-
+        // =========================
+        // EVENT_LOG
+        // =========================
         try {
-          await fs.access(EVENTS_PATH);
-        } catch {
-          await fs.mkdir(path.dirname(EVENTS_PATH), { recursive: true });
-          await fs.writeFile(EVENTS_PATH, "[]", "utf-8");
+          const ch = await client.channels.fetch(CHANNELS.EVENT_LOG);
+          if (ch && ch.isTextBased()) {
+            await ch.send(
+              `Event "${template.title}" wurde freigegeben von <@${interaction.user.id}>`
+            );
+          }
+        } catch (err) {
+          console.error("EVENT_LOG Fehler:", err);
         }
 
-        const raw = await fs.readFile(EVENTS_PATH, "utf-8");
-        const events = JSON.parse(raw);
+        // =========================
+        // COMMIT_LOG
+        // =========================
+        try {
+          const fs = await import("fs/promises");
+          const path = await import("path");
 
-        if (!events.find(e => e.id === template.id)) {
+          const [day, month, year] = template.date.split(".");
+          const safeName = template.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "-");
 
-          const newEvent = {
-            id: template.id,
-            title: template.title,
-            venue: template.venue,
-            date: template.date,
-            time: template.time,
-            description: template.description,
-            image: template.image,
-            created_by: template.created_by
-          };
-
-          events.push(newEvent);
-
-          await fs.writeFile(
-            EVENTS_PATH,
-            JSON.stringify(events, null, 2),
-            "utf-8"
+          const filePath = path.resolve(
+            `../events/data/${year}/${month}/${safeName}.json`
           );
+
+          const content = await fs.readFile(filePath, "utf-8");
+
+          const ch = await client.channels.fetch(CHANNELS.COMMIT_LOG);
+          if (ch && ch.isTextBased()) {
+            await ch.send(
+              `Commit für "${template.title}":\n\`\`\`json\n${content}\n\`\`\``
+            );
+          }
+
+        } catch (err) {
+          console.error("COMMIT_LOG Fehler:", err);
         }
 
       } catch (err) {
-        console.error("Event speichern fehlgeschlagen:", err);
-      }
 
-      try {
-        const logChannel = await client.channels.fetch(CHANNELS.LOG_CHANNEL);
+        console.error("APPROVE ERROR:", err);
 
-        if (logChannel) {
-          await logChannel.send(
-`📅 Neues Event veröffentlicht: ${template.title} (${template.date} ${template.time})`
-          );
+        // =========================
+        // ERROR_LOG
+        // =========================
+        try {
+          const ch = await client.channels.fetch(CHANNELS.ERROR_LOG);
+          if (ch && ch.isTextBased()) {
+            await ch.send(
+              `Fehler beim Approven:\n\`\`\`\n${err.message}\n\`\`\``
+            );
+          }
+        } catch (logErr) {
+          console.error("ERROR_LOG Fehler:", logErr);
         }
 
-      } catch (err) {
-        console.warn("Log fehlgeschlagen:", err.message);
+        if (!interaction.replied && !interaction.deferred) {
+          await interaction.reply({
+            content: "❌ Fehler beim Approve.",
+            ephemeral: true
+          });
+        }
       }
 
       return;
@@ -238,7 +228,6 @@ Viel Erfolg bei deinem Event! 🚀`
           new TextInputBuilder()
             .setCustomId("reason")
             .setLabel("Grund der Ablehnung")
-            .setPlaceholder("Was muss verbessert werden?")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
         )
@@ -250,12 +239,5 @@ Viel Erfolg bei deinem Event! 🚀`
 
   } catch (err) {
     console.error("Button Error:", err);
-
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
-        content: "❌ Fehler beim Button.",
-        ephemeral: true
-      });
-    }
   }
 }
