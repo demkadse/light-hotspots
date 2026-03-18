@@ -6,5 +6,13 @@
     "actor_id": "840120737527627796",
     "target_id": "baf5f762-4105-4e4b-a37b-376d6ee06fb6",
     "summary": "Testevent im Testhof"
+  },
+  {
+    "id": "fdacc0de-9853-4c7a-a328-ba3a146d9e52",
+    "created_at": "2026-03-18T19:15:16.021Z",
+    "action": "template.created",
+    "actor_id": "370678680206311427",
+    "target_id": "dacc104c-570d-49ba-a912-cd4d448a3c26",
+    "summary": "Testabend in der Herberge"
   }
 ]
