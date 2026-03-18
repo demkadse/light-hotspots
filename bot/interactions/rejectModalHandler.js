@@ -1,4 +1,5 @@
 import { rejectTemplate, getTemplate } from "../services/templateService.js";
+import { replyAndExpire } from "../services/interactionResponseService.js";
 
 export async function handleRejectModal(interaction, client) {
   try {
@@ -9,7 +10,7 @@ export async function handleRejectModal(interaction, client) {
 
     await rejectTemplate(templateId, reason);
 
-    await interaction.reply({
+    await replyAndExpire(interaction, {
       content: "❌ Event wurde abgelehnt.",
       ephemeral: true
     });

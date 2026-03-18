@@ -15,6 +15,7 @@ import {
   approveTemplate,
   getTemplate
 } from "../services/templateService.js";
+import { replyAndExpire } from "../services/interactionResponseService.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -57,11 +58,11 @@ export async function handleButton(interaction, client) {
 
       const row = new ActionRowBuilder().addComponents(select);
 
-      await interaction.reply({
+      await replyAndExpire(interaction, {
         content: "📂 Wähle ein Template:",
         components: [row],
         ephemeral: true
-      });
+      }, 120000);
 
       return;
     }
@@ -127,7 +128,7 @@ export async function handleButton(interaction, client) {
         components: [row]
       });
 
-      await interaction.reply({
+      await replyAndExpire(interaction, {
         content: "📨 Event wurde zur Prüfung gesendet.",
         ephemeral: true
       });
@@ -144,7 +145,7 @@ export async function handleButton(interaction, client) {
         const template = await approveTemplate(templateId);
 
         // 👉 bestehende Antwort bleibt UNVERÄNDERT
-        await interaction.reply({
+        await replyAndExpire(interaction, {
           content: "✅ Event angenommen.",
           ephemeral: true
         });
@@ -202,7 +203,7 @@ export async function handleButton(interaction, client) {
         }
 
         if (!interaction.replied && !interaction.deferred) {
-          await interaction.reply({
+          await replyAndExpire(interaction, {
             content: "❌ Fehler beim Approve.",
             ephemeral: true
           });

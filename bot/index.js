@@ -7,6 +7,7 @@ import { handleSelect } from "./interactions/selectHandler.js";
 
 import { execute as setupEvents } from "./commands/setupEventPanel.js";
 import { CONFIG, validateConfig } from "./config/config.js";
+import { replyAndExpire } from "./services/interactionResponseService.js";
 
 validateConfig();
 
@@ -52,7 +53,7 @@ client.on("interactionCreate", async (interaction) => {
     console.error("INTERACTION ERROR:", err);
 
     if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
+      await replyAndExpire(interaction, {
         content: "❌ Fehler.",
         ephemeral: true
       });

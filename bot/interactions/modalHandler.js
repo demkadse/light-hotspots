@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 
 import { createOrUpdateTemplate } from "../services/templateService.js";
+import { replyAndExpire } from "../services/interactionResponseService.js";
 
 export async function handleModal(interaction, client) {
 
@@ -47,11 +48,11 @@ export async function handleModal(interaction, client) {
         .setStyle(ButtonStyle.Success)
     );
 
-    await interaction.reply({
+    await replyAndExpire(interaction, {
       content: "✅ Event gespeichert.",
       components: [row],
       ephemeral: true
-    });
+    }, 120000);
 
     return;
   }
@@ -63,7 +64,7 @@ export async function handleModal(interaction, client) {
     const image = interaction.fields.getTextInputValue("image");
 
     if (!/\.(jpg|jpeg|png|gif)$/i.test(image)) {
-      return await interaction.reply({
+      return await replyAndExpire(interaction, {
         content: "❌ Ungültige Bild-URL.",
         ephemeral: true
       });
@@ -75,7 +76,7 @@ export async function handleModal(interaction, client) {
       templateId
     );
 
-    await interaction.reply({
+    await replyAndExpire(interaction, {
       content: "🖼 Bild gespeichert.",
       ephemeral: true
     });
