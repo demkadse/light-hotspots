@@ -262,21 +262,24 @@ max-width: 1460px;
 margin: 12px auto 0;
 padding: 12px 18px 0;
 border-top: 1px solid rgba(201, 228, 255, 0.08);
+display: flex;
+justify-content: flex-end;
+}
+
+.site-footer-link {
+padding: 0;
+border: 0;
+background: transparent;
+color: rgba(245, 241, 232, 0.62);
 font-size: 0.82rem;
-line-height: 1.55;
-color: rgba(245, 241, 232, 0.72);
+letter-spacing: 0.06em;
+cursor: pointer;
+text-decoration: underline;
+text-underline-offset: 0.22em;
 }
 
-.site-footer-copy {
-margin: 0;
-}
-
-.site-footer-copy + .site-footer-copy {
-margin-top: 6px;
-}
-
-.site-footer-copy-muted {
-color: rgba(245, 241, 232, 0.58);
+.site-footer-link:hover {
+color: rgba(245, 241, 232, 0.86);
 }
 
 .toolbar {
@@ -863,6 +866,19 @@ z-index: 999;
 display: flex;
 }
 
+#legal-notice-modal {
+position: fixed;
+inset: 0;
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+}
+
+#legal-notice-modal.active {
+display: flex;
+}
+
 .modal-overlay {
 position: absolute;
 inset: 0;
@@ -881,6 +897,38 @@ border-radius: 30px;
 border: 1px solid var(--line);
 background: var(--panel-strong);
 box-shadow: var(--shadow);
+}
+
+.legal-modal-window {
+position: relative;
+z-index: 2;
+width: min(760px, calc(100vw - 32px));
+max-height: 86vh;
+overflow: auto;
+padding: 28px;
+border-radius: 30px;
+border: 1px solid var(--line);
+background: var(--panel-strong);
+box-shadow: var(--shadow);
+}
+
+.legal-modal-window h2 {
+margin: 0 36px 18px 0;
+font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+}
+
+.legal-copy {
+margin: 0;
+line-height: 1.72;
+color: rgba(245, 241, 232, 0.9);
+}
+
+.legal-copy + .legal-copy {
+margin-top: 14px;
+}
+
+.legal-copy-muted {
+color: rgba(245, 241, 232, 0.72);
 }
 
 .modal-window img {
@@ -1012,6 +1060,17 @@ font-size: 28px;
 cursor: pointer;
 }
 
+#legal-notice-close {
+position: absolute;
+top: 10px;
+right: 14px;
+border: 0;
+background: transparent;
+color: var(--text);
+font-size: 28px;
+cursor: pointer;
+}
+
 @media (max-width: 1080px) {
 .hero {
 grid-template-columns: 1fr;
@@ -1132,6 +1191,11 @@ display: none;
 
 .modal-window {
 padding: 20px;
+border-radius: 22px;
+}
+
+.legal-modal-window {
+padding: 22px;
 border-radius: 22px;
 }
 

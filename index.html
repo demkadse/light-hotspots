@@ -96,12 +96,7 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 </main>
 
 <footer class="site-footer" aria-label="Rechtlicher Hinweis">
-<p class="site-footer-copy">
-Diese Plattform, ihr Design, ihre Struktur, die Auswahl und Anordnung der Inhalte sowie ihre technische Umsetzung sind urheberrechtlich geschuetzt und Eigentum des Betreibers. Eine Vervielfaeltigung, Uebernahme, Nachahmung oder sonstige Nutzung ganz oder in Teilen ohne vorherige Zustimmung ist nicht gestattet.
-</p>
-<p class="site-footer-copy site-footer-copy-muted">
-Davon ausgenommen sind die Inhalte, Angaben und Beschreibungen, die Nutzer ueber den Discord-Bot fuer ihre eigenen Events einreichen. Diese verbleiben, soweit urheberrechtlich geschuetzt, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern.
-</p>
+<button id="legal-notice-open" class="site-footer-link" type="button">Rechtshinweis</button>
 </footer>
 </div>
 
@@ -113,8 +108,26 @@ Davon ausgenommen sind die Inhalte, Angaben und Beschreibungen, die Nutzer ueber
 </div>
 </div>
 
+<div id="legal-notice-modal" aria-hidden="true">
+<div class="modal-overlay legal-modal-overlay"></div>
+<div class="legal-modal-window" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
+<button id="legal-notice-close" type="button" aria-label="Rechtshinweis schliessen">x</button>
+<h2 id="legal-modal-title">Rechtshinweis</h2>
+<p class="legal-copy">
+Diese Plattform, ihr Design, ihre Struktur, die Auswahl und Anordnung der Inhalte sowie ihre technische Umsetzung sind urheberrechtlich geschuetzt. Die ausschliesslichen Nutzungs- und Verwertungsrechte hieran liegen beim Betreiber. Eine Vervielfaeltigung, Uebernahme, Nachahmung, Weiterverbreitung oder sonstige Nutzung ganz oder in Teilen ohne vorherige ausdrueckliche Zustimmung ist nicht gestattet.
+</p>
+<p class="legal-copy">
+Dies gilt insbesondere fuer die gestalterische und technische Gesamtumsetzung der Plattform, einschliesslich Seitenaufbau, Darstellungskonzept, Interaktionslogik, Datenaufbereitung und praegender Gestaltungselemente.
+</p>
+<p class="legal-copy legal-copy-muted">
+Davon unberuehrt bleiben die Inhalte, Angaben und Beschreibungen, die Nutzer ueber den Discord-Bot fuer ihre eigenen Events einreichen. Diese verbleiben, soweit sie urheberrechtlich geschuetzt sind, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern.
+</p>
+</div>
+</div>
+
 <script src="js/events.js"></script>
 <script src="js/modal.js"></script>
+<script src="js/legalNotice.js"></script>
 <script src="js/siteConfig.js"></script>
 <script src="js/carousel.js"></script>
 <script src="js/timeline.js"></script>
