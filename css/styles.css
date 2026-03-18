@@ -370,6 +370,20 @@ text-transform: uppercase;
 color: rgba(245, 241, 232, 0.72);
 }
 
+.day-transition {
+display: inline-flex;
+width: fit-content;
+margin: 0 0 10px;
+padding: 6px 10px;
+border-radius: 999px;
+border: 1px solid rgba(243, 186, 108, 0.2);
+background: rgba(243, 186, 108, 0.1);
+font-size: 0.76rem;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: #ffe4be;
+}
+
 .day-title {
 margin: 0;
 font-size: clamp(1.5rem, 2vw, 2rem);

@@ -98,10 +98,14 @@ client.on("interactionCreate", async (interaction) => {
         content = "Der Bot darf diese Datei aus Sicherheitsgruenden nicht automatisch pushen.";
       }
 
-      await replyAndExpire(interaction, {
-        content,
-        ephemeral: true
-      });
+      try {
+        await replyAndExpire(interaction, {
+          content,
+          ephemeral: true
+        });
+      } catch (replyError) {
+        console.error("INTERACTION ERROR RESPONSE FAILED:", replyError);
+      }
     }
   }
 });

@@ -12,7 +12,49 @@ function scheduleDelete(interaction, delayMs) {
   }
 }
 
+function shouldIgnoreInteractionError(error) {
+  return error?.code === 10062 || error?.code === 40060;
+}
+
 export async function replyAndExpire(interaction, payload, delayMs = 30000) {
-  await interaction.reply(payload);
-  scheduleDelete(interaction, delayMs);
+  try {
+    if (interaction.deferred) {
+      await interaction.editReply(payload);
+      scheduleDelete(interaction, delayMs);
+      return true;
+    }
+
+    if (interaction.replied) {
+      await interaction.followUp(payload);
+      return true;
+    }
+
+    await interaction.reply(payload);
+    scheduleDelete(interaction, delayMs);
+    return true;
+  } catch (error) {
+    if (shouldIgnoreInteractionError(error)) {
+      console.warn("Interaction response skipped:", error.code);
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+export async function deferEphemeral(interaction) {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({ ephemeral: true });
+    }
+
+    return true;
+  } catch (error) {
+    if (shouldIgnoreInteractionError(error)) {
+      console.warn("Interaction defer skipped:", error.code);
+      return false;
+    }
+
+    throw error;
+  }
 }

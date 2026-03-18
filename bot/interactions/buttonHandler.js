@@ -19,7 +19,10 @@ import {
   unpublishTemplate,
   findPotentialDuplicates
 } from "../services/templateService.js";
-import { replyAndExpire } from "../services/interactionResponseService.js";
+import {
+  deferEphemeral,
+  replyAndExpire
+} from "../services/interactionResponseService.js";
 import { assertAdminUser } from "../services/permissionService.js";
 import { assertActionCooldown } from "../services/cooldownService.js";
 import { cleanupBotMessages } from "../services/cleanupService.js";
@@ -152,6 +155,7 @@ export async function handleButton(interaction, client) {
     if (id === "admin:cleanup:confirm") {
       assertAdminUser(interaction);
       assertActionCooldown(interaction.user.id, "cleanup-confirm", 60000);
+      await deferEphemeral(interaction);
 
       const summary = await cleanupBotMessages(client);
       const summaryText = summary
@@ -313,6 +317,7 @@ export async function handleButton(interaction, client) {
 
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
       const draft = await getTemplate(templateId);
       const template = await submitTemplateForApproval(templateId);
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
@@ -359,6 +364,7 @@ export async function handleButton(interaction, client) {
     if (id.startsWith("event:approve:")) {
       assertAdminUser(interaction);
       assertActionCooldown(interaction.user.id, `approve:${id}`, 10000);
+      await deferEphemeral(interaction);
       const templateId = id.split(":")[2];
 
       try {
@@ -492,6 +498,7 @@ export async function handleButton(interaction, client) {
     if (id.startsWith("event:unpublish_confirm:")) {
       assertAdminUser(interaction);
       assertActionCooldown(interaction.user.id, `unpublish:${id}`, 30000);
+      await deferEphemeral(interaction);
       const templateId = id.split(":")[2];
       const result = await unpublishTemplate(templateId);
 

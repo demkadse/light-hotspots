@@ -1,4 +1,4 @@
-const TIMELINE_DAYS = 14;
+const MIN_VISIBLE_DAYS = 14;
 
 const state = {
   slideIndex: 0,
@@ -33,13 +33,24 @@ function normalizeDateKey(value) {
 
 function buildDays() {
   const today = startOfDay(new Date());
-  state.days = [];
+  const currentMonth = today.getMonth();
+  const days = [];
 
-  for (let index = 0; index < TIMELINE_DAYS; index += 1) {
-    const day = new Date(today);
-    day.setDate(today.getDate() + index);
-    state.days.push(day);
+  let cursor = new Date(today);
+  while (cursor.getMonth() === currentMonth) {
+    days.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
   }
+
+  const remainingCurrentMonthDays = days.length;
+  if (remainingCurrentMonthDays < 7 || days.length < MIN_VISIBLE_DAYS) {
+    while (days.length < MIN_VISIBLE_DAYS) {
+      days.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+
+  state.days = days;
 }
 
 function getDayKey(date) {
@@ -54,6 +65,7 @@ function isWeekend(date) {
 function getDayMarker(day, index) {
   if (index === 0) return "Heute";
   if (index === 1) return "Morgen";
+  if (index > 0 && day.getDate() === 1) return "Neuer Monat";
   if (isWeekend(day)) return "Wochenende";
   return "Diese Woche";
 }
@@ -68,6 +80,23 @@ function getDaySubtitle(eventsForDay) {
   }
 
   return `${eventsForDay.length} sichtbare Events fuer diesen Tag.`;
+}
+
+function getMonthTransitionLabel(day, index) {
+  if (index === 0) {
+    return "";
+  }
+
+  const previousDay = state.days[index - 1];
+  if (!previousDay) {
+    return "";
+  }
+
+  if (previousDay.getMonth() !== day.getMonth()) {
+    return `Monatswechsel zu ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
+  }
+
+  return "";
 }
 
 function getEventType(event) {
@@ -252,7 +281,17 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   subtitle.className = "day-subtitle";
   subtitle.textContent = getDaySubtitle(eventsForDay);
 
-  copy.append(marker, title, subtitle);
+  copy.append(marker);
+
+  const transitionLabel = getMonthTransitionLabel(day, index);
+  if (transitionLabel) {
+    const transition = document.createElement("span");
+    transition.className = "day-transition";
+    transition.textContent = transitionLabel;
+    copy.appendChild(transition);
+  }
+
+  copy.append(title, subtitle);
 
   const count = document.createElement("div");
   count.className = "day-count";
