@@ -1,23 +1,40 @@
 const modal = document.getElementById("event-modal");
 const modalContent = document.getElementById("modal-content");
 
+function appendParagraph(parent, label, value) {
+  const p = document.createElement("p");
+
+  if (label) {
+    const strong = document.createElement("b");
+    strong.textContent = `${label}: `;
+    p.appendChild(strong);
+  }
+
+  p.appendChild(document.createTextNode(value));
+  parent.appendChild(p);
+}
+
 function openModal(event){
+modalContent.replaceChildren();
 
-modalContent.innerHTML = `
+const image = document.createElement("img");
+image.style.width = "100%";
+image.alt = event.title || "Eventbild";
+image.src = event.image || "";
+modalContent.appendChild(image);
 
-<img src="${event.image || ""}" style="width:100%">
+const title = document.createElement("h2");
+title.textContent = event.title || "Unbenannt";
+modalContent.appendChild(title);
 
-<h2>${event.title || "Unbenannt"}</h2>
-
-<p><b>Venue:</b> ${event.venue || "-"}</p>
-
-<p><b>Host:</b> ${event.host || event.created_by || "-"}</p>
-
-<p>${event.date || ""} ${event.start_time || event.time || ""}</p>
-
-<p>${event.description || ""}</p>
-
-`;
+appendParagraph(modalContent, "Venue", event.venue || "-");
+appendParagraph(modalContent, "Host", event.host || event.created_by || "-");
+appendParagraph(
+  modalContent,
+  "",
+  `${event.date || ""} ${event.start_time || event.time || ""}`.trim()
+);
+appendParagraph(modalContent, "", event.description || "");
 
 modal.classList.add("active");
 

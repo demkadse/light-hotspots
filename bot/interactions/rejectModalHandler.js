@@ -40,5 +40,6 @@ Wenn du unsicher bist, melde dich gern – wir helfen dir weiter!`
 
   } catch (err) {
     console.error("Reject Error:", err);
+    throw err;
   }
 }

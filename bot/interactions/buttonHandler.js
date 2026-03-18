@@ -15,8 +15,14 @@ import {
   approveTemplate,
   getTemplate
 } from "../services/templateService.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import { CHANNELS } from "../config/channels.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
 export async function handleButton(interaction, client) {
   const id = interaction.customId;
@@ -162,13 +168,7 @@ export async function handleButton(interaction, client) {
         // =========================
         try {
           const fs = await import("fs/promises");
-          const path = await import("path");
-
-          const [year, month] = template.date.split("-");
-
-          const filePath = path.resolve(
-            `../events/data/${year}/${month}/${template.id}.json`
-          );
+          const filePath = path.join(REPO_ROOT, "events", "data", template.file);
 
           const content = await fs.readFile(filePath, "utf-8");
 
@@ -236,5 +236,6 @@ export async function handleButton(interaction, client) {
 
   } catch (err) {
     console.error("Button Error:", err);
+    throw err;
   }
 }

@@ -1,8 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 
-const TEMPLATE_PATH = path.resolve("data/templates.json");
-const EVENTS_BASE_PATH = path.resolve("../events/data");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const BOT_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(BOT_ROOT, "..");
+
+const TEMPLATE_PATH = path.join(BOT_ROOT, "data", "templates.json");
+const EVENTS_BASE_PATH = path.join(REPO_ROOT, "events", "data");
 
 // =========================
 // HELPERS
@@ -176,6 +182,8 @@ export async function approveTemplate(templateId) {
     created_at: new Date().toISOString()
   };
 
+  eventData.file = `${year}/${month}/${fileName}`;
+
   await writeJSON(filePath, eventData);
 
   // =========================
@@ -186,7 +194,7 @@ export async function approveTemplate(templateId) {
 
   let index = await readJSON(indexPath, { events: [] });
 
-  const relativeFile = `${year}/${month}/${fileName}`;
+  const relativeFile = eventData.file;
 
   const existing = index.events.find(e => e.file === relativeFile);
 

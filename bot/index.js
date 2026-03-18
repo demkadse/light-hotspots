@@ -1,5 +1,4 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import dotenv from "dotenv";
 
 import { handleModal } from "./interactions/modalHandler.js";
 import { handleButton } from "./interactions/buttonHandler.js";
@@ -7,8 +6,9 @@ import { handleRejectModal } from "./interactions/rejectModalHandler.js";
 import { handleSelect } from "./interactions/selectHandler.js";
 
 import { execute as setupEvents } from "./commands/setupEventPanel.js";
+import { CONFIG, validateConfig } from "./config/config.js";
 
-dotenv.config();
+validateConfig();
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
@@ -60,4 +60,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(process.env.DISCORD_TOKEN);
+client.login(CONFIG.DISCORD_TOKEN);

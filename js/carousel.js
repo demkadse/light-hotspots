@@ -46,21 +46,29 @@ function buildCard(event){
 const card = document.createElement("div");
 card.className="event-card";
 
-card.innerHTML = `
+const image = document.createElement("img");
+image.className = "event-image";
+image.src = event.image || "";
+image.alt = event.title || "Eventbild";
 
-<img class="event-image" src="${event.image || ""}">
+const info = document.createElement("div");
+info.className = "event-info";
 
-<div class="event-info">
+const title = document.createElement("h3");
+title.textContent = event.title || "Unbenannt";
 
-<h3>${event.title || "Unbenannt"}</h3>
+const time = document.createElement("p");
+time.textContent = event.start_time || event.time || "Keine Zeit";
 
-<p>${event.start_time || event.time || "Keine Zeit"}</p>
+const host = document.createElement("p");
+host.textContent = event.host || event.created_by || "Unbekannt";
 
-<p>${event.host || event.created_by || "Unbekannt"}</p>
+info.appendChild(title);
+info.appendChild(time);
+info.appendChild(host);
 
-</div>
-
-`;
+card.appendChild(image);
+card.appendChild(info);
 
 card.onclick = ()=> openModal(event);
 
@@ -74,21 +82,36 @@ const card = document.createElement("div");
 
 card.className="event-card";
 
-card.innerHTML = `
+const info = document.createElement("div");
+info.className = "event-info";
+info.style.height = "100%";
+info.style.display = "flex";
+info.style.flexDirection = "column";
+info.style.justifyContent = "center";
+info.style.alignItems = "center";
+info.style.textAlign = "center";
 
-<div class="event-info" style="height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+const title = document.createElement("h3");
+title.textContent = "Keine Events eingetragen";
 
-<h3>Keine Events eingetragen</h3>
+const text = document.createElement("p");
+text.textContent = "Erstell DEINS über den Discord-Bot!";
 
-<p>Erstell DEINS über den Discord-Bot!</p>
+info.appendChild(title);
+info.appendChild(text);
 
-<a href="https://discord.gg/DEINLINK" target="_blank">
-Discord Server
-</a>
+const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
 
-</div>
+if (inviteUrl) {
+const link = document.createElement("a");
+link.href = inviteUrl;
+link.target = "_blank";
+link.rel = "noreferrer noopener";
+link.textContent = "Discord Server";
+info.appendChild(link);
+}
 
-`;
+card.appendChild(info);
 
 return card;
 

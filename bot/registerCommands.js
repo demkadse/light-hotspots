@@ -1,12 +1,9 @@
 console.log("SCRIPT STARTET");
 
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
-import dotenv from "dotenv";
+import { CONFIG, validateConfig } from "./config/config.js";
 
-dotenv.config();
-
-const CLIENT_ID = "1483031945825747034";
-const GUILD_ID = "1483034141858598965";
+validateConfig();
 
 const commands = [
   new SlashCommandBuilder()
@@ -14,7 +11,7 @@ const commands = [
     .setDescription("Erstellt das Event Panel")
 ];
 
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);
 
 async function register() {
 
@@ -23,7 +20,7 @@ async function register() {
     console.log("Registriere Guild Commands...");
 
     const result = await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      Routes.applicationGuildCommands(CONFIG.CLIENT_ID, CONFIG.GUILD_ID),
       { body: commands.map(cmd => cmd.toJSON()) }
     );
 
