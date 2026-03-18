@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { handleModal } from "./interactions/modalHandler.js";
 import { handleButton } from "./interactions/buttonHandler.js";
 import { handleRejectModal } from "./interactions/rejectModalHandler.js";
+import { handleSelect } from "./interactions/selectHandler.js";
 
 import { execute as setupEvents } from "./commands/setupEventPanel.js";
 
@@ -20,16 +21,24 @@ client.once("clientReady", () => {
 client.on("interactionCreate", async (interaction) => {
   try {
 
+    // COMMANDS
     if (interaction.isChatInputCommand()) {
       if (interaction.commandName === "setup-events") {
         return await setupEvents(interaction);
       }
     }
 
+    // BUTTONS
     if (interaction.isButton()) {
       return await handleButton(interaction, client);
     }
 
+    // 🔥 FEHLTE BEI DIR
+    if (interaction.isStringSelectMenu()) {
+      return await handleSelect(interaction);
+    }
+
+    // MODALS
     if (interaction.isModalSubmit()) {
 
       if (interaction.customId.startsWith("reject_modal_")) {
