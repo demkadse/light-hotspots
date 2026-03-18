@@ -14,16 +14,16 @@ export async function handleSelect(interaction) {
   const value = interaction.values[0];
 
   let template = null;
-  let modalId = "event_modal_create";
+  let modalId = "event_modal_step1_create";
 
   if (value !== "new") {
     template = await getTemplate(value);
-    modalId = `event_modal_edit_${value}`;
+    modalId = `event_modal_step1_${value}`;
   }
 
   const modal = new ModalBuilder()
     .setCustomId(modalId)
-    .setTitle("Event erstellen");
+    .setTitle("Event erstellen | Basis");
 
   const createInput = (id, label, placeholder, val = "") =>
     new ActionRowBuilder().addComponents(
@@ -45,7 +45,7 @@ export async function handleSelect(interaction) {
     createInput("venue", "Location", "z.B. Limsa", template?.venue),
     createInput("date", "Datum", "z.B. 20.03.2026", template?.date),
     createInput("time", "Uhrzeit", "z.B. 20:00", template?.time),
-    createInput("description", "Beschreibung", "Text...", template?.description)
+    createInput("description", "Beschreibung", "Worum geht es?", template?.description)
   );
 
   await interaction.showModal(modal);

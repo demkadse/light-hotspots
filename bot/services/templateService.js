@@ -374,15 +374,18 @@ export async function approveTemplate(templateId) {
   const eventData = {
     id: slug,
     title: template.title,
-    type: template.type || "event",
+    type: template.event_type || template.type || "event",
     venue: template.venue,
-    host: template.created_by,
+    host: template.host_display_name || template.host || template.created_by,
+    venue_lead: template.venue_lead || null,
     date: `${year}-${month}-${day}`,
     start_time: template.time,
-    end_time: null,
-    image: template.image,
+    end_time: template.end_time || null,
+    image: template.image || null,
     description: template.description,
-    links: [],
+    link: template.link || null,
+    links: template.link ? [template.link] : [],
+    notes: template.notes || null,
     created_by: template.created_by,
     created_at: new Date().toISOString()
   };

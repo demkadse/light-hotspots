@@ -30,6 +30,79 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
+function buildTimeLabel(template) {
+  if (template.time && template.end_time) {
+    return `${template.time} - ${template.end_time}`;
+  }
+
+  return template.time || "-";
+}
+
+function buildApprovalEmbed(template, duplicates) {
+  const embed = new EmbedBuilder()
+    .setTitle(template.title)
+    .setDescription(template.description)
+    .addFields(
+      { name: "Ort", value: template.venue || "-", inline: true },
+      { name: "Datum", value: template.date || "-", inline: true },
+      { name: "Zeit", value: buildTimeLabel(template), inline: true }
+    );
+
+  if (template.event_type) {
+    embed.addFields({
+      name: "Eventtyp",
+      value: template.event_type,
+      inline: true
+    });
+  }
+
+  if (template.host_display_name) {
+    embed.addFields({
+      name: "Host",
+      value: template.host_display_name,
+      inline: true
+    });
+  }
+
+  if (template.venue_lead) {
+    embed.addFields({
+      name: "Venue-Leitung",
+      value: template.venue_lead,
+      inline: true
+    });
+  }
+
+  if (template.link) {
+    embed.addFields({
+      name: "Link",
+      value: template.link
+    });
+  }
+
+  if (template.notes) {
+    embed.addFields({
+      name: "Hinweise",
+      value: template.notes.slice(0, 1024)
+    });
+  }
+
+  if (template.image) {
+    embed.setImage(template.image);
+  }
+
+  if (duplicates.length > 0) {
+    embed.addFields({
+      name: "Moegliche Duplikate",
+      value: duplicates
+        .map(entry => `${entry.title} | ${entry.venue} | ${entry.date}`)
+        .join("\n")
+        .slice(0, 1024)
+    });
+  }
+
+  return embed;
+}
+
 export async function handleButton(interaction, client) {
   const id = interaction.customId;
 
@@ -127,22 +200,95 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    if (id.startsWith("event:setImage:")) {
+    if (id.startsWith("event:details:")) {
       const templateId = id.split(":")[2];
+      const template = await getTemplate(templateId);
 
       const modal = new ModalBuilder()
-        .setCustomId(`event_image_modal_${templateId}`)
-        .setTitle("Bild hinzufuegen");
+        .setCustomId(`event_modal_step2_${templateId}`)
+        .setTitle("Event | Details");
+
+      const createOptionalInput = (customId, label, placeholder, value = "") =>
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId(customId)
+            .setLabel(label)
+            .setPlaceholder(placeholder)
+            .setValue(value || "")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        );
+
+      modal.addComponents(
+        createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
+        createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
+        createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
+        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Kaeptn Mira", template?.venue_lead),
+        createOptionalInput("image", "Bild-URL (optional)", "https://example.com/event.jpg", template?.image)
+      );
+
+      await interaction.showModal(modal);
+      return;
+    }
+
+    if (id.startsWith("event:extras:")) {
+      const templateId = id.split(":")[2];
+      const template = await getTemplate(templateId);
+
+      const modal = new ModalBuilder()
+        .setCustomId(`event_modal_step3_${templateId}`)
+        .setTitle("Event | Extras");
 
       modal.addComponents(
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
-            .setCustomId("image")
-            .setLabel("Bild URL (.jpg, .png, .gif)")
-            .setPlaceholder("https://example.com/image.jpg")
+            .setCustomId("link")
+            .setLabel("Externer Link (optional)")
+            .setPlaceholder("https://...")
+            .setValue(template?.link || "")
             .setStyle(TextInputStyle.Short)
-            .setRequired(true)
+            .setRequired(false)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("notes")
+            .setLabel("Hinweise (optional)")
+            .setPlaceholder("z.B. Walk-ins willkommen, 18+, OOC-Tell vorab")
+            .setValue(template?.notes || "")
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired(false)
         )
+      );
+
+      await interaction.showModal(modal);
+      return;
+    }
+
+    if (id.startsWith("event:setImage:")) {
+      const templateId = id.split(":")[2];
+      const template = await getTemplate(templateId);
+
+      const modal = new ModalBuilder()
+        .setCustomId(`event_modal_step2_${templateId}`)
+        .setTitle("Event | Details");
+
+      const createOptionalInput = (customId, label, placeholder, value = "") =>
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId(customId)
+            .setLabel(label)
+            .setPlaceholder(placeholder)
+            .setValue(value || "")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        );
+
+      modal.addComponents(
+        createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
+        createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
+        createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
+        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Kaeptn Mira", template?.venue_lead),
+        createOptionalInput("image", "Bild-URL (optional)", "https://example.com/event.jpg", template?.image)
       );
 
       await interaction.showModal(modal);
@@ -160,28 +306,7 @@ export async function handleButton(interaction, client) {
       }
 
       const duplicates = await findPotentialDuplicates(draft);
-      const embed = new EmbedBuilder()
-        .setTitle(template.title)
-        .setDescription(template.description)
-        .addFields(
-          { name: "Ort", value: template.venue || "-", inline: true },
-          { name: "Datum", value: template.date || "-", inline: true },
-          { name: "Zeit", value: template.time || "-", inline: true }
-        );
-
-      if (template.image) {
-        embed.setImage(template.image);
-      }
-
-      if (duplicates.length > 0) {
-        embed.addFields({
-          name: "Moegliche Duplikate",
-          value: duplicates
-            .map(entry => `${entry.title} | ${entry.venue} | ${entry.date}`)
-            .join("\n")
-            .slice(0, 1024)
-        });
-      }
+      const embed = buildApprovalEmbed(template, duplicates);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()

@@ -1,17 +1,63 @@
 const modal = document.getElementById("event-modal");
 const modalContent = document.getElementById("modal-content");
 
-function appendParagraph(parent, label, value) {
-  const paragraph = document.createElement("p");
+function formatHostName(event) {
+  const host = event.host || event.host_display_name || event.created_by || "";
 
-  if (label) {
-    const strong = document.createElement("b");
-    strong.textContent = `${label}: `;
-    paragraph.appendChild(strong);
+  if (!host) {
+    return "Unbekannter Host";
   }
 
-  paragraph.appendChild(document.createTextNode(value));
-  parent.appendChild(paragraph);
+  if (/^\d{17,20}$/.test(host)) {
+    return event.venue ? `Host des ${event.venue}` : "Discord-Host";
+  }
+
+  return host;
+}
+
+function formatTypeLabel(event) {
+  return event.type || event.event_type || "Event";
+}
+
+function formatTimeRange(event) {
+  const date = event.date || "";
+  const start = event.start_time || event.time || "";
+  const end = event.end_time || "";
+
+  if (date && start && end) {
+    return `${date} | ${start} - ${end}`;
+  }
+
+  if (date && start) {
+    return `${date} | ${start}`;
+  }
+
+  return [date, start || end].filter(Boolean).join(" | ") || "Zeit offen";
+}
+
+function appendDetailItem(parent, label, value) {
+  if (!value) return;
+
+  const item = document.createElement("div");
+  item.className = "modal-detail-item";
+
+  const labelNode = document.createElement("span");
+  labelNode.className = "modal-detail-label";
+  labelNode.textContent = label;
+
+  const valueNode = document.createElement("span");
+  valueNode.className = "modal-detail-value";
+  valueNode.textContent = value;
+
+  item.append(labelNode, valueNode);
+  parent.appendChild(item);
+}
+
+function appendSectionTitle(parent, text) {
+  const title = document.createElement("h3");
+  title.className = "modal-section-title";
+  title.textContent = text;
+  parent.appendChild(title);
 }
 
 function openModal(event) {
@@ -24,19 +70,57 @@ function openModal(event) {
     modalContent.appendChild(image);
   }
 
+  const topRow = document.createElement("div");
+  topRow.className = "modal-top-row";
+
+  const typeChip = document.createElement("span");
+  typeChip.className = "event-chip";
+  typeChip.textContent = formatTypeLabel(event);
+
+  const timeChip = document.createElement("span");
+  timeChip.className = "event-time-chip";
+  timeChip.textContent = formatTimeRange(event);
+
+  topRow.append(typeChip, timeChip);
+  modalContent.appendChild(topRow);
+
   const title = document.createElement("h2");
   title.id = "modal-title";
   title.textContent = event.title || "Unbenannt";
   modalContent.appendChild(title);
 
-  appendParagraph(modalContent, "Venue", event.venue || "-");
-  appendParagraph(modalContent, "Host", event.host || event.created_by || "-");
-  appendParagraph(
-    modalContent,
-    "",
-    `${event.date || ""} ${event.start_time || event.time || ""}`.trim()
-  );
-  appendParagraph(modalContent, "", event.description || "");
+  const details = document.createElement("div");
+  details.className = "modal-details-grid";
+  appendDetailItem(details, "Venue", event.venue || "Ort offen");
+  appendDetailItem(details, "Host", formatHostName(event));
+  appendDetailItem(details, "Venue-Leitung", event.venue_lead);
+  appendDetailItem(details, "Zeit", formatTimeRange(event));
+  modalContent.appendChild(details);
+
+  appendSectionTitle(modalContent, "Beschreibung");
+  const description = document.createElement("p");
+  description.className = "modal-copy";
+  description.textContent = event.description || "Keine Beschreibung vorhanden.";
+  modalContent.appendChild(description);
+
+  if (event.notes) {
+    appendSectionTitle(modalContent, "Hinweise");
+    const notes = document.createElement("p");
+    notes.className = "modal-copy modal-copy-muted";
+    notes.textContent = event.notes;
+    modalContent.appendChild(notes);
+  }
+
+  if (event.link || (Array.isArray(event.links) && event.links[0])) {
+    const targetLink = event.link || event.links[0];
+    const cta = document.createElement("a");
+    cta.className = "modal-link-button";
+    cta.href = targetLink;
+    cta.target = "_blank";
+    cta.rel = "noreferrer noopener";
+    cta.textContent = "Externe Infos oeffnen";
+    modalContent.appendChild(cta);
+  }
 
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");

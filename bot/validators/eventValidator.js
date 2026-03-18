@@ -16,6 +16,15 @@ function isValidTime(value) {
   return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
 }
 
+function isValidHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function validateEventInput(event) {
   const errors = [];
   const validateCoreFields = "title" in event || "venue" in event || "date" in event || "time" in event || "description" in event;
@@ -37,8 +46,27 @@ export function validateEventInput(event) {
     }
   }
 
-  if (event.image && !/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(event.image)) {
-    errors.push("Bild-URL muss mit http(s) beginnen und auf .jpg, .jpeg, .png oder .gif enden.");
+  if (event.end_time?.trim() && !isValidTime(event.end_time.trim())) {
+    errors.push("Endzeit muss im Format HH:MM sein.");
+  }
+
+  if (event.image) {
+    const image = event.image.trim();
+    const imagePath = (() => {
+      try {
+        return new URL(image).pathname;
+      } catch {
+        return "";
+      }
+    })();
+
+    if (!isValidHttpUrl(image) || !/\.(jpg|jpeg|png|gif|webp)$/i.test(imagePath)) {
+      errors.push("Bild-URL muss mit http(s) beginnen und auf eine Bilddatei zeigen.");
+    }
+  }
+
+  if (event.link?.trim() && !isValidHttpUrl(event.link.trim())) {
+    errors.push("Link muss mit http:// oder https:// beginnen.");
   }
 
   return errors;
