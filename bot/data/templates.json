@@ -26,5 +26,16 @@
     "created_at": "2026-03-18T11:35:34.437Z",
     "updated_at": "2026-03-18T16:04:00.604Z",
     "rejection_reason": null
+  },
+  {
+    "id": "eb670536-773c-42d6-b41e-67968651e1b3",
+    "title": "Testabend in der Herberge",
+    "venue": "Kelchkuppe",
+    "date": "18.03.2026",
+    "time": "21:00",
+    "description": "Dies ist ein Test.",
+    "status": "draft",
+    "created_by": "370678680206311427",
+    "created_at": "2026-03-18T19:24:27.746Z"
   }
 ]
