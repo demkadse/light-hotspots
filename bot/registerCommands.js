@@ -1,3 +1,5 @@
+console.log("SCRIPT STARTET");
+
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
 import dotenv from "dotenv";
 
