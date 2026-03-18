@@ -411,44 +411,6 @@ function renderQuickJumps() {
   });
 }
 
-function buildDayHeaderControls(track) {
-  const controls = document.createElement("div");
-  controls.className = "day-carousel-controls";
-
-  const prevButton = document.createElement("button");
-  prevButton.type = "button";
-  prevButton.className = "carousel-arrow";
-  prevButton.setAttribute("aria-label", "Vorherige Events");
-  prevButton.textContent = "<";
-
-  const nextButton = document.createElement("button");
-  nextButton.type = "button";
-  nextButton.className = "carousel-arrow";
-  nextButton.setAttribute("aria-label", "Naechste Events");
-  nextButton.textContent = ">";
-
-  prevButton.addEventListener("click", event => {
-    event.stopPropagation();
-    scrollCarousel(track, -1);
-  });
-
-  nextButton.addEventListener("click", event => {
-    event.stopPropagation();
-    scrollCarousel(track, 1);
-  });
-
-  track.addEventListener("scroll", () => {
-    updateCarouselButtons(track, prevButton, nextButton);
-  }, { passive: true });
-
-  requestAnimationFrame(() => {
-    updateCarouselButtons(track, prevButton, nextButton);
-  });
-
-  controls.append(prevButton, nextButton);
-  return controls;
-}
-
 function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   const slide = document.createElement("section");
   slide.className = "day-slide";
@@ -496,9 +458,6 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   count.className = "day-count";
   count.textContent = `${eventsForDay.length} Event${eventsForDay.length === 1 ? "" : "s"}`;
 
-  const headerNav = document.createElement("div");
-  headerNav.className = "day-header-nav";
-
   const inviteUrl = window.SITE_CONFIG?.discordInviteUrl;
   if (eventsForDay.length === 0 && inviteUrl) {
     const cta = document.createElement("a");
@@ -513,13 +472,10 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   }
 
   headerMeta.appendChild(count);
-  header.append(copy, headerMeta, headerNav);
+  header.append(copy, headerMeta);
   slide.appendChild(header);
 
-  const carousel = createCarousel(eventsForDay, { suppressControls: eventsForDay.length > 1 });
-  if (eventsForDay.length > 1 && carousel.track) {
-    headerNav.appendChild(buildDayHeaderControls(carousel.track));
-  }
+  const carousel = createCarousel(eventsForDay);
   if (carousel.childElementCount > 0 && eventsForDay.length > 0) {
     slide.appendChild(carousel);
   }
@@ -588,6 +544,10 @@ function bindNavigationControls() {
 
   document.addEventListener("wheel", event => {
     if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    if (event.target instanceof Element && event.target.closest(".carousel-track")) {
       return;
     }
 

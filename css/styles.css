@@ -452,7 +452,7 @@ min-height: 0;
 
 .day-header {
 display: grid;
-grid-template-columns: minmax(0, 1fr) auto auto;
+grid-template-columns: minmax(0, 1fr) auto;
 gap: 12px;
 align-items: center;
 padding: 14px 18px;
@@ -467,13 +467,6 @@ rgba(255, 255, 255, 0.03);
 display: flex;
 align-items: center;
 justify-content: flex-end;
-}
-
-.day-header-nav {
-display: flex;
-align-items: center;
-justify-content: flex-end;
-min-width: 90px;
 }
 
 .day-marker {
@@ -741,54 +734,11 @@ color: #ffe4be;
 }
 
 .carousel-hint {
-display: none;
+display: inline-flex;
 color: rgba(245, 241, 232, 0.62);
 font-size: 0.84rem;
 letter-spacing: 0.04em;
 padding: 10px 4px 2px;
-}
-
-.carousel-controls {
-position: absolute;
-right: 8px;
-bottom: 8px;
-z-index: 2;
-display: flex;
-gap: 10px;
-pointer-events: none;
-}
-
-.day-carousel-controls {
-display: inline-flex;
-align-items: center;
-gap: 10px;
-pointer-events: auto;
-}
-
-.carousel-arrow {
-display: inline-flex;
-align-items: center;
-justify-content: center;
-width: 40px;
-height: 40px;
-border-radius: 999px;
-border: 1px solid var(--line);
-background: rgba(255, 255, 255, 0.04);
-color: var(--text);
-cursor: pointer;
-transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
-pointer-events: auto;
-backdrop-filter: blur(12px);
-}
-
-.carousel-arrow:hover:not(:disabled) {
-transform: translateY(-1px);
-border-color: var(--line-strong);
-}
-
-.carousel-arrow:disabled {
-opacity: 0.35;
-cursor: default;
 }
 
 .info-card {
@@ -1082,8 +1032,7 @@ padding: 18px;
 grid-template-columns: 1fr;
 }
 
-.day-header-meta,
-.day-header-nav {
+.day-header-meta {
 justify-content: flex-start;
 }
 
@@ -1091,10 +1040,6 @@ justify-content: flex-start;
 width: min(320px, calc(100vw - 70px));
 min-width: min(320px, calc(100vw - 70px));
 height: 410px;
-}
-
-.carousel-controls {
-display: none;
 }
 
 .carousel-track {

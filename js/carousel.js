@@ -64,42 +64,32 @@ function updateCarouselButtons(track, prevButton, nextButton) {
   nextButton.disabled = track.scrollLeft >= maxScrollLeft - 8;
 }
 
-function buildCarouselControls(track, controlsClass = "carousel-controls") {
-  const controls = document.createElement("div");
-  controls.className = controlsClass;
+function bindCarouselWheel(track) {
+  track.addEventListener("wheel", event => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
 
-  const prevButton = document.createElement("button");
-  prevButton.type = "button";
-  prevButton.className = "carousel-arrow";
-  prevButton.setAttribute("aria-label", "Vorherige Events");
-  prevButton.textContent = "<";
+    const maxScrollLeft = Math.max(track.scrollWidth - track.clientWidth, 0);
+    if (maxScrollLeft <= 0) {
+      return;
+    }
 
-  const nextButton = document.createElement("button");
-  nextButton.type = "button";
-  nextButton.className = "carousel-arrow";
-  nextButton.setAttribute("aria-label", "Naechste Events");
-  nextButton.textContent = ">";
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ? event.deltaX
+      : event.deltaY;
 
-  prevButton.addEventListener("click", event => {
+    if (Math.abs(delta) < 4) {
+      return;
+    }
+
+    event.preventDefault();
     event.stopPropagation();
-    scrollCarousel(track, -1);
-  });
-
-  nextButton.addEventListener("click", event => {
-    event.stopPropagation();
-    scrollCarousel(track, 1);
-  });
-
-  track.addEventListener("scroll", () => {
-    updateCarouselButtons(track, prevButton, nextButton);
-  }, { passive: true });
-
-  requestAnimationFrame(() => {
-    updateCarouselButtons(track, prevButton, nextButton);
-  });
-
-  controls.append(prevButton, nextButton);
-  return controls;
+    track.scrollBy({
+      left: delta,
+      behavior: "auto"
+    });
+  }, { passive: false });
 }
 
 function buildCard(event) {
@@ -174,14 +164,12 @@ function buildCard(event) {
   return card;
 }
 
-function createCarousel(eventsForDay, options = {}) {
-  const { suppressControls = false } = options;
+function createCarousel(eventsForDay) {
   const shell = document.createElement("div");
   shell.className = "carousel-shell";
 
   const track = document.createElement("div");
   track.className = "carousel-track";
-  shell.track = track;
 
   if (didIndexLoadFail()) {
     shell.appendChild(track);
@@ -197,16 +185,13 @@ function createCarousel(eventsForDay, options = {}) {
     track.appendChild(buildCard(event));
   });
 
+  bindCarouselWheel(track);
+
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
-  hint.textContent = "Wische fuer weitere Events";
+  hint.textContent = "Scrolle oder wische fuer weitere Events";
 
-  if (suppressControls) {
-    shell.append(track, hint);
-  } else {
-    const controls = buildCarouselControls(track, "carousel-controls");
-    shell.append(track, controls, hint);
-  }
+  shell.append(track, hint);
 
   return shell;
 }
