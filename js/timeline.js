@@ -451,6 +451,9 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
 
   copy.append(title, subtitle);
 
+  const headerSide = document.createElement("div");
+  headerSide.className = "day-header-side";
+
   const count = document.createElement("div");
   count.className = "day-count";
   count.textContent = `${eventsForDay.length} Event${eventsForDay.length === 1 ? "" : "s"}`;
@@ -468,10 +471,11 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
     copy.appendChild(cta);
   }
 
-  header.append(copy, count);
+  headerSide.appendChild(count);
+  header.append(copy, headerSide);
   slide.appendChild(header);
 
-  const carousel = createCarousel(eventsForDay);
+  const carousel = createCarousel(eventsForDay, eventsForDay.length > 1 ? headerSide : null);
   if (carousel.childElementCount > 0 && eventsForDay.length > 0) {
     slide.appendChild(carousel);
   }

@@ -463,6 +463,14 @@ linear-gradient(135deg, rgba(243, 186, 108, 0.08), transparent 30%),
 rgba(255, 255, 255, 0.03);
 }
 
+.day-header-side {
+display: flex;
+align-items: center;
+justify-content: flex-end;
+gap: 10px;
+flex-wrap: wrap;
+}
+
 .day-marker {
 display: inline-flex;
 width: fit-content;
@@ -743,6 +751,15 @@ z-index: 2;
 display: flex;
 gap: 10px;
 pointer-events: none;
+}
+
+.carousel-controls-inline {
+position: static;
+right: auto;
+bottom: auto;
+z-index: auto;
+pointer-events: auto;
+padding: 0;
 }
 
 .carousel-arrow {
@@ -1060,6 +1077,10 @@ padding: 18px;
 
 .day-header {
 grid-template-columns: 1fr;
+}
+
+.day-header-side {
+justify-content: flex-start;
 }
 
 .event-card {
