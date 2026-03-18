@@ -1,10 +1,9 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 
-import { handleButton } from "./interactions/buttonHandler.js";
 import { handleModal } from "./interactions/modalHandler.js";
-import { handleSelect } from "./interactions/selectHandler.js";
-import { execute as setupExecute } from "./commands/setupEventPanel.js";
+import { handleButton } from "./interactions/buttonHandler.js";
+import { handleRejectModal } from "./interactions/rejectModalHandler.js";
 
 dotenv.config();
 
@@ -20,31 +19,22 @@ client.on("interactionCreate", async (interaction) => {
 
   try {
 
-    if (interaction.isChatInputCommand()) {
-      if (interaction.commandName === "setup-events") {
-        await setupExecute(interaction);
-      }
-    }
-
     if (interaction.isButton()) {
-      await handleButton(interaction);
-    }
-
-    if (interaction.isStringSelectMenu()) {
-      await handleSelect(interaction);
+      await handleButton(interaction, client);
     }
 
     if (interaction.isModalSubmit()) {
+      await handleRejectModal(interaction, client);
       await handleModal(interaction, client);
     }
 
-  } catch (error) {
+  } catch (err) {
 
-    console.error("Global Interaction Error:", error);
+    console.error(err);
 
     if (!interaction.replied) {
       await interaction.reply({
-        content: "❌ Unerwarteter Fehler",
+        content: "❌ Fehler",
         flags: 64
       });
     }

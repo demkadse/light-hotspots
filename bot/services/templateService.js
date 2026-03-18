@@ -7,158 +7,100 @@ const octokit = new Octokit({
 const OWNER = process.env.GITHUB_OWNER;
 const REPO = process.env.GITHUB_REPO;
 
-const TEMPLATE_PATH = "events/templates";
-const ARCHIVE_PATH = "events/templates/archive";
-
-// ---------- Helpers ----------
-
-function generateTemplateId(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
+const PATH = "events/templates";
 
 function encode(data) {
   return Buffer.from(JSON.stringify(data, null, 2)).toString("base64");
 }
 
-async function fileExists(path) {
-  try {
-    await octokit.repos.getContent({ owner: OWNER, repo: REPO, path });
-    return true;
-  } catch (err) {
-    if (err.status === 404) return false;
-    throw err;
-  }
-}
+export async function createOrUpdateTemplate(template, userId) {
 
-// ---------- Public ----------
+  const id = template.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
-export async function getTemplates() {
+  const path = `${PATH}/${id}.json`;
+
+  let sha = null;
 
   try {
-
-    const { data } = await octokit.repos.getContent({
+    const existing = await octokit.repos.getContent({
       owner: OWNER,
       repo: REPO,
-      path: TEMPLATE_PATH
+      path
     });
 
-    const templates = [];
-
-    for (const file of data) {
-
-      if (!file.name.endsWith(".json")) continue;
-
-      const content = await octokit.repos.getContent({
-        owner: OWNER,
-        repo: REPO,
-        path: file.path
-      });
-
-      const decoded = JSON.parse(
-        Buffer.from(content.data.content, "base64").toString()
-      );
-
-      templates.push(decoded);
-
-    }
-
-    return templates;
+    sha = existing.data.sha;
 
   } catch (err) {
-    return [];
+    if (err.status !== 404) throw err;
   }
 
+  const full = {
+    ...template,
+    id,
+    status: "pending",
+    rejection_reason: null,
+    created_by: userId,
+    updated_at: new Date().toISOString()
+  };
+
+  await octokit.repos.createOrUpdateFileContents({
+    owner: OWNER,
+    repo: REPO,
+    path,
+    message: `${sha ? "Update" : "Create"} template ${id}`,
+    content: encode(full),
+    ...(sha && { sha })
+  });
+
+  return full;
 }
 
-export async function getTemplateById(templateId) {
+export async function updateTemplateStatus(id, updates) {
 
-  const path = `${TEMPLATE_PATH}/${templateId}.json`;
+  const path = `${PATH}/${id}.json`;
 
-  const { data } = await octokit.repos.getContent({
+  const file = await octokit.repos.getContent({
+    owner: OWNER,
+    repo: REPO,
+    path
+  });
+
+  const data = JSON.parse(
+    Buffer.from(file.data.content, "base64").toString()
+  );
+
+  const updated = {
+    ...data,
+    ...updates,
+    updated_at: new Date().toISOString()
+  };
+
+  await octokit.repos.createOrUpdateFileContents({
+    owner: OWNER,
+    repo: REPO,
+    path,
+    message: `Update template status ${id}`,
+    content: encode(updated),
+    sha: file.data.sha
+  });
+
+  return updated;
+}
+
+export async function getTemplateById(id) {
+
+  const path = `${PATH}/${id}.json`;
+
+  const file = await octokit.repos.getContent({
     owner: OWNER,
     repo: REPO,
     path
   });
 
   return JSON.parse(
-    Buffer.from(data.content, "base64").toString()
+    Buffer.from(file.data.content, "base64").toString()
   );
-
-}
-
-export async function createOrUpdateTemplate(template, userId, createBackup = false) {
-
-  const id = generateTemplateId(template.title);
-  const path = `${TEMPLATE_PATH}/${id}.json`;
-
-  const exists = await fileExists(path);
-
-  if (exists) {
-
-    const current = await octokit.repos.getContent({
-      owner: OWNER,
-      repo: REPO,
-      path
-    });
-
-    const oldData = JSON.parse(
-      Buffer.from(current.data.content, "base64").toString()
-    );
-
-    // Backup erstellen wenn gewünscht
-    if (createBackup) {
-
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const archivePath = `${ARCHIVE_PATH}/${id}-${timestamp}.json`;
-
-      await octokit.repos.createOrUpdateFileContents({
-        owner: OWNER,
-        repo: REPO,
-        path: archivePath,
-        message: `Backup template ${id}`,
-        content: encode(oldData)
-      });
-
-    }
-
-    // Update
-    await octokit.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
-      path,
-      message: `Update template ${id}`,
-      content: encode({
-        ...template,
-        id,
-        updated_at: new Date().toISOString(),
-        updated_by: userId
-      }),
-      sha: current.data.sha
-    });
-
-    return id;
-
-  } else {
-
-    // Neu erstellen
-    await octokit.repos.createOrUpdateFileContents({
-      owner: OWNER,
-      repo: REPO,
-      path,
-      message: `Create template ${id}`,
-      content: encode({
-        ...template,
-        id,
-        created_at: new Date().toISOString(),
-        created_by: userId
-      })
-    });
-
-    return id;
-
-  }
-
 }

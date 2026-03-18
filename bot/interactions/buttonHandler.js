@@ -1,91 +1,50 @@
-import {
-  ActionRowBuilder,
-  StringSelectMenuBuilder
-} from "discord.js";
-
-import { getTemplates } from "../services/templateService.js";
+import { updateTemplateStatus, getTemplateById } from "../services/templateService.js";
+import { createEventFromTemplate } from "../services/eventService.js";
 import { CHANNELS } from "../config/channels.js";
 
-export async function handleButton(interaction) {
+export async function handleButton(interaction, client) {
 
-  if (interaction.customId !== "create_event") return;
+  if (interaction.customId.startsWith("approve_")) {
 
-  try {
+    const id = interaction.customId.replace("approve_", "");
 
-    // Sicherheitscheck: nur im Event-Channel erlaubt
-    if (CHANNELS.EVENT_CHANNEL && interaction.channelId !== CHANNELS.EVENT_CHANNEL) {
-      return await interaction.reply({
-        content: "❌ Dieser Button kann nur im Event-Channel genutzt werden.",
-        flags: 64
-      });
-    }
-
-    // Defer für bessere UX (verhindert Timeout)
-    await interaction.deferReply({ flags: 64 });
-
-    const templates = await getTemplates();
-
-    // Fallback wenn keine Templates existieren
-    if (!templates || templates.length === 0) {
-
-      const select = new StringSelectMenuBuilder()
-        .setCustomId("template_select")
-        .setPlaceholder("Template auswählen")
-        .addOptions([
-          {
-            label: "➕ Neues Template erstellen",
-            value: "new_template"
-          }
-        ]);
-
-      const row = new ActionRowBuilder().addComponents(select);
-
-      return await interaction.editReply({
-        content: "Es existieren noch keine Templates. Erstelle dein erstes:",
-        components: [row]
-      });
-    }
-
-    // Templates limitieren (Discord Limit: 25)
-    const options = templates.slice(0, 24).map(t => ({
-      label: t.title?.substring(0, 100) || "Unbenannt",
-      value: t.id
-    }));
-
-    // Option für neues Template
-    options.unshift({
-      label: "➕ Neues Template erstellen",
-      value: "new_template"
+    const template = await updateTemplateStatus(id, {
+      status: "approved",
+      rejection_reason: null
     });
 
-    const select = new StringSelectMenuBuilder()
-      .setCustomId("template_select")
-      .setPlaceholder("Template auswählen")
-      .addOptions(options);
+    const event = await createEventFromTemplate(template);
 
-    const row = new ActionRowBuilder().addComponents(select);
+    // DM User
+    try {
+      const user = await client.users.fetch(template.created_by);
+      await user.send(`🎉 Dein Event "${event.title}" wurde freigegeben!`);
+    } catch {}
 
-    await interaction.editReply({
-      content: "Wähle ein Template oder erstelle ein neues:",
-      components: [row]
+    return interaction.reply({
+      content: "✅ Event erstellt und freigegeben.",
+      flags: 64
     });
+  }
 
-  } catch (error) {
+  if (interaction.customId.startsWith("reject_")) {
 
-    console.error("Button Handler Fehler:", error);
+    const id = interaction.customId.replace("reject_", "");
 
-    if (interaction.deferred) {
-      await interaction.editReply({
-        content: "❌ Fehler beim Laden der Templates.",
-        components: []
-      });
-    } else {
-      await interaction.reply({
-        content: "❌ Fehler beim Laden der Templates.",
-        flags: 64
-      });
-    }
-
+    await interaction.showModal({
+      custom_id: `reject_modal_${id}`,
+      title: "Ablehnungsgrund",
+      components: [{
+        type: 1,
+        components: [{
+          type: 4,
+          custom_id: "reason",
+          label: "Grund",
+          style: 2,
+          required: true
+        }]
+      }]
+    });
   }
 
 }

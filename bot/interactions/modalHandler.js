@@ -1,77 +1,68 @@
-import { createEvent } from "../services/eventService.js";
 import { createOrUpdateTemplate } from "../services/templateService.js";
-import { logEvent, logToDiscord } from "../services/logService.js";
 import { CHANNELS } from "../config/channels.js";
 
 export async function handleModal(interaction, client) {
 
   if (!interaction.customId.startsWith("event_modal_")) return;
 
-  const templateId = interaction.customId.replace("event_modal_", "");
-
   try {
 
-    const title = interaction.fields.getTextInputValue("title").trim();
-    const venue = interaction.fields.getTextInputValue("venue").trim();
-    const date = interaction.fields.getTextInputValue("date").trim();
-    const time = interaction.fields.getTextInputValue("time").trim();
-    const description = interaction.fields.getTextInputValue("description").trim();
+    const title = interaction.fields.getTextInputValue("title");
+    const venue = interaction.fields.getTextInputValue("venue");
+    const date = interaction.fields.getTextInputValue("date");
+    const time = interaction.fields.getTextInputValue("time");
+    const description = interaction.fields.getTextInputValue("description");
+    const image = interaction.fields.getTextInputValue("image") || null;
 
-    // TEMPLATE erstellen/aktualisieren
-    const finalTemplateId = await createOrUpdateTemplate(
-      {
-        title,
-        venue,
-        description
-      },
-      interaction.user.id,
-      true // immer Backup bei Update
-    );
-
-    // EVENT erstellen
-    const created = await createEvent({
-      template_id: finalTemplateId,
+    const template = await createOrUpdateTemplate({
       title,
       venue,
       date,
-      start_time: time,
+      time,
       description,
-      created_by: interaction.user.id,
-      created_at: new Date().toISOString()
-    });
+      image
+    }, interaction.user.id);
 
-    await logEvent({
-      type: "event_created",
-      event_id: created.id,
-      template_id: finalTemplateId,
-      user_id: interaction.user.id,
-      timestamp: new Date().toISOString(),
-      data: created
-    });
+    // DM an User (Submit)
+    try {
+      await interaction.user.send(
+        "📨 Dein Event wurde eingereicht!\n\nBitte warte, bis ein Administrator es geprüft hat."
+      );
+    } catch {}
 
-    await logToDiscord(
-      client,
-      CHANNELS.EVENT_LOG,
-      `📅 Event erstellt: **${created.title}** (${created.date} ${created.start_time})`
-    );
+    // Approval Channel
+    const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+
+    await channel.send({
+      content: `📦 Neues Template von <@${interaction.user.id}>`,
+      components: [{
+        type: 1,
+        components: [
+          {
+            type: 2,
+            label: "Annehmen",
+            style: 3,
+            custom_id: `approve_${template.id}`
+          },
+          {
+            type: 2,
+            label: "Ablehnen",
+            style: 4,
+            custom_id: `reject_${template.id}`
+          }
+        ]
+      }]
+    });
 
     await interaction.reply({
-      content: "✅ Event + Template verarbeitet!",
+      content: "✅ Eingereicht und wartet auf Prüfung.",
       flags: 64
     });
 
-  } catch (error) {
-
-    console.error(error);
-
-    await logToDiscord(
-      client,
-      CHANNELS.ERROR_LOG,
-      `❌ ${error.message}`
-    );
+  } catch (err) {
 
     await interaction.reply({
-      content: `❌ ${error.message}`,
+      content: "❌ Fehler beim Einreichen.",
       flags: 64
     });
 
