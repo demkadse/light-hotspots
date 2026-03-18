@@ -26,32 +26,37 @@ export async function handleSelect(interaction) {
   const title = new TextInputBuilder()
     .setCustomId("title")
     .setLabel("Event Name")
+    .setPlaceholder("z.B. Badehausabend im Ruby Lotus")
     .setStyle(TextInputStyle.Short)
     .setValue(template?.title || "")
     .setRequired(true);
 
   const venue = new TextInputBuilder()
     .setCustomId("venue")
-    .setLabel("Venue")
+    .setLabel("Location / Venue")
+    .setPlaceholder("z.B. Ruby Lotus (Name der Lokalität, NICHT Eventname)")
     .setStyle(TextInputStyle.Short)
     .setValue(template?.venue || "")
     .setRequired(true);
 
   const date = new TextInputBuilder()
     .setCustomId("date")
-    .setLabel("Datum (YYYY-MM-DD)")
+    .setLabel("Datum")
+    .setPlaceholder("YYYY-MM-DD (z.B. 2026-03-20)")
     .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
   const time = new TextInputBuilder()
     .setCustomId("time")
-    .setLabel("Startzeit (HH:MM)")
+    .setLabel("Startzeit")
+    .setPlaceholder("HH:MM (z.B. 20:00)")
     .setStyle(TextInputStyle.Short)
     .setRequired(true);
 
   const description = new TextInputBuilder()
     .setCustomId("description")
     .setLabel("Beschreibung")
+    .setPlaceholder("Kurze Beschreibung des Events, Atmosphäre, Besonderheiten...")
     .setStyle(TextInputStyle.Paragraph)
     .setValue(template?.description || "")
     .setRequired(true);
