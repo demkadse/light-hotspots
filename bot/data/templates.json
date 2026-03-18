@@ -7,10 +7,23 @@
     "time": "20:00",
     "description": "Test!",
     "image": "https://i.ibb.co/ycVLvpS2/amf65m.jpghttps://i.ibb.co/ycVLvpS2/amf65m.jpg",
-    "status": "approved",
+    "status": "rejected",
     "created_by": "840120737527627796",
     "created_at": "2026-03-18T10:26:24.943Z",
-    "updated_at": "2026-03-18T11:11:53.298Z",
-    "rejection_reason": "Kein Inhalt dargestellt"
+    "updated_at": "2026-03-18T11:34:58.738Z",
+    "rejection_reason": "dada"
+  },
+  {
+    "id": "baf5f762-4105-4e4b-a37b-376d6ee06fb6",
+    "title": "Testevent im Testhof",
+    "venue": "Testhof",
+    "date": "20.03.2026",
+    "time": "21:00",
+    "description": "Dingeldong",
+    "image": null,
+    "status": "approved",
+    "created_by": "840120737527627796",
+    "created_at": "2026-03-18T11:35:34.437Z",
+    "updated_at": "2026-03-18T11:36:00.928Z"
   }
 ]
