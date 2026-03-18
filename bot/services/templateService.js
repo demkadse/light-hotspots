@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 
 const DATA_PATH = path.resolve("bot/data/templates.json");
 
@@ -11,7 +11,6 @@ async function readTemplates() {
     const data = await fs.readFile(DATA_PATH, "utf-8");
     return JSON.parse(data);
   } catch (err) {
-    // Datei existiert noch nicht → neu erstellen
     if (err.code === "ENOENT") {
       await writeTemplates([]);
       return [];
@@ -26,7 +25,7 @@ async function writeTemplates(data) {
 
 // ---------- Core Functions ----------
 
-// 🟢 CREATE / UPDATE (Draft + Image Update)
+// 🟢 CREATE / UPDATE
 export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const templates = await readTemplates();
 
@@ -48,9 +47,9 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     return templates[index];
   }
 
-  // 🔹 CREATE (Draft)
+  // 🔹 CREATE
   const newTemplate = {
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     title: data.title,
     venue: data.venue,
     date: data.date,
@@ -93,9 +92,9 @@ export async function submitTemplateForApproval(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
-  // 🔥 Validierung vor Submit
   const template = templates[index];
 
+  // 🔥 Validierung
   if (!template.title || !template.date || !template.time) {
     throw new Error("Template unvollständig");
   }
@@ -145,7 +144,7 @@ export async function rejectTemplate(templateId, reason = null) {
   return templates[index];
 }
 
-// 🟢 GET ALL (optional)
+// 🟢 GET ALL
 export async function getAllTemplates() {
   return await readTemplates();
 }
