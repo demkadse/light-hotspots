@@ -10,14 +10,33 @@ export async function handleRejectModal(interaction, client) {
     await rejectTemplate(templateId, reason);
 
     await interaction.reply({
-      content: "❌ Event abgelehnt.",
+      content: "❌ Event wurde abgelehnt.",
       ephemeral: true
     });
 
     try {
       const user = await client.users.fetch(template.created_by);
-      await user.send(`❌ Dein Event wurde abgelehnt:\n${reason}`);
-    } catch {}
+
+      await user.send(
+`❌ **Dein Event wurde abgelehnt**
+
+Leider konnte dein Event in der aktuellen Form nicht freigegeben werden.
+
+**Event:**
+📌 ${template.title}
+
+**Grund der Ablehnung:**
+${reason}
+
+👉 Bitte erstelle dein Event erneut und korrigiere die oben genannten Punkte.  
+Du kannst dein bestehendes Template als Grundlage nutzen.
+
+Wenn du unsicher bist, melde dich gern – wir helfen dir weiter!`
+      );
+
+    } catch (err) {
+      console.warn("DM fehlgeschlagen:", err.message);
+    }
 
   } catch (err) {
     console.error("Reject Error:", err);

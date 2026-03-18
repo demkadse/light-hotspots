@@ -4,10 +4,16 @@ import {
   TextInputStyle,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  EmbedBuilder
 } from "discord.js";
 
-import { submitTemplateForApproval } from "../services/templateService.js";
+import {
+  submitTemplateForApproval,
+  getTemplate,
+  approveTemplate
+} from "../services/templateService.js";
+
 import { CHANNELS } from "../config/channels.js";
 
 export async function handleButton(interaction, client) {
@@ -23,19 +29,20 @@ export async function handleButton(interaction, client) {
         .setTitle("Event erstellen");
 
       const fields = [
-        ["title", "Titel"],
-        ["venue", "Location / Venue"],
-        ["date", "Datum"],
-        ["time", "Uhrzeit"],
-        ["description", "Beschreibung", TextInputStyle.Paragraph]
+        ["title", "Titel", "z.B. Club Night"],
+        ["venue", "Location", "z.B. Limsa Lominsa"],
+        ["date", "Datum", "z.B. 20.03.2026"],
+        ["time", "Uhrzeit", "z.B. 20:00"],
+        ["description", "Beschreibung", "Kurze Beschreibung", TextInputStyle.Paragraph]
       ];
 
       modal.addComponents(
-        ...fields.map(([id, label, style = TextInputStyle.Short]) =>
+        ...fields.map(([id, label, placeholder, style = TextInputStyle.Short]) =>
           new ActionRowBuilder().addComponents(
             new TextInputBuilder()
               .setCustomId(id)
               .setLabel(label)
+              .setPlaceholder(placeholder)
               .setStyle(style)
               .setRequired(true)
           )
@@ -46,7 +53,7 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // SET IMAGE
+    // IMAGE
     if (id.startsWith("event:setImage:")) {
       const templateId = id.split(":")[2];
 
@@ -59,6 +66,7 @@ export async function handleButton(interaction, client) {
           new TextInputBuilder()
             .setCustomId("image")
             .setLabel("Bild URL (.jpg, .png, .gif)")
+            .setPlaceholder("https://...")
             .setStyle(TextInputStyle.Short)
             .setRequired(true)
         )
@@ -68,12 +76,28 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    // SUBMIT
+    // SUBMIT → mit Preview
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
 
       const template = await submitTemplateForApproval(templateId);
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+
+      const embed = new EmbedBuilder()
+        .setTitle(template.title)
+        .setDescription(template.description)
+        .addFields(
+          { name: "📍 Ort", value: template.venue, inline: true },
+          { name: "📅 Datum", value: template.date, inline: true },
+          { name: "⏰ Zeit", value: template.time, inline: true }
+        )
+        .setFooter({
+          text: `Erstellt von ${template.created_by}`
+        });
+
+      if (template.image) {
+        embed.setImage(template.image);
+      }
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -89,11 +113,12 @@ export async function handleButton(interaction, client) {
 
       await channel.send({
         content: `📦 Neues Event von <@${template.created_by}>`,
+        embeds: [embed],
         components: [row]
       });
 
       await interaction.reply({
-        content: "📨 Event eingereicht.",
+        content: "📨 Event wurde zur Prüfung gesendet.",
         ephemeral: true
       });
 
@@ -102,14 +127,39 @@ export async function handleButton(interaction, client) {
 
     // APPROVE
     if (id.startsWith("event:approve:")) {
+      const templateId = id.split(":")[2];
+
+      const template = await approveTemplate(templateId);
+
       await interaction.reply({
-        content: "✅ Event angenommen (noch ohne Veröffentlichung).",
+        content: "✅ Event angenommen.",
         ephemeral: true
       });
+
+      try {
+        const user = await client.users.fetch(template.created_by);
+
+        await user.send(
+`✅ **Dein Event wurde angenommen!**
+
+🎉 Dein Event wurde erfolgreich geprüft und freigegeben.
+
+**Details:**
+📌 ${template.title}  
+📍 ${template.venue}  
+📅 ${template.date} um ${template.time}
+
+Viel Erfolg bei deinem Event – wir wünschen dir viele Besucher! 🚀`
+        );
+
+      } catch (err) {
+        console.warn("DM fehlgeschlagen:", err.message);
+      }
+
       return;
     }
 
-    // REJECT → öffnet Modal
+    // REJECT → Modal
     if (id.startsWith("event:reject:")) {
       const templateId = id.split(":")[2];
 
@@ -121,7 +171,8 @@ export async function handleButton(interaction, client) {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("reason")
-            .setLabel("Grund")
+            .setLabel("Grund der Ablehnung")
+            .setPlaceholder("Was muss verbessert werden?")
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true)
         )
