@@ -1,0 +1,20 @@
+{
+  "id": "testevent-im-testhaus",
+  "title": "Testevent im Testhaus",
+  "type": "Testerei",
+  "venue": "Testhaus",
+  "host": "Testhost",
+  "venue_lead": "DIngeldong",
+  "date": "2026-03-18",
+  "start_time": "23:00",
+  "end_time": "23:00",
+  "image": "https://i.ibb.co/ycVLvpS2/amf65m.jpghttps://i.ibb.co/ycVLvpS2/amf65m.jpg",
+  "description": "Test!",
+  "discord_link": null,
+  "link": null,
+  "links": [],
+  "notes": null,
+  "created_by": "840120737527627796",
+  "created_at": "2026-03-18T21:14:02.078Z",
+  "file": "2026/03/testevent-im-testhaus-2026-03-18.json"
+}
