@@ -753,13 +753,11 @@ gap: 10px;
 pointer-events: none;
 }
 
-.carousel-controls-inline {
-position: static;
-right: auto;
-bottom: auto;
-z-index: auto;
+.day-carousel-controls {
+display: inline-flex;
+align-items: center;
+gap: 10px;
 pointer-events: auto;
-padding: 0;
 }
 
 .carousel-arrow {

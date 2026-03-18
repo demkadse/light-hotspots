@@ -64,9 +64,9 @@ function updateCarouselButtons(track, prevButton, nextButton) {
   nextButton.disabled = track.scrollLeft >= maxScrollLeft - 8;
 }
 
-function buildCarouselControls(track) {
+function buildCarouselControls(track, controlsClass = "carousel-controls") {
   const controls = document.createElement("div");
-  controls.className = "carousel-controls";
+  controls.className = controlsClass;
 
   const prevButton = document.createElement("button");
   prevButton.type = "button";
@@ -195,13 +195,15 @@ function createCarousel(eventsForDay, controlsHost = null) {
     track.appendChild(buildCard(event));
   });
 
-  const controls = buildCarouselControls(track);
+  const controls = buildCarouselControls(
+    track,
+    controlsHost ? "day-carousel-controls" : "carousel-controls"
+  );
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
   hint.textContent = "Wische fuer weitere Events";
 
   if (controlsHost) {
-    controls.classList.add("carousel-controls-inline");
     controlsHost.appendChild(controls);
     shell.append(track, hint);
   } else {
