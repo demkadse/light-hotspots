@@ -4,34 +4,35 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const commands = [
-new SlashCommandBuilder()
-.setName("testevent")
-.setDescription("Erstellt ein Test Event")
-.toJSON()
+  new SlashCommandBuilder()
+    .setName("setup-events")
+    .setDescription("Erstellt das Event Panel")
+    .toJSON()
 ];
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
-const CLIENT_ID = "1483031945825747034";
+// ⚠️ HIER DEINE APPLICATION ID EINTRAGEN
+const CLIENT_ID = "DEINE_APPLICATION_ID";
 
 async function register() {
 
-try {
+  try {
 
-console.log("Registriere Slash Commands...");
+    console.log("Registriere Slash Commands...");
 
-await rest.put(
-Routes.applicationCommands(CLIENT_ID),
-{ body: commands }
-);
+    await rest.put(
+      Routes.applicationCommands(CLIENT_ID),
+      { body: commands }
+    );
 
-console.log("Slash Commands registriert.");
+    console.log("Slash Commands registriert.");
 
-} catch (error) {
+  } catch (error) {
 
-console.error(error);
+    console.error("Fehler beim Registrieren:", error);
 
-}
+  }
 
 }
 
