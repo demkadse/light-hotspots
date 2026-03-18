@@ -1,66 +1,61 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { CONFIG } from "./config/config.js";
-import { createEvent } from "./services/eventService.js";
-import { validateEvent } from "./validators/eventValidator.js";
+import dotenv from "dotenv";
+
+import { handleButton } from "./interactions/buttonHandler.js";
+import { handleModal } from "./interactions/modalHandler.js";
+import { data as setupData, execute as setupExecute } from "./commands/setupEventPanel.js";
+
+dotenv.config();
 
 const client = new Client({
+  intents: [GatewayIntentBits.Guilds]
+});
 
-intents: [GatewayIntentBits.Guilds]
+client.once("clientReady", () => {
+  console.log(`Bot online: ${client.user.tag}`);
+});
+
+client.on("interactionCreate", async (interaction) => {
+
+  try {
+
+    // Slash Commands
+    if (interaction.isChatInputCommand()) {
+
+      if (interaction.commandName === "setup-events") {
+        await setupExecute(interaction);
+      }
+
+    }
+
+    // Button
+    if (interaction.isButton()) {
+      await handleButton(interaction);
+    }
+
+    // Modal
+    if (interaction.isModalSubmit()) {
+      await handleModal(interaction, client);
+    }
+
+  } catch (error) {
+
+    console.error("Interaction Fehler:", error);
+
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: "❌ Fehler bei der Verarbeitung.",
+        ephemeral: true
+      });
+    } else {
+      await interaction.reply({
+        content: "❌ Fehler bei der Verarbeitung.",
+        ephemeral: true
+      });
+    }
+
+  }
 
 });
 
-client.once("ready",()=>{
-
-console.log(`Bot online: ${client.user.tag}`);
-
-});
-
-client.on("interactionCreate", async interaction=>{
-
-if(!interaction.isChatInputCommand()) return;
-
-if(interaction.commandName === "testevent"){
-
-const event = {
-
-id:"test-event",
-
-title:"Test Event",
-
-type:"open-rp",
-
-venue:"Test Venue",
-
-host:"Test Host",
-
-date:"2026-03-20",
-
-start_time:"20:00",
-
-image:"https://placehold.co/600x400",
-
-description:"Test Event",
-
-links:[]
-
-};
-
-try{
-
-validateEvent(event);
-
-await createEvent(event);
-
-await interaction.reply("Event erstellt und ins Repo committed.");
-
-}catch(err){
-
-await interaction.reply("Fehler: "+err.message);
-
-}
-
-}
-
-});
-
-client.login(CONFIG.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN);
