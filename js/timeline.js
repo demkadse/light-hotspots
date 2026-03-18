@@ -1,5 +1,3 @@
-const MIN_VISIBLE_DAYS = 14;
-
 const state = {
   slideIndex: 0,
   days: [],
@@ -34,23 +32,25 @@ function normalizeDateKey(value) {
 function buildDays() {
   const today = startOfDay(new Date());
   const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
   const days = [];
 
-  let cursor = new Date(today);
-  while (cursor.getMonth() === currentMonth) {
+  const cursor = new Date(currentYear, currentMonth, 1);
+  while (
+    cursor.getMonth() === currentMonth &&
+    cursor.getFullYear() === currentYear
+  ) {
     days.push(new Date(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
 
-  const remainingCurrentMonthDays = days.length;
-  if (remainingCurrentMonthDays < 7 || days.length < MIN_VISIBLE_DAYS) {
-    while (days.length < MIN_VISIBLE_DAYS) {
-      days.push(new Date(cursor));
-      cursor.setDate(cursor.getDate() + 1);
-    }
-  }
-
   state.days = days;
+}
+
+function getTodayIndex() {
+  const todayKey = getDayKey(startOfDay(new Date()));
+  const index = state.days.findIndex(day => getDayKey(day) === todayKey);
+  return index >= 0 ? index : 0;
 }
 
 function getDayKey(date) {
@@ -63,8 +63,11 @@ function isWeekend(date) {
 }
 
 function getDayMarker(day, index) {
-  if (index === 0) return "Heute";
-  if (index === 1) return "Morgen";
+  const todayIndex = getTodayIndex();
+
+  if (index === todayIndex) return "Heute";
+  if (index === todayIndex + 1) return "Morgen";
+  if (index === todayIndex - 1) return "Gestern";
   if (index > 0 && day.getDate() === 1) return "Neuer Monat";
   if (isWeekend(day)) return "Wochenende";
   return "Diese Woche";
@@ -348,25 +351,25 @@ function bindFilterControls() {
       document.querySelectorAll(".scope-button").forEach(item => item.classList.remove("active"));
       button.classList.add("active");
       state.filters.scope = button.dataset.scope || "all";
-      state.slideIndex = 0;
+      state.slideIndex = getTodayIndex();
       void renderTimeline();
     });
   });
 
   document.getElementById("type-filter").addEventListener("change", event => {
     state.filters.type = event.target.value;
-    state.slideIndex = 0;
+    state.slideIndex = getTodayIndex();
     void renderTimeline();
   });
 
   document.getElementById("venue-filter").addEventListener("change", event => {
     state.filters.venue = event.target.value;
-    state.slideIndex = 0;
+    state.slideIndex = getTodayIndex();
     void renderTimeline();
   });
 
   document.getElementById("jump-today").addEventListener("click", () => {
-    state.slideIndex = 0;
+    state.slideIndex = getTodayIndex();
     updateSlide();
   });
 }
@@ -435,6 +438,7 @@ function setupHeroCta() {
 async function initTimeline() {
   setupHeroCta();
   buildDays();
+  state.slideIndex = getTodayIndex();
   state.allEvents = await getAllIndexedEvents();
   populateFilterOptions();
   bindFilterControls();
