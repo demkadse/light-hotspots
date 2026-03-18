@@ -507,39 +507,35 @@ padding-bottom: 22px;
 
 .carousel-shell {
 position: relative;
-display: grid;
-grid-template-rows: minmax(0, 1fr) auto;
-gap: 12px;
 min-height: 0;
+height: 100%;
 }
 
 .carousel-track {
 display: flex;
 gap: 22px;
 width: 100%;
+height: 100%;
 overflow-x: auto;
 overflow-y: hidden;
-padding: 4px 2px 14px;
-scrollbar-width: thin;
+padding: 4px 72px 4px 2px;
+scrollbar-width: none;
+-ms-overflow-style: none;
 align-items: stretch;
 scroll-snap-type: x proximity;
 touch-action: pan-x;
 }
 
 .carousel-track::-webkit-scrollbar {
-height: 10px;
-}
-
-.carousel-track::-webkit-scrollbar-thumb {
-background: rgba(255, 255, 255, 0.16);
-border-radius: 999px;
+display: none;
 }
 
 .event-card {
 position: relative;
-width: min(360px, calc(100vw - 110px));
-min-width: min(360px, calc(100vw - 110px));
-height: 430px;
+width: min(340px, calc(100vw - 160px));
+min-width: min(340px, calc(100vw - 160px));
+height: 100%;
+max-height: 100%;
 display: flex;
 flex-direction: column;
 border-radius: 28px;
@@ -698,14 +694,17 @@ display: none;
 color: rgba(245, 241, 232, 0.62);
 font-size: 0.84rem;
 letter-spacing: 0.04em;
-padding: 0 4px 2px;
+padding: 10px 4px 2px;
 }
 
 .carousel-controls {
+position: absolute;
+right: 8px;
+bottom: 8px;
+z-index: 2;
 display: flex;
-justify-content: flex-end;
 gap: 10px;
-padding: 0 4px 2px;
+pointer-events: none;
 }
 
 .carousel-arrow {
@@ -720,6 +719,8 @@ background: rgba(255, 255, 255, 0.04);
 color: var(--text);
 cursor: pointer;
 transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+pointer-events: auto;
+backdrop-filter: blur(12px);
 }
 
 .carousel-arrow:hover:not(:disabled) {
@@ -1019,6 +1020,11 @@ height: 410px;
 
 .carousel-controls {
 display: none;
+}
+
+.carousel-track {
+padding-right: 2px;
+scrollbar-width: none;
 }
 
 .timeline-controls {
