@@ -30,5 +30,13 @@
     "actor_id": "370678680206311427",
     "target_id": "dacc104c-570d-49ba-a912-cd4d448a3c26",
     "summary": "Testabend in der Herberge"
+  },
+  {
+    "id": "8ba1bdb1-e587-4de9-a898-3a6bf35e8055",
+    "created_at": "2026-03-18T19:24:29.109Z",
+    "action": "template.created",
+    "actor_id": "370678680206311427",
+    "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
+    "summary": "Testabend in der Herberge"
   }
 ]
