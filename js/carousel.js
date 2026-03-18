@@ -5,13 +5,15 @@ track.className="carousel-track";
 
 const index = await getIndex();
 
-const target = formatDate(date);
+const target = formatDate(date).trim();
 
 let foundEvents = false;
 
 for(const entry of index){
 
-if(normalizeDate(entry.date) === target){
+const entryDate = normalizeDate(entry.date).trim();
+
+if(entryDate === target){
 
 foundEvents = true;
 
@@ -52,9 +54,9 @@ card.innerHTML = `
 
 <h3>${event.title || "Unbenannt"}</h3>
 
-<p>${event.time || "Keine Zeit angegeben"}</p>
+<p>${event.start_time || event.time || "Keine Zeit"}</p>
 
-<p>${event.created_by || "Unbekannt"}</p>
+<p>${event.host || event.created_by || "Unbekannt"}</p>
 
 </div>
 
@@ -102,10 +104,11 @@ String(date.getDate()).padStart(2,"0");
 
 }
 
-// 🔥 NEU: Backend-Format anpassen
 function normalizeDate(d){
 
 if(!d) return "";
+
+d = d.trim();
 
 if(d.includes(".")){
 const [day, month, year] = d.split(".");
