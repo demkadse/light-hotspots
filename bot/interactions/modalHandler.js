@@ -1,10 +1,13 @@
 import { createEvent } from "../services/eventService.js";
+import { createOrUpdateTemplate } from "../services/templateService.js";
 import { logEvent, logToDiscord } from "../services/logService.js";
 import { CHANNELS } from "../config/channels.js";
 
 export async function handleModal(interaction, client) {
 
   if (!interaction.customId.startsWith("event_modal_")) return;
+
+  const templateId = interaction.customId.replace("event_modal_", "");
 
   try {
 
@@ -14,7 +17,20 @@ export async function handleModal(interaction, client) {
     const time = interaction.fields.getTextInputValue("time").trim();
     const description = interaction.fields.getTextInputValue("description").trim();
 
-    const event = {
+    // TEMPLATE erstellen/aktualisieren
+    const finalTemplateId = await createOrUpdateTemplate(
+      {
+        title,
+        venue,
+        description
+      },
+      interaction.user.id,
+      true // immer Backup bei Update
+    );
+
+    // EVENT erstellen
+    const created = await createEvent({
+      template_id: finalTemplateId,
       title,
       venue,
       date,
@@ -22,13 +38,12 @@ export async function handleModal(interaction, client) {
       description,
       created_by: interaction.user.id,
       created_at: new Date().toISOString()
-    };
-
-    const created = await createEvent(event);
+    });
 
     await logEvent({
       type: "event_created",
       event_id: created.id,
+      template_id: finalTemplateId,
       user_id: interaction.user.id,
       timestamp: new Date().toISOString(),
       data: created
@@ -41,18 +56,18 @@ export async function handleModal(interaction, client) {
     );
 
     await interaction.reply({
-      content: "✅ Event erfolgreich erstellt!",
+      content: "✅ Event + Template verarbeitet!",
       flags: 64
     });
 
   } catch (error) {
 
-    console.error("Modal Fehler:", error);
+    console.error(error);
 
     await logToDiscord(
       client,
       CHANNELS.ERROR_LOG,
-      `❌ Fehler: ${error.message}`
+      `❌ ${error.message}`
     );
 
     await interaction.reply({
