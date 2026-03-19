@@ -174,5 +174,13 @@
     "actor_id": "1475816435145113631",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
     "summary": "Club Katzenfutter"
+  },
+  {
+    "id": "37dad81c-5ad6-4160-8e05-87824e3ad207",
+    "created_at": "2026-03-19T07:33:02.882Z",
+    "action": "template.submitted",
+    "actor_id": "1475816435145113631",
+    "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
+    "summary": "Club Katzenfutter"
   }
 ]
