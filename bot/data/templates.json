@@ -51,5 +51,16 @@
     "link": null,
     "notes": "Test Test",
     "rejection_reason": null
+  },
+  {
+    "id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
+    "title": "Club Katzenfutter",
+    "venue": "Dorf des Nebels",
+    "date": "19.03.2026",
+    "time": "20:00",
+    "description": "Katzenfutter!",
+    "status": "draft",
+    "created_by": "1475816435145113631",
+    "created_at": "2026-03-19T07:31:32.795Z"
   }
 ]
