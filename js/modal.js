@@ -130,7 +130,7 @@ function openModal(event) {
     cta.href = event.discord_link;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Event-Discord oeffnen";
+    cta.textContent = "Event-Discord öffnen";
     linkRow.appendChild(cta);
   }
 
@@ -144,7 +144,7 @@ function openModal(event) {
     cta.href = externalLink;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Externe Infos oeffnen";
+    cta.textContent = "Externe Infos öffnen";
     linkRow.appendChild(cta);
   }
 

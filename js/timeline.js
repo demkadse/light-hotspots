@@ -74,19 +74,19 @@ function getDayMarker(day, index) {
 
 function getDaySubtitle(eventsForDay) {
   if (eventsForDay.length === 0) {
-    return "Noch keine sichtbaren Events fuer diesen Tag.";
+    return "Noch keine sichtbaren Events für diesen Tag.";
   }
 
   if (eventsForDay.length === 1) {
-    return "Ein sichtbares Event fuer diesen Tag.";
+    return "Ein sichtbares Event für diesen Tag.";
   }
 
-  return `${eventsForDay.length} sichtbare Events fuer diesen Tag.`;
+  return `${eventsForDay.length} sichtbare Events für diesen Tag.`;
 }
 
 function getMonthTransitionLabel(day, index) {
   if (index === 0) {
-    return `Monatsuebersicht fuer ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
+    return `Monatsübersicht für ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
   }
 
   const previousDay = state.days[index - 1];
@@ -217,7 +217,7 @@ function restoreState() {
     const storedRaw = localStorage.getItem(STORAGE_KEY);
     stored = storedRaw ? JSON.parse(storedRaw) : null;
   } catch (error) {
-    console.warn("Gespeicherter Timeline-State ist ungueltig und wird verworfen.", error);
+    console.warn("Gespeicherter Timeline-State ist ungültig und wird verworfen.", error);
 
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -280,7 +280,7 @@ function updateFeaturedEvent(activeDayEvents) {
   state.featuredEvent = featured;
 
   if (!featured) {
-    title.textContent = "Noch kein Event ausgewaehlt";
+    title.textContent = "Noch kein Event ausgewählt";
     copy.textContent = "Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.";
     button.hidden = true;
     return;

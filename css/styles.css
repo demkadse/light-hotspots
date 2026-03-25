@@ -34,7 +34,8 @@ background:
 radial-gradient(circle at top left, rgba(243, 186, 108, 0.16), transparent 26%),
 radial-gradient(circle at top right, rgba(94, 155, 202, 0.12), transparent 24%),
 linear-gradient(180deg, var(--bg-3), var(--bg-2) 28%, var(--bg-1) 100%);
-overflow: hidden;
+overflow-x: hidden;
+overflow-y: auto;
 }
 
 body::before {
@@ -63,10 +64,10 @@ font: inherit;
 position: relative;
 z-index: 1;
 padding: 18px 20px 20px;
-height: 100vh;
+min-height: 100vh;
 display: flex;
 flex-direction: column;
-overflow: hidden;
+overflow: visible;
 }
 
 .hero {
@@ -247,12 +248,12 @@ margin-top: 12px;
 .layout {
 display: grid;
 grid-template-columns: 1fr;
-grid-template-rows: auto minmax(0, 1fr);
+grid-template-rows: auto auto;
 gap: 12px;
 width: 100%;
 max-width: 1460px;
 margin: 0 auto;
-flex: 1;
+flex: 1 0 auto;
 min-height: 0;
 }
 
@@ -413,7 +414,7 @@ display: grid;
 grid-template-columns: 56px minmax(0, 1fr);
 gap: 14px;
 align-items: stretch;
-height: 100%;
+height: clamp(520px, 66vh, 840px);
 min-height: 0;
 }
 
@@ -572,17 +573,13 @@ padding-bottom: 22px;
 
 .carousel-shell {
 position: relative;
-display: grid;
-grid-template-columns: 52px minmax(0, 1fr) 52px;
-grid-template-rows: minmax(0, 1fr) auto;
-column-gap: 10px;
+display: block;
+padding-inline: 52px;
 min-height: 0;
 height: 100%;
 }
 
 .carousel-track {
-grid-column: 2;
-grid-row: 1;
 display: flex;
 gap: 22px;
 width: 100%;
@@ -603,8 +600,8 @@ display: none;
 
 .event-card {
 position: relative;
-width: min(352px, calc(100vw - 220px));
-min-width: min(352px, calc(100vw - 220px));
+width: clamp(280px, 24vw, 344px);
+min-width: clamp(280px, 24vw, 344px);
 height: 100%;
 max-height: 100%;
 display: flex;
@@ -767,9 +764,7 @@ color: #ffe4be;
 }
 
 .carousel-hint {
-display: inline-flex;
-grid-column: 2;
-grid-row: 2;
+display: none;
 color: rgba(245, 241, 232, 0.62);
 font-size: 0.84rem;
 letter-spacing: 0.04em;
@@ -777,18 +772,17 @@ padding: 10px 4px 2px;
 }
 
 .carousel-nav {
-grid-column: 1 / 4;
-grid-row: 1;
-display: grid;
-grid-template-columns: 52px minmax(0, 1fr) 52px;
+position: absolute;
+inset: 0;
+display: block;
 pointer-events: none;
-align-items: center;
 }
 
 .carousel-nav-button {
 pointer-events: auto;
-align-self: center;
-justify-self: center;
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
 display: inline-flex;
 align-items: center;
 justify-content: center;
@@ -813,15 +807,15 @@ transform: translateY(-2px);
 }
 
 .carousel-nav-button-prev {
-grid-column: 1;
+left: 0;
 }
 
 .carousel-nav-button-next {
-grid-column: 3;
+right: 0;
 }
 
 .carousel-nav-button:hover:not(:disabled) {
-transform: translateY(-1px);
+transform: translateY(calc(-50% - 1px));
 border-color: rgba(243, 186, 108, 0.34);
 background:
 linear-gradient(180deg, rgba(243, 186, 108, 0.14), rgba(255, 255, 255, 0.03)),
@@ -1105,14 +1099,8 @@ grid-template-columns: 1fr;
 }
 
 @media (max-width: 768px) {
-body {
-overflow: auto;
-}
-
 .site-shell {
 padding: 16px;
-height: auto;
-overflow: visible;
 }
 
 .hero-copy,
@@ -1132,16 +1120,32 @@ padding: 24px;
 grid-template-columns: 1fr;
 }
 
+.hero h1 {
+font-size: clamp(2rem, 12vw, 3.1rem);
+}
+
+.hero-actions {
+flex-direction: column;
+align-items: stretch;
+}
+
+.hero-button {
+width: 100%;
+}
+
 .toolbar {
 grid-template-columns: 1fr;
 grid-template-areas:
 "scope"
 "filters"
 "status";
+padding: 16px;
 }
 
-.carousel-hint {
-display: inline-flex;
+.scope-switch,
+.quick-jumps,
+.type-chip-row {
+gap: 8px;
 }
 
 .timeline-stage {
@@ -1167,36 +1171,54 @@ height: auto;
 .day-slide {
 height: auto;
 min-height: auto;
-padding: 18px;
+padding: 16px;
 }
 
 .day-header {
 grid-template-columns: 1fr;
+padding: 14px 16px;
 }
 
 .day-header-meta {
 justify-content: flex-start;
 }
 
-.event-card {
-width: min(320px, calc(100vw - 70px));
-min-width: min(320px, calc(100vw - 70px));
-height: 410px;
-}
-
 .carousel-shell {
-grid-template-columns: 1fr;
-grid-template-rows: minmax(0, 1fr) auto;
+padding-inline: 0;
+height: auto;
 }
 
 .carousel-track {
-grid-column: 1;
-padding-right: 2px;
-scrollbar-width: none;
+flex-direction: column;
+gap: 14px;
+height: auto;
+overflow: visible;
+padding: 0;
+scroll-snap-type: none;
 }
 
 .carousel-nav {
 display: none;
+}
+
+.carousel-hint {
+display: none;
+}
+
+.event-card {
+width: 100%;
+min-width: 0;
+height: auto;
+max-height: none;
+}
+
+.event-media {
+height: 180px;
+min-height: 180px;
+}
+
+.event-summary {
+-webkit-line-clamp: 3;
 }
 
 .modal-window {
