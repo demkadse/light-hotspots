@@ -1,11 +1,11 @@
 [
   {
     "id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
-    "title": "Badehaus Meerjungfrau",
-    "venue": "Twintania - KK 21/35",
+    "title": "Meerjungfrau",
+    "venue": "KK 21/35",
     "date": "27.03.2026",
     "time": "20:00",
-    "description": "Die Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.\n\nLink zu unseren feinen Discord-Server. https://discord.gg/RqEdSu8hdD",
+    "description": "Die Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.",
     "status": "draft",
     "category": "event",
     "recurrence_rule": null,
@@ -16,6 +16,6 @@
     "host_display_name": null,
     "venue_lead": null,
     "server": "Twintania",
-    "updated_at": "2026-03-26T20:58:07.173Z"
+    "updated_at": "2026-03-26T21:01:36.804Z"
   }
 ]
