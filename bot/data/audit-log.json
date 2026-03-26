@@ -253,5 +253,12 @@
     "action": "calendar_feed.forced",
     "summary": "Fenster 2026-03-26 bis 2026-04-01 | Nachrichten 1",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "55249375-a3c0-42d0-baeb-0b0a26d50421",
+    "created_at": "2026-03-26T14:45:38.092Z",
+    "action": "calendar_feed.forced",
+    "summary": "Fenster 2026-03-26 bis 2026-04-01 | Nachrichten 1",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
