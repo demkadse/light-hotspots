@@ -152,21 +152,6 @@ function buildFeedEventTitle(event) {
   return event.status === "cancelled" ? `${event.title} (ABGESAGT)` : event.title;
 }
 
-function getFeedAccent(event) {
-  if (event.status === "cancelled") {
-    return "Rot";
-  }
-
-  const type = (event.type || event.event_type || "").toLowerCase();
-
-  if (type.includes("taverne")) return "Gold";
-  if (type.includes("markt")) return "Kupfer";
-  if (type.includes("club")) return "Magenta";
-  if (type.includes("open")) return "Blau";
-  if (type.includes("salon")) return "Rosa";
-  return "Blau";
-}
-
 function formatFeedTime(event) {
   if (event.start_time && event.end_time) {
     return `${event.start_time}-${event.end_time}`;
@@ -308,33 +293,44 @@ function clampText(value, maxLength) {
 
 function buildCompactWeekLines(groups) {
   return groups.flatMap(group => {
-    const lines = [`**${group.label}**`];
+    const lines = [`__**${group.label}**__`];
 
     for (const event of group.events) {
-      lines.push([
-        `[${getFeedAccent(event)}]`,
-        `\`${formatFeedTime(event)}\``,
+      const eventLine = [
+        `> \`${formatFeedTime(event)}\``,
         `**${buildFeedEventTitle(event)}**`,
-        event.venue ? `in ${event.venue}` : null
-      ].filter(Boolean).join(" "));
+        event.venue ? `- *${event.venue}*` : null
+      ].filter(Boolean).join(" ");
+
+      lines.push(eventLine);
     }
 
     return lines;
   });
 }
 
-function buildEventFacts(event, groupLabel) {
+function buildEventSummaryLine(event, groupLabel) {
   return [
-    `**Tag:** ${groupLabel}`,
-    `**Zeit:** ${formatFeedTime(event)}`,
-    event.type || event.event_type ? `**Typ:** ${event.type || event.event_type}` : null,
-    event.venue ? `**Venue:** ${event.venue}` : null,
-    event.server ? `**Server:** ${event.server}` : null,
-    event.host ? `**Veranstalter:** ${event.host}` : null,
-    event.venue_lead ? `**Venue-Leitung:** ${event.venue_lead}` : null,
-    event.status === "cancelled" ? "**Status:** Abgesagt" : null,
-    event.notes ? `**Hinweise:** ${event.notes}` : null
-  ].filter(Boolean).join("\n");
+    `**${groupLabel}**`,
+    `\`${formatFeedTime(event)}\``,
+    event.status === "cancelled" ? "`Abgesagt`" : null
+  ].filter(Boolean).join("  •  ");
+}
+
+function buildPrimaryInfo(event) {
+  return [
+    event.type || event.event_type ? `**Typ**\n${event.type || event.event_type}` : null,
+    event.venue ? `**Venue**\n${event.venue}` : null,
+    event.server ? `**Server**\n${event.server}` : null
+  ].filter(Boolean);
+}
+
+function buildSecondaryInfo(event) {
+  return [
+    event.host ? `**Veranstalter**\n${event.host}` : null,
+    event.venue_lead ? `**Venue-Leitung**\n${event.venue_lead}` : null,
+    event.notes ? `**Hinweise**\n${event.notes}` : null
+  ].filter(Boolean);
 }
 
 function createDiscordMessages({ summary, groups, startDate, endDate }) {
@@ -352,17 +348,12 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
     .setColor(0xf3ba6c)
     .setTitle(title)
     .setURL(FEED_URL)
-    .setDescription(summary.intro)
     .setFooter({ text: "Light Hotspots Kalender" });
 
   if (groups.length === 0) {
     return [{
       embeds: [
         baseEmbed
-          .addFields({
-            name: "Zeitraum",
-            value: `${startLabel} bis ${endLabel}`
-          })
           .addFields({
             name: "Diese Woche",
             value: "Aktuell sind keine Events geplant."
@@ -394,18 +385,7 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
     overviewChunks.push(currentChunk.join("\n"));
   }
 
-  const overviewEmbed = baseEmbed
-    .addFields({
-      name: "Zeitraum",
-      value: `${startLabel} bis ${endLabel}`,
-      inline: false
-    })
-    .addFields({
-      name: "Uebersicht",
-      value: `${summary.title}\n${groups.length} Tag${groups.length === 1 ? "" : "e"} mit geplanten Eintr\u00e4gen.`,
-      inline: false
-    })
-    .setTimestamp(new Date());
+  const overviewEmbed = baseEmbed.setTimestamp(new Date());
 
   overviewChunks.forEach((chunk, index) => {
     overviewEmbed.addFields({
@@ -417,22 +397,37 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
 
   const eventEmbeds = groups.flatMap(group =>
     group.events.map(event => {
+      const descriptionParts = [
+        buildEventSummaryLine(event, group.label),
+        "",
+        event.description || "Keine Beschreibung vorhanden."
+      ];
+
       const embed = new EmbedBuilder()
         .setColor(event.status === "cancelled" ? 0xc75c5c : 0x5ea8d6)
         .setTitle(buildFeedEventTitle(event))
         .setURL(buildEventUrl(event))
-        .setDescription(clampText(event.description || "Keine Beschreibung vorhanden.", 4096))
+        .setDescription(clampText(descriptionParts.join("\n"), 4096))
         .setImage(getEventImageUrl(event))
         .setFooter({ text: `Light Hotspots Kalender | ${group.label}` });
 
-      const facts = clampText(buildEventFacts(event, group.label), 1024);
-      if (facts) {
+      const primaryInfo = buildPrimaryInfo(event);
+      primaryInfo.forEach((value, index) => {
         embed.addFields({
-          name: "Infos",
-          value: facts,
-          inline: false
+          name: index === 0 ? "Details" : "\u200b",
+          value: clampText(value, 1024),
+          inline: true
         });
-      }
+      });
+
+      const secondaryInfo = buildSecondaryInfo(event);
+      secondaryInfo.forEach((value, index) => {
+        embed.addFields({
+          name: index === 0 && primaryInfo.length === 0 ? "Details" : "\u200b",
+          value: clampText(value, 1024),
+          inline: index < 2
+        });
+      });
 
       const links = [
         event.discord_link ? `[Discord](${event.discord_link})` : null,
@@ -447,7 +442,7 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
 
       if (links) {
         embed.addFields({
-          name: "Links",
+          name: "Weiterfuehrende Links",
           value: clampText(links, 1024),
           inline: false
         });
