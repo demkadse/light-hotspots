@@ -8,14 +8,14 @@
     "description": "Das ist ein Test! So funktioniert das alles hier!",
     "image": "https://i.ibb.co/ycVLvpS2/amf65m.jpghttps://i.ibb.co/ycVLvpS2/amf65m.jpg",
     "status": "draft",
-    "created_by": "840120737527627796",
     "created_at": "2026-03-18T10:26:24.943Z",
     "updated_at": "2026-03-26T09:43:23.678Z",
     "rejection_reason": null,
     "end_time": "23:00",
     "event_type": "Testerei",
     "host_display_name": "Testhost",
-    "venue_lead": "DIngeldong"
+    "venue_lead": "DIngeldong",
+    "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "baf5f762-4105-4e4b-a37b-376d6ee06fb6",
@@ -26,10 +26,10 @@
     "description": "Dingeldong",
     "image": null,
     "status": "unpublished",
-    "created_by": "840120737527627796",
     "created_at": "2026-03-18T11:35:34.437Z",
     "updated_at": "2026-03-18T16:04:00.604Z",
-    "rejection_reason": null
+    "rejection_reason": null,
+    "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "eb670536-773c-42d6-b41e-67968651e1b3",
@@ -39,7 +39,6 @@
     "time": "21:00",
     "description": "Dies ist ein Test.",
     "status": "unpublished",
-    "created_by": "370678680206311427",
     "created_at": "2026-03-18T19:24:27.746Z",
     "end_time": "23:00",
     "event_type": "Zum rastenden Mhigiten",
@@ -50,7 +49,8 @@
     "discord_link": null,
     "link": null,
     "notes": "Test Test",
-    "rejection_reason": null
+    "rejection_reason": null,
+    "created_by_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
@@ -60,7 +60,6 @@
     "time": "20:00",
     "description": "Katzenfutter!",
     "status": "unpublished",
-    "created_by": "1475816435145113631",
     "created_at": "2026-03-19T07:31:32.795Z",
     "end_time": "23:00",
     "event_type": "Club",
@@ -71,7 +70,8 @@
     "discord_link": null,
     "link": null,
     "notes": "18+",
-    "rejection_reason": null
+    "rejection_reason": null,
+    "created_by_hash": "03751a3963cc633bf3091e79d55a5c5c9671f529ef0041552365dbb02fcdd916"
   },
   {
     "id": "7fd3fcb8-824c-4269-bce8-9558a81eb411",
@@ -81,8 +81,8 @@
     "time": "20:00",
     "description": "Das Event-Beispiel dient zur Demonstration. Hier wäre eine ausführlichere Beschreibung zum Event angezeigt.",
     "status": "draft",
-    "created_by": "840120737527627796",
     "created_at": "2026-03-26T09:45:16.964Z",
-    "updated_at": "2026-03-26T09:56:39.006Z"
+    "updated_at": "2026-03-26T09:56:39.006Z",
+    "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]

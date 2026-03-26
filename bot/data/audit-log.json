@@ -3,200 +3,200 @@
     "id": "ad3b8718-10d8-44a8-af7e-8e83558ab6ee",
     "created_at": "2026-03-18T16:04:03.292Z",
     "action": "template.unpublished",
-    "actor_id": "840120737527627796",
     "target_id": "baf5f762-4105-4e4b-a37b-376d6ee06fb6",
-    "summary": "Testevent im Testhof"
+    "summary": "Testevent im Testhof",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "fdacc0de-9853-4c7a-a328-ba3a146d9e52",
     "created_at": "2026-03-18T19:15:16.021Z",
     "action": "template.created",
-    "actor_id": "370678680206311427",
     "target_id": "dacc104c-570d-49ba-a912-cd4d448a3c26",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "ac52c057-2008-40a6-84d2-c21ae106ba3d",
     "created_at": "2026-03-18T19:15:29.105Z",
     "action": "template.created",
-    "actor_id": "370678680206311427",
     "target_id": "d96dbaf7-61a2-498a-8f72-da4e1cfa38da",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "718d86e9-c509-4ce7-8001-45f38dbadc8f",
     "created_at": "2026-03-18T19:16:23.024Z",
     "action": "template.updated",
-    "actor_id": "370678680206311427",
     "target_id": "dacc104c-570d-49ba-a912-cd4d448a3c26",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "8ba1bdb1-e587-4de9-a898-3a6bf35e8055",
     "created_at": "2026-03-18T19:24:29.109Z",
     "action": "template.created",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "9a649712-ab58-4631-a738-cab96ee73a72",
     "created_at": "2026-03-18T19:25:03.766Z",
     "action": "template.details_updated",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "1fbbc94f-0d9d-4280-8a0a-13fa6deabd01",
     "created_at": "2026-03-18T19:25:23.416Z",
     "action": "template.extras_updated",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "2d9db474-d232-44d5-a0d5-bf4c87dbdd14",
     "created_at": "2026-03-18T19:25:33.577Z",
     "action": "template.submitted",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "0db18c2e-5aaa-4337-b7bd-d4b3dd17f445",
     "created_at": "2026-03-18T19:26:16.729Z",
     "action": "template.approved",
-    "actor_id": "840120737527627796",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "f255519c-43e7-47a3-bbd5-0c4e5c05f6c7",
     "created_at": "2026-03-18T19:39:06.329Z",
     "action": "template.updated",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "13809557-b191-4ec0-b4f2-0c4646925003",
     "created_at": "2026-03-18T19:40:09.666Z",
     "action": "template.details_updated",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "08e2f771-ede1-4737-af18-047bd2c73acc",
     "created_at": "2026-03-18T19:40:17.743Z",
     "action": "template.extras_updated",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "be5c3001-89b9-4821-83f8-17412ae17ef3",
     "created_at": "2026-03-18T19:40:24.245Z",
     "action": "template.submitted",
-    "actor_id": "370678680206311427",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
   },
   {
     "id": "2497a327-6446-4cca-8e6e-abe3b627f76d",
     "created_at": "2026-03-18T19:42:15.206Z",
     "action": "template.approved",
-    "actor_id": "840120737527627796",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "e9bcdb10-e797-4afb-ab3c-6bb4214044ea",
     "created_at": "2026-03-18T20:11:01.841Z",
     "action": "template.unpublished",
-    "actor_id": "840120737527627796",
     "target_id": "eb670536-773c-42d6-b41e-67968651e1b3",
-    "summary": "Testabend in der Herberge"
+    "summary": "Testabend in der Herberge",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "6b4fe5f3-01fe-4ca4-9998-6424848f07ea",
     "created_at": "2026-03-18T21:12:43.013Z",
     "action": "template.updated",
-    "actor_id": "840120737527627796",
     "target_id": "b318ff89-018b-48f6-8ab0-e73f7a25c409",
-    "summary": "Testevent im Testhaus"
+    "summary": "Testevent im Testhaus",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "0c14531a-ee10-4263-9d64-26ed804bcddc",
     "created_at": "2026-03-18T21:13:48.785Z",
     "action": "template.details_updated",
-    "actor_id": "840120737527627796",
     "target_id": "b318ff89-018b-48f6-8ab0-e73f7a25c409",
-    "summary": "Testevent im Testhaus"
+    "summary": "Testevent im Testhaus",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "741415b9-f479-4c12-a8af-ff438949f272",
     "created_at": "2026-03-18T21:13:56.329Z",
     "action": "template.submitted",
-    "actor_id": "840120737527627796",
     "target_id": "b318ff89-018b-48f6-8ab0-e73f7a25c409",
-    "summary": "Testevent im Testhaus"
+    "summary": "Testevent im Testhaus",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "42bf6b5a-ac61-47f8-834b-a4869ba7e980",
     "created_at": "2026-03-18T21:14:05.294Z",
     "action": "template.approved",
-    "actor_id": "840120737527627796",
     "target_id": "b318ff89-018b-48f6-8ab0-e73f7a25c409",
-    "summary": "Testevent im Testhaus"
+    "summary": "Testevent im Testhaus",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "37f9b3bd-c01d-4c20-b8a1-8f791ed87267",
     "created_at": "2026-03-19T07:31:35.532Z",
     "action": "template.created",
-    "actor_id": "1475816435145113631",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "03751a3963cc633bf3091e79d55a5c5c9671f529ef0041552365dbb02fcdd916"
   },
   {
     "id": "ba8adc22-a134-49f4-baa9-cf4af3cf3867",
     "created_at": "2026-03-19T07:32:25.168Z",
     "action": "template.details_updated",
-    "actor_id": "1475816435145113631",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "03751a3963cc633bf3091e79d55a5c5c9671f529ef0041552365dbb02fcdd916"
   },
   {
     "id": "c77dbd8b-11a6-4d2c-ab01-62316d8b66f1",
     "created_at": "2026-03-19T07:32:44.756Z",
     "action": "template.extras_updated",
-    "actor_id": "1475816435145113631",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "03751a3963cc633bf3091e79d55a5c5c9671f529ef0041552365dbb02fcdd916"
   },
   {
     "id": "37dad81c-5ad6-4160-8e05-87824e3ad207",
     "created_at": "2026-03-19T07:33:02.882Z",
     "action": "template.submitted",
-    "actor_id": "1475816435145113631",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "03751a3963cc633bf3091e79d55a5c5c9671f529ef0041552365dbb02fcdd916"
   },
   {
     "id": "0fa67e87-9038-447b-aeb9-1c728a9f574a",
     "created_at": "2026-03-19T07:33:28.299Z",
     "action": "template.approved",
-    "actor_id": "840120737527627796",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   },
   {
     "id": "8a8b3217-9d99-4175-b101-62386c795e00",
     "created_at": "2026-03-19T07:36:34.368Z",
     "action": "template.unpublished",
-    "actor_id": "840120737527627796",
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
-    "summary": "Club Katzenfutter"
+    "summary": "Club Katzenfutter",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
