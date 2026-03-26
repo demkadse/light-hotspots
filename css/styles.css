@@ -670,7 +670,8 @@ padding: 4px 2px;
 scrollbar-width: none;
 -ms-overflow-style: none;
 align-items: stretch;
-scroll-snap-type: x proximity;
+scroll-snap-type: x mandatory;
+scroll-padding-inline: 2px;
 touch-action: pan-x;
 }
 

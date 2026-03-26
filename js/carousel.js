@@ -54,27 +54,73 @@ function appendMetaItem(parent, label, value) {
 }
 
 function scrollCarousel(track, direction) {
-  const firstCard = track.querySelector(".event-card");
-  const step = firstCard
-    ? firstCard.getBoundingClientRect().width + 22
-    : track.clientWidth * 0.8;
+  const cards = [...track.querySelectorAll(".event-card")];
+  if (cards.length === 0) {
+    return;
+  }
 
-  track.scrollBy({
-    left: direction * step,
+  const closestIndex = getClosestCardIndex(track, cards);
+  const targetIndex = Math.max(0, Math.min(cards.length - 1, closestIndex + direction));
+  const targetCard = cards[targetIndex];
+
+  track.scrollTo({
+    left: targetCard.offsetLeft,
     behavior: "smooth"
   });
 }
 
 function updateCarouselButtons(track, prevButton, nextButton) {
-  const maxScrollLeft = Math.max(track.scrollWidth - track.clientWidth, 0);
+  const cards = [...track.querySelectorAll(".event-card")];
+  if (cards.length === 0) {
+    prevButton.disabled = true;
+    nextButton.disabled = true;
+    return;
+  }
 
-  prevButton.disabled = track.scrollLeft <= 8;
-  nextButton.disabled = track.scrollLeft >= maxScrollLeft - 8;
+  const closestIndex = getClosestCardIndex(track, cards);
+  prevButton.disabled = closestIndex <= 0;
+  nextButton.disabled = closestIndex >= cards.length - 1;
+}
+
+function getClosestCardIndex(track, cards) {
+  const currentLeft = track.scrollLeft;
+  let closestIndex = 0;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  cards.forEach((card, index) => {
+    const distance = Math.abs(card.offsetLeft - currentLeft);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = index;
+    }
+  });
+
+  return closestIndex;
+}
+
+function snapToClosestCard(track) {
+  const cards = [...track.querySelectorAll(".event-card")];
+  if (cards.length === 0) {
+    return;
+  }
+
+  const closestCard = cards[getClosestCardIndex(track, cards)];
+  const delta = Math.abs(track.scrollLeft - closestCard.offsetLeft);
+
+  if (delta < 4) {
+    return;
+  }
+
+  track.scrollTo({
+    left: closestCard.offsetLeft,
+    behavior: "smooth"
+  });
 }
 
 function buildCarouselNav(track) {
   const controls = document.createElement("div");
   controls.className = "carousel-nav";
+  let snapTimer = null;
 
   const prevButton = document.createElement("button");
   prevButton.type = "button";
@@ -100,6 +146,15 @@ function buildCarouselNav(track) {
 
   track.addEventListener("scroll", () => {
     updateCarouselButtons(track, prevButton, nextButton);
+
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => {
+      snapToClosestCard(track);
+    }, 120);
   }, { passive: true });
 
   requestAnimationFrame(() => {
