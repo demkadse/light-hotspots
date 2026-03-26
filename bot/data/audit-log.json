@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "99c600b8-e135-4bdd-adbf-b43cdc793e7b",
+    "created_at": "2026-03-26T20:57:27.273Z",
+    "action": "template.created",
+    "target_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
+    "summary": "Badehaus Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  }
+]
