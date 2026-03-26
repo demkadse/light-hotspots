@@ -2,11 +2,11 @@ function formatHostName(event) {
   const host = event.host || event.host_display_name || event.created_by || "";
 
   if (!host) {
-    return "Unbekannter Host";
+    return "Unbekannter Veranstalter";
   }
 
   if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Host des ${event.venue}` : "Discord-Host";
+    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
   }
 
   return host;
@@ -14,6 +14,14 @@ function formatHostName(event) {
 
 function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
+}
+
+function formatCategoryLabel(event) {
+  return window.getEventCategoryLabel?.(event) || "Event";
+}
+
+function isCancelled(event) {
+  return event.status === "cancelled";
 }
 
 function formatTimeRange(event) {
@@ -77,7 +85,7 @@ function buildCarouselNav(track) {
   const nextButton = document.createElement("button");
   nextButton.type = "button";
   nextButton.className = "carousel-nav-button carousel-nav-button-next";
-  nextButton.setAttribute("aria-label", "Naechste Events");
+  nextButton.setAttribute("aria-label", "Nächste Events");
   nextButton.innerHTML = "<span aria-hidden=\"true\">&rsaquo;</span>";
 
   prevButton.addEventListener("click", event => {
@@ -105,6 +113,9 @@ function buildCarouselNav(track) {
 function buildCard(event) {
   const card = document.createElement("article");
   card.className = "event-card";
+  if (isCancelled(event)) {
+    card.classList.add("event-card-cancelled");
+  }
 
   const media = document.createElement("div");
   media.className = "event-media";
@@ -113,7 +124,7 @@ function buildCard(event) {
     const image = document.createElement("img");
     image.className = "event-image";
     image.src = event.image;
-    image.alt = event.title || "Eventbild";
+    image.alt = event.title || "Veranstaltungsbild";
     image.loading = "lazy";
     media.appendChild(image);
   } else {
@@ -136,20 +147,36 @@ function buildCard(event) {
   const headerRow = document.createElement("div");
   headerRow.className = "event-card-header";
 
+  const chipRow = document.createElement("div");
+  chipRow.className = "event-card-chip-row";
+
   const chip = document.createElement("span");
   chip.className = "event-chip";
-  chip.textContent = formatTypeLabel(event);
+  chip.textContent = formatCategoryLabel(event);
+
+  const typeChip = document.createElement("span");
+  typeChip.className = "event-time-chip";
+  typeChip.textContent = formatTypeLabel(event);
 
   const timeChip = document.createElement("span");
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  headerRow.append(chip, timeChip);
+  chipRow.append(chip, typeChip, timeChip);
+  headerRow.appendChild(chipRow);
+
+  if (isCancelled(event)) {
+    const statusChip = document.createElement("span");
+    statusChip.className = "event-status-chip event-status-chip-cancelled";
+    statusChip.textContent = "Abgesagt";
+    headerRow.appendChild(statusChip);
+  }
 
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
-  appendMetaItem(meta, "Host", formatHostName(event));
+  appendMetaItem(meta, "Server", event.server);
+  appendMetaItem(meta, "Veranstalter", formatHostName(event));
 
   if (event.venue_lead) {
     appendMetaItem(meta, "Leitung", event.venue_lead);
@@ -157,14 +184,16 @@ function buildCard(event) {
 
   const description = document.createElement("p");
   description.className = "event-summary";
-  description.textContent = event.description || "Keine Beschreibung vorhanden.";
+  description.textContent = isCancelled(event)
+    ? `Dieses Event wurde abgesagt.${event.description ? ` ${event.description}` : ""}`
+    : (event.description || "Keine Beschreibung vorhanden.");
 
   info.append(headerRow, meta, description);
 
   if (event.discord_link || event.link) {
     const linkHint = document.createElement("span");
     linkHint.className = "event-link-hint";
-    linkHint.textContent = event.discord_link ? "Mit Event-Discord" : "Mit externem Link";
+    linkHint.textContent = event.discord_link ? "Mit Discord-Server" : "Mit externem Link";
     info.appendChild(linkHint);
   }
 
@@ -199,7 +228,7 @@ function createCarousel(eventsForDay) {
 
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
-  hint.textContent = "Wische fuer weitere Events";
+  hint.textContent = "Wische für weitere Events";
 
   shell.append(nav, track, hint);
 

@@ -12,7 +12,7 @@ dotenv.config({ path: path.join(BOT_ROOT, ".env") });
 
 function validateDiscordId(name, value) {
   if (!value || !/^\d{17,20}$/.test(value)) {
-    throw new Error(`Ungueltige oder fehlende Discord-ID fuer ${name}`);
+    throw new Error(`Ungültige oder fehlende Discord-ID für ${name}`);
   }
 }
 
@@ -26,6 +26,7 @@ export const CONFIG = {
   DISCORD_TOKEN: process.env.DISCORD_TOKEN,
   CLIENT_ID: process.env.CLIENT_ID,
   GUILD_ID: process.env.GUILD_ID,
+  USER_ID_HASH_SECRET: process.env.USER_ID_HASH_SECRET,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   GITHUB_OWNER: process.env.GITHUB_OWNER,
   GITHUB_REPO: process.env.GITHUB_REPO,
@@ -37,6 +38,7 @@ export function validateConfig() {
   validateRequired("DISCORD_TOKEN", CONFIG.DISCORD_TOKEN);
   validateRequired("CLIENT_ID", CONFIG.CLIENT_ID);
   validateRequired("GUILD_ID", CONFIG.GUILD_ID);
+  validateRequired("USER_ID_HASH_SECRET", CONFIG.USER_ID_HASH_SECRET);
 
   validateDiscordId("CLIENT_ID", CONFIG.CLIENT_ID);
   validateDiscordId("GUILD_ID", CONFIG.GUILD_ID);

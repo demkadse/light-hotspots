@@ -15,13 +15,13 @@ const commands = [
     .addChannelOption(option =>
       option
         .setName("channel")
-        .setDescription("Channel fuer das Cleanup-Panel")
+        .setDescription("Channel für das Cleanup-Panel")
         .addChannelTypes(ChannelType.GuildText)
         .setRequired(false)
     ),
   new SlashCommandBuilder()
     .setName("resync-events")
-    .setDescription("Prueft oder repariert events/data/index.json")
+    .setDescription("Prüft oder repariert events/data/index.json")
     .addBooleanOption(option =>
       option
         .setName("fix")
@@ -30,7 +30,10 @@ const commands = [
     ),
   new SlashCommandBuilder()
     .setName("unpublish-event")
-    .setDescription("Waehlt ein veroeffentlichtes Event zum Zuruecknehmen aus")
+    .setDescription("Wählt ein veröffentlichtes Event zum Zurücknehmen aus"),
+  new SlashCommandBuilder()
+    .setName("force-calendar-feed")
+    .setDescription("Postet die Wochenvorschau sofort in den Kalenderfeed")
 ];
 
 const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);

@@ -10,7 +10,7 @@ import { recordAuditEntry } from "../services/auditService.js";
 
 export const data = new SlashCommandBuilder()
   .setName("resync-events")
-  .setDescription("Prueft oder repariert events/data/index.json")
+  .setDescription("Prüft oder repariert events/data/index.json")
   .addBooleanOption(option =>
     option
       .setName("fix")

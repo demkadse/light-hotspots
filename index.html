@@ -3,50 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FFXIV RP Events</title>
+<title>FFXIV RP-Eventkalender</title>
 <meta name="description" content="Rollenspiel-Events in FFXIV, kuratiert für den aktuellen Monat.">
+<link rel="alternate" type="application/rss+xml" title="Light Hotspots Wochenfeed" href="/feeds/weekly-summary.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <div class="site-shell">
 <header class="hero">
 <div class="hero-copy">
-<p class="eyebrow">Light Data Center - Roleplay Calendar</p>
-<h1>FFXIV RP Events</h1>
+<p class="eyebrow">Light-Datenzentrum - RP-Eventkalender</p>
+<h1>FFXIV RP-Eventkalender</h1>
 <p class="hero-text">
 Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Community-Events.
 </p>
 <div class="hero-actions">
-<a id="discord-cta" class="hero-button hero-button-primary" href="#" target="_blank" rel="noreferrer noopener">Nichts los? Erstell selbst ein Event im Discord</a>
-<button id="jump-today" class="hero-button hero-button-secondary" type="button">Zu heute</button>
+<a id="discord-cta" class="hero-button hero-button-primary" href="#" target="_blank" rel="noreferrer noopener">Erstell dein eigenes Event über Discord!</a>
 </div>
 </div>
 <div class="hero-panel">
 <div class="hero-panel-section">
 <span class="panel-label">Aktueller Fokus</span>
 <strong id="active-day-label">Heute</strong>
-<p id="active-day-subtitle">Die aktuellen Termine der Woche.</p>
+<p id="active-day-subtitle">Die aktuellen Events des Tages.</p>
 </div>
 <div id="featured-event-card" class="featured-event">
 <span class="panel-label">Heute im Fokus</span>
-<strong id="featured-event-title">Noch kein Event ausgewählt</strong>
-<p id="featured-event-copy">Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.</p>
+<strong id="featured-event-title" hidden></strong>
+<p id="featured-event-copy">Für den Rest dieser Woche steht aktuell kein Event im Fokus.</p>
 <div class="featured-event-actions">
 <button id="featured-event-open" class="hero-button hero-button-secondary" type="button" hidden>Details ansehen</button>
-</div>
-</div>
-<div class="hero-stats">
-<div class="hero-stat">
-<span class="panel-label">Heute</span>
-<strong id="today-count">0</strong>
-</div>
-<div class="hero-stat">
-<span class="panel-label">Sichtbar</span>
-<strong id="week-count">0</strong>
-</div>
-<div class="hero-stat">
-<span class="panel-label">Typen</span>
-<strong id="type-count">0</strong>
 </div>
 </div>
 </div>
@@ -76,6 +65,15 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <option value="">Alle Venues</option>
 </select>
 </div>
+
+<div class="filter-group filter-group-wide">
+<label class="filter-label">Anzeige</label>
+<div class="filter-toggle-row" role="group" aria-label="Events und Venues einblenden">
+<button id="category-toggle-event" class="filter-toggle active" type="button" aria-pressed="true">Events</button>
+<button id="category-toggle-venue" class="filter-toggle active" type="button" aria-pressed="true">Venues</button>
+</div>
+<button id="event-venue-info-open" class="toolbar-help-button" type="button">Unterschiede Events/Venues</button>
+</div>
 </div>
 
 <div class="toolbar-status">
@@ -85,7 +83,7 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 </div>
 </section>
 
-<section id="timeline-container" class="timeline-stage" aria-label="Event-Timeline">
+<section id="timeline-container" class="timeline-stage" aria-label="Event-Übersicht">
 <div class="timeline-rail" aria-hidden="true">
 <div id="timeline-dots" class="timeline-dots"></div>
 </div>
@@ -95,8 +93,9 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 </section>
 </main>
 
-<footer class="site-footer" aria-label="Rechtlicher Hinweis">
+<footer class="site-footer" aria-label="Seitenhinweise">
 <button id="legal-notice-open" class="site-footer-link" type="button">Rechtshinweis</button>
+<button id="transparency-open" class="site-footer-link" type="button">Transparenz</button>
 </footer>
 </div>
 
@@ -114,20 +113,60 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <button id="legal-notice-close" type="button" aria-label="Rechtshinweis schließen">x</button>
 <h2 id="legal-modal-title">Rechtshinweis</h2>
 <p class="legal-copy">
-Diese Plattform ist in ihrer konkreten gestalterischen und technischen Ausgestaltung urheberrechtlich geschuetzt. Das betrifft insbesondere Design, Struktur, Seitenaufbau, Auswahl und Anordnung der Inhalte sowie die konkrete technische Umsetzung, soweit darin eine persoenliche geistige Schoepfung im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__2.html" target="_blank" rel="noreferrer noopener">§ 2 UrhG</a> beziehungsweise ein schutzfaehiges Sammel- oder Datenbankwerk im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__4.html" target="_blank" rel="noreferrer noopener">§ 4 UrhG</a> liegt.
+Diese Plattform ist in ihrer konkreten gestalterischen und technischen Ausarbeitung urheberrechtlich geschützt. Das betrifft insbesondere Design, Struktur, Seitenaufbau, Auswahl und Anordnung der Inhalte sowie die konkrete technische Umsetzung, soweit darin eine persönliche geistige Schöpfung im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__2.html" target="_blank" rel="noreferrer noopener">§ 2 UrhG</a> oder ein schutzfähiges Sammel- oder Datenbankwerk im Sinne von <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__4.html" target="_blank" rel="noreferrer noopener">§ 4 UrhG</a> liegt.
 </p>
 <p class="legal-copy">
-Urheber ist grundsaetzlich der Schoepfer des jeweiligen Werkes nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__7.html" target="_blank" rel="noreferrer noopener">§ 7 UrhG</a>. Dem Urheber stehen die gesetzlichen Schutz- und Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__11.html" target="_blank" rel="noreferrer noopener">§ 11 UrhG</a> und die ausschliesslichen Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__15.html" target="_blank" rel="noreferrer noopener">§ 15 UrhG</a> zu. Eine Vervielfaeltigung, Uebernahme, Nachahmung, Weiterverbreitung oder sonstige Nutzung der konkreten Plattformgestaltung und -umsetzung ganz oder in Teilen ohne vorherige ausdrueckliche Zustimmung ist daher nicht gestattet.
+Urheber ist grundsätzlich der Schöpfer des jeweiligen Werkes nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__7.html" target="_blank" rel="noreferrer noopener">§ 7 UrhG</a>. Dem Urheber stehen die gesetzlichen Schutz- und Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__11.html" target="_blank" rel="noreferrer noopener">§ 11 UrhG</a> sowie die ausschließlichen Verwertungsrechte nach <a class="legal-link" href="https://www.gesetze-im-internet.de/urhg/__15.html" target="_blank" rel="noreferrer noopener">§ 15 UrhG</a> zu. Die konkrete Plattformgestaltung und technische Umsetzung dürfen deshalb weder ganz noch in wesentlichen Teilen ohne vorherige ausdrückliche Zustimmung übernommen, nachgebildet, vervielfältigt oder weiterverbreitet werden.
 </p>
 <p class="legal-copy legal-copy-muted">
-Davon unberuehrt bleiben die Inhalte, Angaben und Beschreibungen, die Nutzer ueber den Discord-Bot fuer ihre eigenen Events einreichen. Diese verbleiben, soweit sie ihrerseits urheberrechtlich geschuetzt sind, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern. Geschuetzt ist also nicht die abstrakte Idee eines Eventkalenders, sondern die konkrete Ausgestaltung dieser Plattform und die jeweils eingereichten individuellen Inhalte.
+Unberührt bleiben die Inhalte, Angaben und Beschreibungen, die Nutzer über den Discord-Bot für ihre eigenen Events einreichen. Diese verbleiben, soweit sie ihrerseits urheberrechtlich geschützt sind, bei den jeweiligen Veranstaltern beziehungsweise Urheberinnen und Urhebern. Geschützt ist also nicht die abstrakte Idee eines Eventkalenders, sondern die konkrete Ausgestaltung dieser Plattform und die jeweils eingereichten individuellen Inhalte.
+</p>
+</div>
+</div>
+
+<div id="transparency-modal" aria-hidden="true">
+<div class="modal-overlay transparency-modal-overlay"></div>
+<div class="legal-modal-window" role="dialog" aria-modal="true" aria-labelledby="transparency-modal-title">
+<button id="transparency-close" type="button" aria-label="Transparenz schließen">x</button>
+<h2 id="transparency-modal-title">Transparenz</h2>
+<p class="legal-copy">
+Ich lerne aktuell selbst noch Programmierung und setze Ideen wie diesen Kalender deshalb nicht komplett alleine um.
+</p>
+<p class="legal-copy">
+Für die technische Umsetzung wird in vielen Bereichen eine speziell für Coding entwickelte KI genutzt. Sie hilft beim Planen, Strukturieren, Schreiben und Prüfen von Code.
+</p>
+<p class="legal-copy legal-copy-muted">
+Mir ist wichtig, damit offen umzugehen. Gegenüber echten Entwicklerinnen und Entwicklern halte ich es für fair, diese Unterstützung nicht zu verschweigen, sondern transparent zu benennen.
+</p>
+</div>
+</div>
+
+<div id="event-venue-info-modal" aria-hidden="true">
+<div class="modal-overlay event-venue-info-overlay"></div>
+<div class="legal-modal-window" role="dialog" aria-modal="true" aria-labelledby="event-venue-info-title">
+<button id="event-venue-info-close" type="button" aria-label="Hinweis zu Events und Venues schließen">x</button>
+<h2 id="event-venue-info-title">Unterschiede Events/Venues</h2>
+<p class="legal-copy">
+Auf dieser Seite unterscheiden wir zwischen <strong>Events</strong> und <strong>Venues</strong>, damit du schneller filtern kannst, welche Art von Event du gerade suchst.
+</p>
+<p class="legal-copy">
+Als <strong>Events</strong> verstehen wir eher klassische Treffpunkte oder thematische Angebote wie Bars, Restaurants, Badehäuser, Teehäuser, Tavernen oder ähnliche RP-Abende.
+</p>
+<p class="legal-copy">
+Als <strong>Venues</strong> verstehen wir vor allem clubartige oder dauerhaft als Location gedachte Formate wie Clubs, Nightclubs oder ähnliche Party-Locations.
+</p>
+<p class="legal-copy legal-copy-muted">
+Die Einordnung dient nur der Übersicht. Wenn ein Event thematisch dazwischenliegt, ordnet der Kalender es nach der naheliegendsten Hauptform ein.
 </p>
 </div>
 </div>
 
 <script src="js/events.js"></script>
+<script src="js/eventCategories.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/legalNotice.js"></script>
+<script src="js/transparency.js"></script>
+<script src="js/eventVenueInfo.js"></script>
 <script src="js/siteConfig.js"></script>
 <script src="js/carousel.js"></script>
 <script src="js/timeline.js"></script>

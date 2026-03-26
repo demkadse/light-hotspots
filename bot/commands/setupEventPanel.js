@@ -7,6 +7,8 @@ import {
 
 import { assertAdminUser } from "../services/permissionService.js";
 import { assertActionCooldown } from "../services/cooldownService.js";
+import { replyAndExpire } from "../services/interactionResponseService.js";
+import { upsertPanelMessage } from "../services/panelService.js";
 
 export const data = new SlashCommandBuilder()
   .setName("setup-events")
@@ -15,6 +17,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
   assertAdminUser(interaction);
   assertActionCooldown(interaction.user.id, "setup-events", 10000);
+  const targetChannel = interaction.channel;
 
   const button = new ButtonBuilder()
     .setCustomId("event:start")
@@ -23,8 +26,13 @@ export async function execute(interaction) {
 
   const row = new ActionRowBuilder().addComponents(button);
 
-  await interaction.reply({
+  await upsertPanelMessage(targetChannel, interaction.client.user.id, ["event:start", "event:create"], {
     content: "**Event-System**\nStarte hier den Event-Flow.",
     components: [row]
+  });
+
+  await replyAndExpire(interaction, {
+    content: `Event-Panel wurde in <#${targetChannel.id}> aktualisiert.`,
+    ephemeral: true
   });
 }

@@ -9,7 +9,9 @@ const state = {
   filters: {
     scope: "all",
     type: "",
-    venue: ""
+    venue: "",
+    showEvents: true,
+    showVenues: true
   },
   touchStartY: null
 };
@@ -36,10 +38,16 @@ function getDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function getTodayIndex() {
-  const todayKey = getDayKey(startOfDay(new Date()));
-  const index = state.days.findIndex(day => getDayKey(day) === todayKey);
-  return index >= 0 ? index : 0;
+function parseVisibilityFlag(value, fallback = true) {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return value !== "0" && value !== "false";
 }
 
 function buildDays() {
@@ -62,34 +70,70 @@ function isWeekend(date) {
   return day === 0 || day === 6;
 }
 
-function getDayMarker(day, index) {
-  const todayIndex = getTodayIndex();
+function getRenderedDays() {
+  const todayKey = getDayKey(startOfDay(new Date()));
 
-  if (index === todayIndex) return "Heute";
-  if (index === todayIndex + 1) return "Morgen";
-  if (index === todayIndex - 1) return "Gestern";
+  if (state.filters.scope === "today") {
+    return state.days.filter(day => getDayKey(day) === todayKey);
+  }
+
+  if (state.filters.scope === "weekend") {
+    return state.days.filter(day => isWeekend(day));
+  }
+
+  return state.days;
+}
+
+function getPreferredSlideIndex(days = getRenderedDays()) {
+  if (days.length === 0) {
+    return 0;
+  }
+
+  if (state.filters.scope === "today") {
+    return 0;
+  }
+
+  if (state.filters.scope === "weekend") {
+    const todayStart = startOfDay(new Date()).getTime();
+    const upcomingIndex = days.findIndex(day => startOfDay(day).getTime() >= todayStart);
+    return upcomingIndex >= 0 ? upcomingIndex : 0;
+  }
+
+  const todayKey = getDayKey(startOfDay(new Date()));
+  const todayIndex = days.findIndex(day => getDayKey(day) === todayKey);
+  return todayIndex >= 0 ? todayIndex : 0;
+}
+
+function getDayMarker(day) {
+  const today = startOfDay(new Date()).getTime();
+  const current = startOfDay(day).getTime();
+  const offset = Math.round((current - today) / 86400000);
+
+  if (offset === 0) return "Heute";
+  if (offset === 1) return "Morgen";
+  if (offset === -1) return "Gestern";
   if (isWeekend(day)) return "Wochenende";
   return "Diese Woche";
 }
 
 function getDaySubtitle(eventsForDay) {
-  if (eventsForDay.length === 0) {
-    return "Noch keine sichtbaren Events fuer diesen Tag.";
-  }
-
   if (eventsForDay.length === 1) {
-    return "Ein sichtbares Event fuer diesen Tag.";
+    return "Ein sichtbares Event für diesen Tag.";
   }
 
-  return `${eventsForDay.length} sichtbare Events fuer diesen Tag.`;
+  if (eventsForDay.length > 1) {
+    return `${eventsForDay.length} sichtbare Events für diesen Tag.`;
+  }
+
+  return "";
 }
 
-function getMonthTransitionLabel(day, index) {
+function getMonthTransitionLabel(day, index, days) {
   if (index === 0) {
-    return `Monatsuebersicht fuer ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
+    return `Monatsübersicht für ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
   }
 
-  const previousDay = state.days[index - 1];
+  const previousDay = days[index - 1];
   if (previousDay && previousDay.getMonth() !== day.getMonth()) {
     return `Monatswechsel zu ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
   }
@@ -99,6 +143,16 @@ function getMonthTransitionLabel(day, index) {
 
 function getEventType(event) {
   return (event.type || event.event_type || "").trim();
+}
+
+function isEventCategoryVisible(event) {
+  const category = window.classifyEventCategory?.(event) || "event";
+
+  if (category === "venue") {
+    return state.filters.showVenues;
+  }
+
+  return state.filters.showEvents;
 }
 
 function compareEvents(a, b) {
@@ -113,31 +167,59 @@ function getFeaturedPriority(event) {
   return priorityIndex >= 0 ? priorityIndex : Number.POSITIVE_INFINITY;
 }
 
+function getCurrentWeekRange() {
+  const today = startOfDay(new Date());
+  const day = today.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() + mondayOffset);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { today, weekStart, weekEnd };
+}
+
+function isEventInCurrentWeekUpcoming(event) {
+  const eventDateKey = normalizeDateKey(event.date);
+  if (!eventDateKey) {
+    return false;
+  }
+
+  const eventDate = startOfDay(new Date(`${eventDateKey}T00:00:00`));
+  const { today, weekEnd } = getCurrentWeekRange();
+
+  return eventDate.getTime() >= today.getTime() && eventDate.getTime() <= weekEnd.getTime();
+}
+
+function compareFeaturedEvents(a, b) {
+  const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
+  if (priorityDiff !== 0) {
+    return priorityDiff;
+  }
+
+  const dateDiff = normalizeDateKey(a.date).localeCompare(normalizeDateKey(b.date));
+  if (dateDiff !== 0) {
+    return dateDiff;
+  }
+
+  return compareEvents(a, b);
+}
+
 function pickFeaturedEvent(events) {
   if (!events || events.length === 0) {
     return null;
   }
 
-  return [...events].sort((a, b) => {
-    const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
-    if (priorityDiff !== 0) {
-      return priorityDiff;
-    }
-
-    return compareEvents(a, b);
-  })[0];
+  return [...events].sort(compareFeaturedEvents)[0];
 }
 
 function eventMatchesFilters(event, day) {
-  const { scope, type, venue } = state.filters;
-  const dayStart = startOfDay(day);
-  const todayStart = startOfDay(new Date());
+  const { type, venue } = state.filters;
+  const renderedDays = getRenderedDays();
 
-  if (scope === "today" && dayStart.getTime() !== todayStart.getTime()) {
-    return false;
-  }
-
-  if (scope === "weekend" && !isWeekend(dayStart)) {
+  if (!isEventCategoryVisible(event)) {
     return false;
   }
 
@@ -149,7 +231,7 @@ function eventMatchesFilters(event, day) {
     return false;
   }
 
-  return true;
+  return renderedDays.some(renderedDay => getDayKey(renderedDay) === getDayKey(day));
 }
 
 function getEventsForDay(day) {
@@ -162,19 +244,24 @@ function getEventsForDay(day) {
 }
 
 function getVisibleEvents() {
+  const renderedDays = getRenderedDays();
+
   return state.allEvents
     .filter(event => {
       const eventDate = normalizeDateKey(event.date);
-      const matchingDay = state.days.find(day => getDayKey(day) === eventDate);
+      const matchingDay = renderedDays.find(day => getDayKey(day) === eventDate);
       return matchingDay ? eventMatchesFilters(event, matchingDay) : false;
     })
     .sort((a, b) => normalizeDateKey(a.date).localeCompare(normalizeDateKey(b.date)) || compareEvents(a, b));
 }
 
 function saveState() {
+  const renderedDays = getRenderedDays();
+  const fallbackIndex = getPreferredSlideIndex(renderedDays);
+  const activeDay = renderedDays[state.slideIndex] || renderedDays[fallbackIndex] || new Date();
   const payload = {
     filters: state.filters,
-    dayKey: getDayKey(state.days[state.slideIndex] || state.days[getTodayIndex()] || new Date())
+    dayKey: getDayKey(activeDay)
   };
 
   try {
@@ -185,8 +272,11 @@ function saveState() {
 }
 
 function updateUrlState() {
+  const renderedDays = getRenderedDays();
+  const fallbackIndex = getPreferredSlideIndex(renderedDays);
+  const activeDay = renderedDays[state.slideIndex] || renderedDays[fallbackIndex] || new Date();
   const url = new URL(window.location.href);
-  url.searchParams.set("day", getDayKey(state.days[state.slideIndex] || state.days[getTodayIndex()] || new Date()));
+  url.searchParams.set("day", getDayKey(activeDay));
 
   if (state.filters.scope !== "all") {
     url.searchParams.set("scope", state.filters.scope);
@@ -206,6 +296,9 @@ function updateUrlState() {
     url.searchParams.delete("venue");
   }
 
+  url.searchParams.set("showEvents", state.filters.showEvents ? "1" : "0");
+  url.searchParams.set("showVenues", state.filters.showVenues ? "1" : "0");
+
   window.history.replaceState({}, "", url);
 }
 
@@ -217,7 +310,7 @@ function restoreState() {
     const storedRaw = localStorage.getItem(STORAGE_KEY);
     stored = storedRaw ? JSON.parse(storedRaw) : null;
   } catch (error) {
-    console.warn("Gespeicherter Timeline-State ist ungueltig und wird verworfen.", error);
+    console.warn("Gespeicherter Timeline-State ist ungültig und wird verworfen.", error);
 
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -229,21 +322,30 @@ function restoreState() {
   state.filters.scope = params.get("scope") || stored?.filters?.scope || "all";
   state.filters.type = params.get("type") || stored?.filters?.type || "";
   state.filters.venue = params.get("venue") || stored?.filters?.venue || "";
+  state.filters.showEvents = parseVisibilityFlag(params.get("showEvents"), parseVisibilityFlag(stored?.filters?.showEvents, true));
+  state.filters.showVenues = parseVisibilityFlag(params.get("showVenues"), parseVisibilityFlag(stored?.filters?.showVenues, true));
 
+  if (!state.filters.showEvents && !state.filters.showVenues) {
+    state.filters.showEvents = true;
+    state.filters.showVenues = true;
+  }
+
+  const renderedDays = getRenderedDays();
   const targetDayKey = params.get("day") || stored?.dayKey;
   if (targetDayKey) {
-    const targetIndex = state.days.findIndex(day => getDayKey(day) === targetDayKey);
-    state.slideIndex = targetIndex >= 0 ? targetIndex : getTodayIndex();
+    const targetIndex = renderedDays.findIndex(day => getDayKey(day) === targetDayKey);
+    state.slideIndex = targetIndex >= 0 ? targetIndex : getPreferredSlideIndex(renderedDays);
   } else {
-    state.slideIndex = getTodayIndex();
+    state.slideIndex = getPreferredSlideIndex(renderedDays);
   }
 }
 
 function renderTimelineDots(dayCounts) {
   const dots = document.getElementById("timeline-dots");
+  const renderedDays = getRenderedDays();
   dots.replaceChildren();
 
-  state.days.forEach((day, index) => {
+  renderedDays.forEach((day, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "timeline-dot";
@@ -275,36 +377,33 @@ function updateFeaturedEvent(activeDayEvents) {
   const copy = document.getElementById("featured-event-copy");
   const button = document.getElementById("featured-event-open");
   const visibleEvents = getVisibleEvents();
-  const featured = pickFeaturedEvent(activeDayEvents) || pickFeaturedEvent(visibleEvents);
+  const weeklyUpcomingEvents = visibleEvents.filter(isEventInCurrentWeekUpcoming);
+  const featured = pickFeaturedEvent(weeklyUpcomingEvents);
 
   state.featuredEvent = featured;
 
   if (!featured) {
-    title.textContent = "Noch kein Event ausgewaehlt";
-    copy.textContent = "Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.";
+    title.textContent = "";
+    title.hidden = true;
+    copy.textContent = "Für den Rest dieser Woche steht aktuell kein Event im Fokus.";
     button.hidden = true;
     return;
   }
 
   title.textContent = featured.title || "Unbenannt";
+  title.hidden = false;
   copy.textContent = `${featured.venue || "Ort offen"} - ${featured.start_time || featured.time || "Zeit offen"}${featured.end_time ? ` - ${featured.end_time}` : ""}`;
   button.hidden = false;
 }
 
 function updateHeroStats() {
-  const todayKey = getDayKey(startOfDay(new Date()));
   const visibleEvents = getVisibleEvents();
-  const todayVisible = visibleEvents.filter(event => normalizeDateKey(event.date) === todayKey);
-  const types = new Set(visibleEvents.map(getEventType).filter(Boolean));
-
-  document.getElementById("today-count").textContent = String(todayVisible.length);
-  document.getElementById("week-count").textContent = String(visibleEvents.length);
-  document.getElementById("type-count").textContent = String(types.size);
   document.getElementById("result-count").textContent = `${visibleEvents.length} sichtbare Events`;
 }
 
 function updateActiveDayMeta() {
-  const activeDay = state.days[state.slideIndex] || state.days[0];
+  const renderedDays = getRenderedDays();
+  const activeDay = renderedDays[state.slideIndex] || renderedDays[0];
   const eventsForDay = activeDay ? getEventsForDay(activeDay) : [];
 
   if (!activeDay) {
@@ -317,14 +416,21 @@ function updateActiveDayMeta() {
     month: "long"
   });
   document.getElementById("active-day-subtitle").textContent = getDaySubtitle(eventsForDay);
-  document.getElementById("slide-position").textContent = `${state.slideIndex + 1} / ${state.days.length}`;
+  document.getElementById("slide-position").textContent = `${state.slideIndex + 1} / ${renderedDays.length}`;
   updateFeaturedEvent(eventsForDay);
 }
 
 function updateSlide() {
+  const renderedDays = getRenderedDays();
   const track = document.getElementById("timeline-track");
   const viewport = document.querySelector(".timeline-viewport");
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (renderedDays.length === 0) {
+    return;
+  }
+
+  state.slideIndex = Math.min(state.slideIndex, renderedDays.length - 1);
 
   if (isMobile) {
     track.style.transform = "";
@@ -342,7 +448,8 @@ function updateSlide() {
 }
 
 function changeSlide(direction) {
-  const nextIndex = Math.min(Math.max(state.slideIndex + direction, 0), Math.max(state.days.length - 1, 0));
+  const renderedDays = getRenderedDays();
+  const nextIndex = Math.min(Math.max(state.slideIndex + direction, 0), Math.max(renderedDays.length - 1, 0));
 
   if (nextIndex === state.slideIndex) {
     return;
@@ -366,7 +473,7 @@ function renderTypeChips(uniqueTypes) {
     button.addEventListener("click", () => {
       state.filters.type = state.filters.type === type ? "" : type;
       document.getElementById("type-filter").value = state.filters.type;
-      state.slideIndex = getTodayIndex();
+      state.slideIndex = getPreferredSlideIndex();
       void renderTimeline();
     });
 
@@ -402,16 +509,33 @@ function populateFilterOptions() {
   renderTypeChips(uniqueTypes);
 }
 
+function syncCategoryToggle(buttonId, isActive) {
+  const button = document.getElementById(buttonId);
+  if (!button) {
+    return;
+  }
+
+  button.classList.toggle("active", isActive);
+  button.setAttribute("aria-pressed", String(isActive));
+}
+
+function updateCategoryToggleState() {
+  syncCategoryToggle("category-toggle-event", state.filters.showEvents);
+  syncCategoryToggle("category-toggle-venue", state.filters.showVenues);
+}
+
 function renderQuickJumps() {
   const container = document.getElementById("quick-jumps");
+  const renderedDays = getRenderedDays();
   container.replaceChildren();
 
+  const tomorrow = startOfDay(new Date());
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   const candidates = [
-    { label: "Heute", index: getTodayIndex() },
-    { label: "Morgen", index: Math.min(getTodayIndex() + 1, state.days.length - 1) },
-    { label: "Wochenende", index: state.days.findIndex(day => isWeekend(day) && getDayKey(day) >= getDayKey(startOfDay(new Date()))) },
+    { label: "Morgen", index: renderedDays.findIndex(day => getDayKey(day) === getDayKey(tomorrow)) },
     { label: "Monatsanfang", index: 0 },
-    { label: "Erstes Event", index: state.days.findIndex(day => getEventsForDay(day).length > 0) }
+    { label: "Erstes Event", index: renderedDays.findIndex(day => getEventsForDay(day).length > 0) }
   ];
 
   const seen = new Set();
@@ -433,7 +557,7 @@ function renderQuickJumps() {
   });
 }
 
-function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
+function renderDaySlide(day, index, eventsForDay, hasActiveFilters, days) {
   const slide = document.createElement("section");
   slide.className = "day-slide";
   if (eventsForDay.length === 0) {
@@ -446,7 +570,7 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
   const copy = document.createElement("div");
   const marker = document.createElement("span");
   marker.className = "day-marker";
-  marker.textContent = getDayMarker(day, index);
+  marker.textContent = getDayMarker(day);
 
   const title = document.createElement("h2");
   title.className = "day-title";
@@ -463,7 +587,7 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
 
   copy.append(marker);
 
-  const transitionLabel = getMonthTransitionLabel(day, index);
+  const transitionLabel = getMonthTransitionLabel(day, index, days);
   if (transitionLabel) {
     const transition = document.createElement("span");
     transition.className = "day-transition";
@@ -507,19 +631,26 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters) {
 
 async function renderTimeline() {
   const track = document.getElementById("timeline-track");
+  const hasActiveFilters = Boolean(
+    state.filters.type ||
+    state.filters.venue ||
+    state.filters.scope !== "all" ||
+    !state.filters.showEvents ||
+    !state.filters.showVenues
+  );
+  const renderedDays = getRenderedDays();
+  const dayCounts = [];
   track.replaceChildren();
 
-  const hasActiveFilters = Boolean(state.filters.type || state.filters.venue || state.filters.scope !== "all");
-  const dayCounts = [];
-
-  state.days.forEach((day, index) => {
+  renderedDays.forEach((day, index) => {
     const eventsForDay = getEventsForDay(day);
     dayCounts.push(eventsForDay.length);
-    track.appendChild(renderDaySlide(day, index, eventsForDay, hasActiveFilters));
+    track.appendChild(renderDaySlide(day, index, eventsForDay, hasActiveFilters, renderedDays));
   });
 
   renderTimelineDots(dayCounts);
   renderQuickJumps();
+  updateCategoryToggleState();
   updateHeroStats();
   updateSlide();
   window.EVENT_CONTEXT = { allEvents: state.allEvents, visibleEvents: getVisibleEvents() };
@@ -527,31 +658,72 @@ async function renderTimeline() {
 
 function bindFilterControls() {
   document.querySelectorAll(".scope-button").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.classList.contains("active")));
     button.addEventListener("click", () => {
       document.querySelectorAll(".scope-button").forEach(item => item.classList.remove("active"));
       button.classList.add("active");
+      document.querySelectorAll(".scope-button").forEach(item => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
       state.filters.scope = button.dataset.scope || "all";
-      state.slideIndex = getTodayIndex();
+      state.slideIndex = getPreferredSlideIndex();
       void renderTimeline();
     });
   });
 
   document.getElementById("type-filter").addEventListener("change", event => {
     state.filters.type = event.target.value;
-    state.slideIndex = getTodayIndex();
+    state.slideIndex = getPreferredSlideIndex();
     void renderTimeline();
   });
 
   document.getElementById("venue-filter").addEventListener("change", event => {
     state.filters.venue = event.target.value;
-    state.slideIndex = getTodayIndex();
+    state.slideIndex = getPreferredSlideIndex();
     void renderTimeline();
   });
 
-  document.getElementById("jump-today").addEventListener("click", () => {
-    state.slideIndex = getTodayIndex();
-    updateSlide();
+  document.getElementById("category-toggle-event")?.addEventListener("click", () => {
+    const nextValue = !state.filters.showEvents;
+    if (!nextValue && !state.filters.showVenues) {
+      return;
+    }
+
+    state.filters.showEvents = nextValue;
+    if (!state.filters.showEvents && !state.filters.showVenues) {
+      state.filters.showVenues = true;
+    }
+
+    state.slideIndex = getPreferredSlideIndex();
+    void renderTimeline();
   });
+
+  document.getElementById("category-toggle-venue")?.addEventListener("click", () => {
+    const nextValue = !state.filters.showVenues;
+    if (!nextValue && !state.filters.showEvents) {
+      return;
+    }
+
+    state.filters.showVenues = nextValue;
+    if (!state.filters.showEvents && !state.filters.showVenues) {
+      state.filters.showEvents = true;
+    }
+
+    state.slideIndex = getPreferredSlideIndex();
+    void renderTimeline();
+  });
+
+  const jumpTodayButton = document.getElementById("jump-today");
+  if (jumpTodayButton) {
+    jumpTodayButton.addEventListener("click", () => {
+      state.filters.scope = "today";
+      document.querySelectorAll(".scope-button").forEach(button => {
+        button.classList.toggle("active", button.dataset.scope === "today");
+      });
+      state.slideIndex = 0;
+      void renderTimeline();
+    });
+  }
 
   document.getElementById("featured-event-open").addEventListener("click", () => {
     if (state.featuredEvent) {
@@ -629,8 +801,10 @@ async function initTimeline() {
 
   document.querySelectorAll(".scope-button").forEach(button => {
     button.classList.toggle("active", button.dataset.scope === state.filters.scope);
+    button.setAttribute("aria-pressed", String(button.dataset.scope === state.filters.scope));
   });
 
+  updateCategoryToggleState();
   await renderTimeline();
 }
 

@@ -5,11 +5,11 @@ function formatHostName(event) {
   const host = event.host || event.host_display_name || event.created_by || "";
 
   if (!host) {
-    return "Unbekannter Host";
+    return "Unbekannter Veranstalter";
   }
 
   if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Host des ${event.venue}` : "Discord-Host";
+    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
   }
 
   return host;
@@ -17,6 +17,14 @@ function formatHostName(event) {
 
 function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
+}
+
+function formatCategoryLabel(event) {
+  return window.getEventCategoryLabel?.(event) || "Event";
+}
+
+function isCancelled(event) {
+  return event.status === "cancelled";
 }
 
 function formatTimeRange(event) {
@@ -75,7 +83,7 @@ function openModal(event) {
 
   if (event.image) {
     const image = document.createElement("img");
-    image.alt = event.title || "Eventbild";
+    image.alt = event.title || "Veranstaltungsbild";
     image.src = event.image;
     modalContent.appendChild(image);
   }
@@ -83,15 +91,30 @@ function openModal(event) {
   const topRow = document.createElement("div");
   topRow.className = "modal-top-row";
 
+  const topChipRow = document.createElement("div");
+  topChipRow.className = "modal-chip-row";
+
   const typeChip = document.createElement("span");
   typeChip.className = "event-chip";
-  typeChip.textContent = formatTypeLabel(event);
+  typeChip.textContent = formatCategoryLabel(event);
+
+  const detailChip = document.createElement("span");
+  detailChip.className = "event-time-chip";
+  detailChip.textContent = formatTypeLabel(event);
 
   const timeChip = document.createElement("span");
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  topRow.append(typeChip, timeChip);
+  topChipRow.append(typeChip, detailChip, timeChip);
+  topRow.appendChild(topChipRow);
+
+  if (isCancelled(event)) {
+    const statusChip = document.createElement("span");
+    statusChip.className = "event-status-chip event-status-chip-cancelled";
+    statusChip.textContent = "Abgesagt";
+    topRow.appendChild(statusChip);
+  }
   modalContent.appendChild(topRow);
 
   const title = document.createElement("h2");
@@ -101,11 +124,23 @@ function openModal(event) {
 
   const details = document.createElement("div");
   details.className = "modal-details-grid";
+  appendDetailItem(details, "Kategorie", formatCategoryLabel(event));
+  appendDetailItem(details, "Typ", formatTypeLabel(event));
   appendDetailItem(details, "Venue", event.venue || "Ort offen");
-  appendDetailItem(details, "Host", formatHostName(event));
+  appendDetailItem(details, "Server", event.server);
+  appendDetailItem(details, "Veranstalter", formatHostName(event));
   appendDetailItem(details, "Venue-Leitung", event.venue_lead);
+  appendDetailItem(details, "Wiederholung", event.recurrence_rule === "weekly" ? "Wöchentlich" : null);
   appendDetailItem(details, "Zeit", formatTimeRange(event));
   modalContent.appendChild(details);
+
+  if (isCancelled(event)) {
+    appendSectionTitle(modalContent, "Status");
+    const cancellationNotice = document.createElement("p");
+    cancellationNotice.className = "modal-copy modal-copy-cancelled";
+    cancellationNotice.textContent = "Dieses Event wurde abgesagt.";
+    modalContent.appendChild(cancellationNotice);
+  }
 
   appendSectionTitle(modalContent, "Beschreibung");
   const description = document.createElement("p");
@@ -130,7 +165,7 @@ function openModal(event) {
     cta.href = event.discord_link;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Event-Discord oeffnen";
+    cta.textContent = "Discord-Server öffnen";
     linkRow.appendChild(cta);
   }
 
@@ -144,7 +179,7 @@ function openModal(event) {
     cta.href = externalLink;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Externe Infos oeffnen";
+    cta.textContent = "Externe Infos öffnen";
     linkRow.appendChild(cta);
   }
 

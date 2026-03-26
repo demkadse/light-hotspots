@@ -1,0 +1,38 @@
+name: Generate Weekly Feed
+
+on:
+  schedule:
+    - cron: "0 2,3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-feed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate weekly feed
+        run: node scripts/generateWeeklyFeed.mjs
+        env:
+          FORCE_FEED_BUILD: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
+
+      - name: Commit feed updates
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          [ -f feeds/weekly-summary.xml ] || exit 0
+          [ -f feeds/weekly-summary.json ] || exit 0
+          git add feeds/weekly-summary.xml feeds/weekly-summary.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update weekly feed"
+          git push

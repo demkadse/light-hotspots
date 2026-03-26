@@ -22,12 +22,30 @@ function normalizeOptional(value) {
   return trimmed ? trimmed : null;
 }
 
+function normalizeRecurrenceRule(value) {
+  const normalized = normalizeOptional(value)?.toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (["weekly", "wöchentlich", "woechentlich"].includes(normalized)) {
+    return "weekly";
+  }
+
+  return normalized;
+}
+
 function buildTimeLabel(template) {
   if (template.time && template.end_time) {
     return `${template.time} - ${template.end_time}`;
   }
 
   return template.time || "-";
+}
+
+function buildRecurrenceLabel(template) {
+  return template.recurrence_rule === "weekly" ? "Wöchentlich" : null;
 }
 
 function buildPreviewEmbed(template, duplicates) {
@@ -48,10 +66,32 @@ function buildPreviewEmbed(template, duplicates) {
     });
   }
 
+  embed.addFields({
+    name: "Kategorie",
+    value: template.category === "venue" ? "Venue" : "Event",
+    inline: true
+  });
+
   if (template.host_display_name) {
     embed.addFields({
       name: "Host",
       value: template.host_display_name,
+      inline: true
+    });
+  }
+
+  if (template.server) {
+    embed.addFields({
+      name: "Server",
+      value: template.server,
+      inline: true
+    });
+  }
+
+  if (buildRecurrenceLabel(template)) {
+    embed.addFields({
+      name: "Wiederholung",
+      value: buildRecurrenceLabel(template),
       inline: true
     });
   }
@@ -91,7 +131,7 @@ function buildPreviewEmbed(template, duplicates) {
 
   if (duplicates.length > 0) {
     embed.addFields({
-      name: "Moegliche Duplikate",
+      name: "Mögliche Duplikate",
       value: duplicates
         .map(entry => `${entry.title} | ${entry.venue} | ${entry.date}`)
         .join("\n")
@@ -109,20 +149,22 @@ function buildWizardRow(templateId, stage = "step1") {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`event:details:${templateId}`)
-        .setLabel("Weiter zu Details")
+        .setLabel("Weiter zu 2/3 Details")
         .setStyle(ButtonStyle.Primary)
     );
+
+    return row;
   }
 
   if (stage === "step2") {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`event:extras:${templateId}`)
-        .setLabel("Weiter zu Extras")
+        .setLabel("Weiter zu 3/3 Extras")
         .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
         .setCustomId(`event:details:${templateId}`)
-        .setLabel("Details bearbeiten")
+        .setLabel("2/3 Details bearbeiten")
         .setStyle(ButtonStyle.Secondary)
     );
   }
@@ -131,11 +173,11 @@ function buildWizardRow(templateId, stage = "step1") {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`event:details:${templateId}`)
-        .setLabel("Details bearbeiten")
+        .setLabel("2/3 Details bearbeiten")
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`event:extras:${templateId}`)
-        .setLabel("Extras bearbeiten")
+        .setLabel("3/3 Extras bearbeiten")
         .setStyle(ButtonStyle.Secondary)
     );
   }
@@ -143,7 +185,7 @@ function buildWizardRow(templateId, stage = "step1") {
   row.addComponents(
     new ButtonBuilder()
       .setCustomId(`event:submit:${templateId}`)
-      .setLabel("Zur Pruefung senden")
+      .setLabel("Jetzt zur Prüfung senden")
       .setStyle(ButtonStyle.Success)
   );
 
@@ -181,14 +223,14 @@ async function replyWithPreview(interaction, template, stage, client, auditActio
   });
 
   const contentByStage = {
-    step1: "Basisdaten gespeichert. Du kannst jetzt die restlichen Angaben erfassen.",
-    step2: "Details gespeichert. Optional kannst du jetzt noch Links und Hinweise pflegen.",
-    step3: "Extras gespeichert."
+    step1: "Schritt 1 von 3 gespeichert. Als Nächstes bitte die Details ausfüllen.",
+    step2: "Schritt 2 von 3 gespeichert. Du kannst jetzt noch optionale Extras ergänzen oder direkt zur Prüfung senden.",
+    step3: "Schritt 3 von 3 gespeichert. Du kannst das Event jetzt zur Prüfung senden."
   };
 
   await replyAndExpire(interaction, {
     content: isCreate
-      ? "Event gespeichert. Du kannst jetzt die restlichen Angaben erfassen."
+      ? "Schritt 1 von 3 gespeichert. Als Nächstes bitte die Details ausfüllen."
       : contentByStage[stage] || "Event gespeichert.",
     embeds: [buildPreviewEmbed(template, duplicates)],
     components: [buildWizardRow(template.id, stage)],
@@ -248,12 +290,12 @@ export async function handleModal(interaction, client) {
       event_type: normalizeOptional(interaction.fields.getTextInputValue("event_type")),
       host_display_name: normalizeOptional(interaction.fields.getTextInputValue("host_display_name")),
       venue_lead: normalizeOptional(interaction.fields.getTextInputValue("venue_lead")),
-      image: normalizeOptional(interaction.fields.getTextInputValue("image"))
+      server: normalizeOptional(interaction.fields.getTextInputValue("server"))
     };
 
     const errors = validateEventInput({
       end_time: data.end_time,
-      image: data.image
+      server: data.server
     });
 
     if (errors.length > 0) {
@@ -274,14 +316,18 @@ export async function handleModal(interaction, client) {
 
     const templateId = getTemplateIdFromModal(interaction.customId);
     const data = {
+      image: normalizeOptional(interaction.fields.getTextInputValue("image")),
       discord_link: normalizeOptional(interaction.fields.getTextInputValue("discord_link")),
       link: normalizeOptional(interaction.fields.getTextInputValue("link")),
+      recurrence_rule: normalizeRecurrenceRule(interaction.fields.getTextInputValue("recurrence_rule")),
       notes: normalizeOptional(interaction.fields.getTextInputValue("notes"))
     };
 
     const errors = validateEventInput({
+      image: data.image,
       link: data.link,
-      discord_link: data.discord_link
+      discord_link: data.discord_link,
+      recurrence_rule: data.recurrence_rule
     });
     if (errors.length > 0) {
       await replyAndExpire(interaction, {

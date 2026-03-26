@@ -14,6 +14,37 @@ import { assertAdminUser } from "../services/permissionService.js";
 export async function handleSelect(interaction) {
   if (!interaction.isStringSelectMenu()) return;
 
+  if (interaction.customId === "event:selectCancellationTemplate") {
+    const templateId = interaction.values[0];
+    const template = await getTemplate(templateId);
+
+    if (!template) {
+      await replyAndExpire(interaction, {
+        content: "Das ausgewählte Event wurde nicht gefunden.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`event:cancel_confirm:${template.id}`)
+        .setLabel("Ja, Event absagen")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("event:cancel_abort")
+        .setLabel("Abbrechen")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    await replyAndExpire(interaction, {
+      content: `Ausgewählt: ${template.title} (${template.date}). Das Event bleibt sichtbar, wird aber als abgesagt markiert.`,
+      components: [row],
+      ephemeral: true
+    }, 120000);
+    return;
+  }
+
   if (interaction.customId === "admin:selectUnpublishEvent") {
     assertAdminUser(interaction);
 
@@ -22,7 +53,7 @@ export async function handleSelect(interaction) {
 
     if (!template) {
       await replyAndExpire(interaction, {
-        content: "Das ausgewaehlte Event wurde nicht gefunden.",
+        content: "Das ausgewählte Event wurde nicht gefunden.",
         ephemeral: true
       });
       return;
@@ -31,7 +62,7 @@ export async function handleSelect(interaction) {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`event:unpublish:${template.id}`)
-        .setLabel("Veroeffentlichung zuruecknehmen")
+        .setLabel("Veröffentlichung zurücknehmen")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId("event:unpublish_cancel:selection")
@@ -40,7 +71,7 @@ export async function handleSelect(interaction) {
     );
 
     await replyAndExpire(interaction, {
-      content: `Ausgewaehlt: ${template.title} (${template.date})`,
+      content: `Ausgewählt: ${template.title} (${template.date})`,
       components: [row],
       ephemeral: true
     }, 120000);
@@ -54,7 +85,7 @@ export async function handleSelect(interaction) {
 
   const modal = new ModalBuilder()
     .setCustomId(`event_modal_step1_${value}`)
-    .setTitle("Event erstellen | Basis");
+    .setTitle("1/3 | Basis");
 
   const createInput = (id, label, placeholder, val = "") =>
     new ActionRowBuilder().addComponents(
