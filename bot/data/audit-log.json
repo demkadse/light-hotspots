@@ -238,5 +238,13 @@
     "target_id": "7fd3fcb8-824c-4269-bce8-9558a81eb411",
     "summary": "Beispiel-Event",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "af2e068a-3c2f-4b82-9b9f-6f31e06984dd",
+    "created_at": "2026-03-26T14:31:05.117Z",
+    "action": "template.cancelled",
+    "target_id": "7fd3fcb8-824c-4269-bce8-9558a81eb411",
+    "summary": "Beispiel-Event",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
