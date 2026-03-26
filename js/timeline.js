@@ -117,15 +117,15 @@ function getDayMarker(day) {
 }
 
 function getDaySubtitle(eventsForDay) {
-  if (eventsForDay.length === 0) {
-    return "Noch keine sichtbaren Events für diesen Tag.";
-  }
-
   if (eventsForDay.length === 1) {
     return "Ein sichtbares Event für diesen Tag.";
   }
 
-  return `${eventsForDay.length} sichtbare Events für diesen Tag.`;
+  if (eventsForDay.length > 1) {
+    return `${eventsForDay.length} sichtbare Events für diesen Tag.`;
+  }
+
+  return "";
 }
 
 function getMonthTransitionLabel(day, index, days) {
@@ -383,13 +383,15 @@ function updateFeaturedEvent(activeDayEvents) {
   state.featuredEvent = featured;
 
   if (!featured) {
-    title.textContent = "Noch kein Event ausgewählt";
+    title.textContent = "";
+    title.hidden = true;
     copy.textContent = "Für den Rest dieser Woche steht aktuell kein Event im Fokus.";
     button.hidden = true;
     return;
   }
 
   title.textContent = featured.title || "Unbenannt";
+  title.hidden = false;
   copy.textContent = `${featured.venue || "Ort offen"} - ${featured.start_time || featured.time || "Zeit offen"}${featured.end_time ? ` - ${featured.end_time}` : ""}`;
   button.hidden = false;
 }
