@@ -1,12 +1,3 @@
 {
-  "events": [
-    {
-      "file": "2026/03/testevent-im-testhaus-2026-03-18.json",
-      "date": "2026-03-18"
-    },
-    {
-      "file": "2026/03/beispiel-event-2026-03-26-7fd3fcb8.json",
-      "date": "2026-03-26"
-    }
-  ]
+  "events": []
 }
