@@ -3,3 +3,4 @@ bot/.env
 bot/data/private-user-map.json
 bot/data/private-calendar-feed-state.json
 node_modules/
+.doofeleute
