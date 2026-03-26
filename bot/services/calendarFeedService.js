@@ -18,6 +18,7 @@ const JSON_PATH = path.join(FEED_DIR, "weekly-summary.json");
 const PRIVATE_STATE_PATH = path.join(BOT_ROOT, "data", "private-calendar-feed-state.json");
 const SITE_URL = "https://light-hotspots.talaani.de";
 const FEED_URL = `${SITE_URL}/feeds/weekly-summary.xml`;
+const PLACEHOLDER_IMAGE_URL = `${SITE_URL}/placeholder.png`;
 const TIME_ZONE = "Europe/Berlin";
 const DISCORD_LIMIT = 2000;
 
@@ -73,6 +74,21 @@ function escapeXml(value) {
 
 function buildEventUrl(event) {
   return `${SITE_URL}/?event=${encodeURIComponent(event.id || event.file || event.title)}`;
+}
+
+function getEventImageUrl(event) {
+  const rawImage = typeof event?.image === "string" ? event.image.trim() : "";
+
+  if (!rawImage) {
+    return PLACEHOLDER_IMAGE_URL;
+  }
+
+  if (/^https?:\/\//i.test(rawImage)) {
+    return rawImage;
+  }
+
+  const normalizedPath = rawImage.startsWith("/") ? rawImage : `/${rawImage}`;
+  return `${SITE_URL}${normalizedPath}`;
 }
 
 async function readJson(filePath, fallback) {
@@ -138,31 +154,22 @@ function buildFeedEventTitle(event) {
 
 function getFeedAccent(event) {
   if (event.status === "cancelled") {
-    return "🟥";
+    return "Rot";
   }
 
   const type = (event.type || event.event_type || "").toLowerCase();
 
-  if (type.includes("taverne")) return "🟨";
-  if (type.includes("markt")) return "🟧";
-  if (type.includes("club")) return "🟪";
-  if (type.includes("open")) return "🟦";
-  if (type.includes("salon")) return "🟫";
-  return "🟦";
-}
-
-function formatFeedLocation(event) {
-  const locationParts = [
-    event.server ? `(${event.server})` : null,
-    event.venue || null
-  ].filter(Boolean);
-
-  return locationParts.join(" ");
+  if (type.includes("taverne")) return "Gold";
+  if (type.includes("markt")) return "Kupfer";
+  if (type.includes("club")) return "Magenta";
+  if (type.includes("open")) return "Blau";
+  if (type.includes("salon")) return "Rosa";
+  return "Blau";
 }
 
 function formatFeedTime(event) {
   if (event.start_time && event.end_time) {
-    return `${event.start_time}–${event.end_time}`;
+    return `${event.start_time}-${event.end_time}`;
   }
 
   if (event.start_time) {
@@ -190,7 +197,7 @@ function createSummary(groups, startDate, endDate) {
   if (totalEvents === 0) {
     return {
       title: `Wochenvorschau ${startLabel} bis ${endLabel}: keine geplanten Events`,
-      intro: `Für den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
+      intro: `F\u00fcr den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
       lines: []
     };
   }
@@ -210,7 +217,7 @@ function createSummary(groups, startDate, endDate) {
 
   return {
     title: `Wochenvorschau ${startLabel} bis ${endLabel}: ${totalEvents} Event${totalEvents === 1 ? "" : "s"} an ${dayCount} Tag${dayCount === 1 ? "" : "en"}`,
-    intro: "Das ist die ruhige Wochenübersicht für die kommenden sieben Tage im Light Hotspots Kalender.",
+    intro: "Das ist die ruhige Wochen\u00fcbersicht f\u00fcr die kommenden sieben Tage im Light Hotspots Kalender.",
     lines
   };
 }
@@ -224,7 +231,7 @@ function createRssFeed({ generatedAt, summary, startDate }) {
   <channel>
     <title>Light Hotspots Wochenfeed</title>
     <link>${SITE_URL}/</link>
-    <description>Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.</description>
+    <description>T\u00e4gliche Wochenzusammenfassung der geplanten RP-Events f\u00fcr die kommenden sieben Tage.</description>
     <language>de-DE</language>
     <lastBuildDate>${pubDate}</lastBuildDate>
     <ttl>1440</ttl>
@@ -246,7 +253,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
     title: "Light Hotspots Wochenfeed",
     home_page_url: `${SITE_URL}/`,
     feed_url: `${SITE_URL}/feeds/weekly-summary.json`,
-    description: "Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.",
+    description: "T\u00e4gliche Wochenzusammenfassung der geplanten RP-Events f\u00fcr die kommenden sieben Tage.",
     language: "de-DE",
     generated_at: generatedAt,
     weekly_window: {
@@ -263,6 +270,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
         id: `${startDate}:${event.id || event.file || event.title}`,
         url: buildEventUrl(event),
         title: buildFeedEventTitle(event),
+        image: getEventImageUrl(event),
         content_text: [
           group.label,
           event.start_time ? `Start: ${event.start_time} Uhr` : "Start: offen",
@@ -270,6 +278,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
           event.server ? `Server: ${event.server}` : null,
           event.status === "cancelled" ? "Status: Abgesagt" : null,
           event.host ? `Host: ${event.host}` : null,
+          event.notes ? `Hinweise: ${event.notes}` : null,
           event.description || null
         ].filter(Boolean).join("\n"),
         date_published: generatedAt,
@@ -277,6 +286,55 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
       }))
     )
   };
+}
+
+function chunkEmbeds(embeds, size = 10) {
+  const chunks = [];
+
+  for (let index = 0; index < embeds.length; index += size) {
+    chunks.push(embeds.slice(index, index + size));
+  }
+
+  return chunks;
+}
+
+function clampText(value, maxLength) {
+  if (!value) {
+    return null;
+  }
+
+  return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
+}
+
+function buildCompactWeekLines(groups) {
+  return groups.flatMap(group => {
+    const lines = [`**${group.label}**`];
+
+    for (const event of group.events) {
+      lines.push([
+        `[${getFeedAccent(event)}]`,
+        `\`${formatFeedTime(event)}\``,
+        `**${buildFeedEventTitle(event)}**`,
+        event.venue ? `in ${event.venue}` : null
+      ].filter(Boolean).join(" "));
+    }
+
+    return lines;
+  });
+}
+
+function buildEventFacts(event, groupLabel) {
+  return [
+    `**Tag:** ${groupLabel}`,
+    `**Zeit:** ${formatFeedTime(event)}`,
+    event.type || event.event_type ? `**Typ:** ${event.type || event.event_type}` : null,
+    event.venue ? `**Venue:** ${event.venue}` : null,
+    event.server ? `**Server:** ${event.server}` : null,
+    event.host ? `**Veranstalter:** ${event.host}` : null,
+    event.venue_lead ? `**Venue-Leitung:** ${event.venue_lead}` : null,
+    event.status === "cancelled" ? "**Status:** Abgesagt" : null,
+    event.notes ? `**Hinweise:** ${event.notes}` : null
+  ].filter(Boolean).join("\n");
 }
 
 function createDiscordMessages({ summary, groups, startDate, endDate }) {
@@ -293,18 +351,18 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
   const baseEmbed = new EmbedBuilder()
     .setColor(0xf3ba6c)
     .setTitle(title)
-    .setURL(SITE_URL)
-    .setDescription([
-      summary.intro,
-      "",
-      `Zeitraum: **${startLabel} bis ${endLabel}**`
-    ].join("\n"))
+    .setURL(FEED_URL)
+    .setDescription(summary.intro)
     .setFooter({ text: "Light Hotspots Kalender" });
 
   if (groups.length === 0) {
     return [{
       embeds: [
         baseEmbed
+          .addFields({
+            name: "Zeitraum",
+            value: `${startLabel} bis ${endLabel}`
+          })
           .addFields({
             name: "Diese Woche",
             value: "Aktuell sind keine Events geplant."
@@ -314,38 +372,93 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
     }];
   }
 
-  const messages = [{ embeds: [baseEmbed.setTimestamp(new Date())] }];
+  const overviewLines = buildCompactWeekLines(groups);
+  const overviewChunks = [];
+  let currentChunk = [];
+  let currentLength = 0;
 
-  for (const group of groups) {
-    const dayEmbed = new EmbedBuilder()
-      .setColor(0x5ea8d6)
-      .setTitle(group.label)
-      .setFooter({ text: "Light Hotspots Kalender" });
+  for (const line of overviewLines) {
+    const lineLength = line.length + 1;
 
-    for (const event of group.events.slice(0, 10)) {
-      const fieldLines = [
-        `${getFeedAccent(event)} **${buildFeedEventTitle(event)}**`,
-        formatFeedLocation(event) ? `Ort: ${formatFeedLocation(event)}` : null,
-        event.host ? `Host: ${event.host}` : null,
-        `Zeit: \`${formatFeedTime(event)}\``
-      ].filter(Boolean);
-
-      let value = fieldLines.join("\n");
-      if (value.length > 1024) {
-        value = `${value.slice(0, 1000)}\n…`;
-      }
-
-      dayEmbed.addFields({
-        name: "\u200b",
-        value,
-        inline: false
-      });
+    if (currentChunk.length > 0 && currentLength + lineLength > 900) {
+      overviewChunks.push(currentChunk.join("\n"));
+      currentChunk = [];
+      currentLength = 0;
     }
 
-    messages.push({ embeds: [dayEmbed] });
+    currentChunk.push(line);
+    currentLength += lineLength;
   }
 
-  return messages;
+  if (currentChunk.length > 0) {
+    overviewChunks.push(currentChunk.join("\n"));
+  }
+
+  const overviewEmbed = baseEmbed
+    .addFields({
+      name: "Zeitraum",
+      value: `${startLabel} bis ${endLabel}`,
+      inline: false
+    })
+    .addFields({
+      name: "Uebersicht",
+      value: `${summary.title}\n${groups.length} Tag${groups.length === 1 ? "" : "e"} mit geplanten Eintr\u00e4gen.`,
+      inline: false
+    })
+    .setTimestamp(new Date());
+
+  overviewChunks.forEach((chunk, index) => {
+    overviewEmbed.addFields({
+      name: index === 0 ? "Alle Events auf einen Blick" : "\u200b",
+      value: chunk,
+      inline: false
+    });
+  });
+
+  const eventEmbeds = groups.flatMap(group =>
+    group.events.map(event => {
+      const embed = new EmbedBuilder()
+        .setColor(event.status === "cancelled" ? 0xc75c5c : 0x5ea8d6)
+        .setTitle(buildFeedEventTitle(event))
+        .setURL(buildEventUrl(event))
+        .setDescription(clampText(event.description || "Keine Beschreibung vorhanden.", 4096))
+        .setImage(getEventImageUrl(event))
+        .setFooter({ text: `Light Hotspots Kalender | ${group.label}` });
+
+      const facts = clampText(buildEventFacts(event, group.label), 1024);
+      if (facts) {
+        embed.addFields({
+          name: "Infos",
+          value: facts,
+          inline: false
+        });
+      }
+
+      const links = [
+        event.discord_link ? `[Discord](${event.discord_link})` : null,
+        event.link ? `[Externer Link](${event.link})` : null,
+        Array.isArray(event.links)
+          ? event.links
+            .filter(link => link && link !== event.discord_link && link !== event.link)
+            .map((link, index) => `[Link ${index + 1}](${link})`)
+            .join(" | ")
+          : null
+      ].filter(Boolean).join(" | ");
+
+      if (links) {
+        embed.addFields({
+          name: "Links",
+          value: clampText(links, 1024),
+          inline: false
+        });
+      }
+
+      return embed;
+    })
+  );
+
+  const allEmbeds = [overviewEmbed, ...eventEmbeds];
+  return chunkEmbeds(allEmbeds).map(embeds => ({ embeds }));
 }
 
 export function shouldRunCalendarFeedNow(date = new Date()) {
@@ -452,7 +565,7 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Date()) {
   const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
   if (!channel?.isTextBased()) {
-    const error = new Error("Kalenderfeed-Channel nicht verfügbar.");
+    const error = new Error("Kalenderfeed-Channel nicht verf\u00fcgbar.");
     error.code = "CALENDAR_FEED_CHANNEL_UNAVAILABLE";
     throw error;
   }

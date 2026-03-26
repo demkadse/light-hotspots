@@ -15,6 +15,7 @@
 --accent-soft: rgba(243, 186, 108, 0.16);
 --shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
 --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.24);
+--carousel-max-height: clamp(320px, 46vh, 520px);
 }
 
 * {
@@ -543,6 +544,8 @@ min-height: 0;
 }
 
 #timeline-track {
+display: flex;
+flex-direction: column;
 transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 will-change: transform;
 height: 100%;
@@ -554,8 +557,17 @@ display: grid;
 grid-template-rows: auto 1fr;
 gap: 12px;
 padding: 16px;
+flex: 0 0 100%;
 height: 100%;
 min-height: 0;
+overflow: hidden;
+}
+
+.day-body {
+min-height: 0;
+height: 100%;
+display: flex;
+flex-direction: column;
 }
 
 .day-header {
@@ -643,20 +655,13 @@ text-decoration: none;
 line-height: 1.35;
 }
 
-.day-slide.day-empty {
-grid-template-rows: auto;
-}
-
-.day-slide.day-empty .day-header {
-padding-bottom: 22px;
-}
-
 .carousel-shell {
 position: relative;
 display: block;
 padding-inline: 52px;
 min-height: 0;
 height: 100%;
+max-height: var(--carousel-max-height);
 }
 
 .carousel-track {
@@ -664,13 +669,15 @@ display: flex;
 gap: 22px;
 width: 100%;
 height: 100%;
+max-height: var(--carousel-max-height);
 overflow-x: auto;
 overflow-y: hidden;
 padding: 4px 2px;
 scrollbar-width: none;
 -ms-overflow-style: none;
 align-items: stretch;
-scroll-snap-type: x proximity;
+scroll-snap-type: x mandatory;
+scroll-padding-inline: 2px;
 touch-action: pan-x;
 }
 
@@ -704,8 +711,9 @@ box-shadow: 0 32px 80px rgba(0, 0, 0, 0.44);
 
 .event-media {
 position: relative;
-height: 32%;
-min-height: 116px;
+height: 30%;
+min-height: 104px;
+max-height: 160px;
 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 overflow: hidden;
 }
@@ -1320,6 +1328,12 @@ min-height: 0;
 min-height: 0;
 }
 
+.carousel-shell,
+.carousel-track,
+.event-card {
+max-height: min(100%, var(--carousel-max-height));
+}
+
 .site-footer {
 flex: 0 0 auto;
 margin-top: 8px;
@@ -1405,6 +1419,10 @@ min-height: auto;
 padding: 16px;
 }
 
+.day-body {
+height: auto;
+}
+
 .day-header {
 grid-template-columns: 1fr;
 padding: 14px 16px;
@@ -1417,12 +1435,14 @@ justify-content: flex-start;
 .carousel-shell {
 padding-inline: 0;
 height: auto;
+max-height: none;
 }
 
 .carousel-track {
 flex-direction: column;
 gap: 14px;
 height: auto;
+max-height: none;
 overflow: visible;
 padding: 0;
 scroll-snap-type: none;
