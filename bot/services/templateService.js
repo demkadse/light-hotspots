@@ -372,6 +372,10 @@ export async function submitTemplateForApproval(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
+  if (!templates[index].server?.trim()) {
+    throw new Error("Server fehlt. Bitte ergänze den Server in den Details, bevor du das Event einreichst.");
+  }
+
   templates[index] = {
     ...templates[index],
     status: "pending",
@@ -434,6 +438,7 @@ export async function approveTemplate(templateId) {
     title: template.title,
     type: template.event_type || template.type || "event",
     venue: template.venue,
+    server: template.server || null,
     host: template.host_display_name || template.host || "Unbekannt",
     venue_lead: template.venue_lead || null,
     date: `${year}-${month}-${day}`,

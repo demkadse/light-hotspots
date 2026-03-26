@@ -50,6 +50,14 @@ export function validateEventInput(event) {
     errors.push("Endzeit muss im Format HH:MM sein.");
   }
 
+  if ("server" in event) {
+    if (!event.server?.trim()) {
+      errors.push("Server fehlt.");
+    } else if (event.server.trim().length > 60) {
+      errors.push("Server darf maximal 60 Zeichen lang sein.");
+    }
+  }
+
   if (event.image) {
     const image = event.image.trim();
     const imagePath = (() => {

@@ -145,7 +145,7 @@ function createSummary(groups, startDate, endDate) {
   if (totalEvents === 0) {
     return {
       title: `Wochenvorschau ${startLabel} bis ${endLabel}: keine geplanten Events`,
-      intro: `Fuer den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
+      intro: `Für den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
       lines: []
     };
   }
@@ -164,7 +164,7 @@ function createSummary(groups, startDate, endDate) {
 
   return {
     title: `Wochenvorschau ${startLabel} bis ${endLabel}: ${totalEvents} Event${totalEvents === 1 ? "" : "s"} an ${dayCount} Tag${dayCount === 1 ? "" : "en"}`,
-    intro: "Das ist die ruhige Wochenuebersicht fuer die kommenden sieben Tage im Light Hotspots Kalender.",
+    intro: "Das ist die ruhige Wochenübersicht für die kommenden sieben Tage im Light Hotspots Kalender.",
     lines
   };
 }
@@ -178,7 +178,7 @@ function createRssFeed({ generatedAt, summary, startDate }) {
   <channel>
     <title>Light Hotspots Wochenfeed</title>
     <link>${SITE_URL}/</link>
-    <description>Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.</description>
+    <description>Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.</description>
     <language>de-DE</language>
     <lastBuildDate>${pubDate}</lastBuildDate>
     <ttl>1440</ttl>
@@ -200,7 +200,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
     title: "Light Hotspots Wochenfeed",
     home_page_url: `${SITE_URL}/`,
     feed_url: `${SITE_URL}/feeds/weekly-summary.json`,
-    description: "Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.",
+    description: "Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.",
     language: "de-DE",
     generated_at: generatedAt,
     weekly_window: {
@@ -372,7 +372,7 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Date()) {
   const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
   if (!channel?.isTextBased()) {
-    const error = new Error("Kalenderfeed-Channel nicht verfuegbar.");
+    const error = new Error("Kalenderfeed-Channel nicht verfügbar.");
     error.code = "CALENDAR_FEED_CHANNEL_UNAVAILABLE";
     throw error;
   }

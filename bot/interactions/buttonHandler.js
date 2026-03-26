@@ -38,6 +38,7 @@ function formatTemplateSummary(template) {
   return [
     `**${template.title || "Unbenannt"}**`,
     template.venue ? `Ort: ${template.venue}` : null,
+    template.server ? `Server: ${template.server}` : null,
     template.date ? `Datum: ${template.date}` : null,
     template.time ? `Zeit: ${buildTimeLabel(template)}` : null
   ].filter(Boolean).join("\n");
@@ -59,7 +60,7 @@ async function sendTemplateDm(client, userId, message) {
 function buildStepOneModal(template = null, modalId = "event_modal_step1_create") {
   const modal = new ModalBuilder()
     .setCustomId(modalId)
-    .setTitle("Event erstellen | Basis");
+    .setTitle("1/3 | Basis");
 
   const createInput = (id, label, placeholder, value = "") =>
     new ActionRowBuilder().addComponents(
@@ -121,6 +122,14 @@ function buildApprovalEmbed(template, duplicates) {
     });
   }
 
+  if (template.server) {
+    embed.addFields({
+      name: "Server",
+      value: template.server,
+      inline: true
+    });
+  }
+
   if (template.venue_lead) {
     embed.addFields({
       name: "Venue-Leitung",
@@ -156,7 +165,7 @@ function buildApprovalEmbed(template, duplicates) {
 
   if (duplicates.length > 0) {
     embed.addFields({
-      name: "Moegliche Duplikate",
+      name: "Mögliche Duplikate",
       value: duplicates
         .map(entry => `${entry.title} | ${entry.venue} | ${entry.date}`)
         .join("\n")
@@ -178,7 +187,7 @@ export async function handleButton(interaction, client) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("admin:cleanup:confirm")
-          .setLabel("Wirklich loeschen")
+          .setLabel("Wirklich löschen")
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId("admin:cleanup:cancel")
@@ -187,7 +196,7 @@ export async function handleButton(interaction, client) {
       );
 
       await replyAndExpire(interaction, {
-        content: "Dadurch werden Bot-Nachrichten in den Log- und Approval-Channels geloescht.",
+        content: "Dadurch werden Bot-Nachrichten in den Log- und Approval-Channels gelöscht.",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -213,7 +222,7 @@ export async function handleButton(interaction, client) {
 
       const summary = await cleanupBotMessages(client);
       const summaryText = summary
-        .map(entry => `<#${entry.channelId}>: ${entry.deleted} geloescht`)
+        .map(entry => `<#${entry.channelId}>: ${entry.deleted} gelöscht`)
         .join("\n");
 
       await replyAndExpire(interaction, {
@@ -243,7 +252,7 @@ export async function handleButton(interaction, client) {
       );
 
       await replyAndExpire(interaction, {
-        content: "Wenn du schon einmal ein Event erstellt hast, kannst du es hier einfach bearbeiten und musst kein neues anlegen. Wenn du noch kein Event erstellt hast, waehle `Neues Event erstellen`.",
+        content: "Starte ein neues Event oder öffne ein vorhandenes, um den 3-Schritte-Ablauf fortzusetzen.",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -262,7 +271,7 @@ export async function handleButton(interaction, client) {
 
       if (templates.length === 0) {
         await replyAndExpire(interaction, {
-          content: "Du hast aktuell noch kein bestehendes Event. Waehle stattdessen `Neues Event erstellen`.",
+          content: "Du hast aktuell noch kein bestehendes Event. Starte stattdessen mit `Neues Event erstellen`.",
           ephemeral: true
         }, 45000);
         return;
@@ -276,13 +285,13 @@ export async function handleButton(interaction, client) {
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("event:selectTemplate")
-        .setPlaceholder("Bestehendes Event auswaehlen")
+        .setPlaceholder("Bestehendes Event auswählen")
         .addOptions(options);
 
       const row = new ActionRowBuilder().addComponents(select);
 
       await replyAndExpire(interaction, {
-        content: "Waehle das Event aus, das du bearbeiten moechtest:",
+        content: "Wähle das Event aus, dessen 3-Schritte-Ablauf du fortsetzen möchtest:",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -296,7 +305,7 @@ export async function handleButton(interaction, client) {
 
       const modal = new ModalBuilder()
         .setCustomId(`event_modal_step2_${templateId}`)
-        .setTitle("Event | Details");
+        .setTitle("2/3 | Details");
 
       const createOptionalInput = (customId, label, placeholder, value = "") =>
         new ActionRowBuilder().addComponents(
@@ -313,8 +322,8 @@ export async function handleButton(interaction, client) {
         createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
         createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
         createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
-        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Kaeptn Mira", template?.venue_lead),
-        createOptionalInput("image", "Bild-URL (optional)", "https://example.com/event.jpg", template?.image)
+        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Käptn Mira", template?.venue_lead),
+        createOptionalInput("server", "Server", "z.B. Shiva, Odin, Twintania", template?.server)
       );
 
       await interaction.showModal(modal);
@@ -327,9 +336,18 @@ export async function handleButton(interaction, client) {
 
       const modal = new ModalBuilder()
         .setCustomId(`event_modal_step3_${templateId}`)
-        .setTitle("Event | Extras");
+        .setTitle("3/3 | Extras");
 
       modal.addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("image")
+            .setLabel("Bild-URL (optional)")
+            .setPlaceholder("https://example.com/event.jpg")
+            .setValue(template?.image || "")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        ),
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("discord_link")
@@ -369,7 +387,7 @@ export async function handleButton(interaction, client) {
 
       const modal = new ModalBuilder()
         .setCustomId(`event_modal_step2_${templateId}`)
-        .setTitle("Event | Details");
+        .setTitle("2/3 | Details");
 
       const createOptionalInput = (customId, label, placeholder, value = "") =>
         new ActionRowBuilder().addComponents(
@@ -386,8 +404,8 @@ export async function handleButton(interaction, client) {
         createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
         createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
         createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
-        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Kaeptn Mira", template?.venue_lead),
-        createOptionalInput("image", "Bild-URL (optional)", "https://example.com/event.jpg", template?.image)
+        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Käptn Mira", template?.venue_lead),
+        createOptionalInput("server", "Server", "z.B. Shiva, Odin, Twintania", template?.server)
       );
 
       await interaction.showModal(modal);
@@ -436,11 +454,11 @@ export async function handleButton(interaction, client) {
       await sendTemplateDm(
         client,
         ownerId,
-        `Dein Event wird gerade ueberprueft.\n\n${formatTemplateSummary(template)}\n\nDu wirst benachrichtigt, sobald es ein Update gibt.`
+        `Dein Event wird gerade überprüft.\n\n${formatTemplateSummary(template)}\n\nDu wirst benachrichtigt, sobald es ein Update gibt.`
       );
 
       await replyAndExpire(interaction, {
-        content: "Event wurde zur Pruefung gesendet.",
+        content: "Event wurde zur Prüfung gesendet.",
         ephemeral: true
       });
 
@@ -459,7 +477,7 @@ export async function handleButton(interaction, client) {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`event:unpublish:${templateId}`)
-            .setLabel("Veroeffentlichung zuruecknehmen")
+            .setLabel("Veröffentlichung zurücknehmen")
             .setStyle(ButtonStyle.Danger)
         );
 
@@ -483,7 +501,7 @@ export async function handleButton(interaction, client) {
         await sendTemplateDm(
           client,
           ownerId,
-          `Dein Event wurde bestaetigt. Viel Erfolg!\n\n${formatTemplateSummary(template)}\n\nEs ist jetzt fuer die Community sichtbar.`
+          `Dein Event wurde bestätigt. Viel Erfolg!\n\n${formatTemplateSummary(template)}\n\nEs ist jetzt für die Community sichtbar.`
         );
 
         await recordAuditEntry(client, {
@@ -501,7 +519,7 @@ export async function handleButton(interaction, client) {
 
           if (commitChannel?.isTextBased()) {
             await commitChannel.send(
-              `Commit fuer "${template.title}":\n\`\`\`json\n${content}\n\`\`\``
+              `Commit für "${template.title}":\n\`\`\`json\n${content}\n\`\`\``
             );
           }
         } catch (error) {
@@ -562,7 +580,7 @@ export async function handleButton(interaction, client) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`event:unpublish_confirm:${templateId}`)
-          .setLabel("Ja, wirklich zuruecknehmen")
+          .setLabel("Ja, wirklich zurücknehmen")
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`event:unpublish_cancel:${templateId}`)
@@ -603,7 +621,7 @@ export async function handleButton(interaction, client) {
       });
 
       await replyAndExpire(interaction, {
-        content: `Veroeffentlichung zurueckgenommen: ${result.title}`,
+        content: `Veröffentlichung zurückgenommen: ${result.title}`,
         ephemeral: true
       });
 

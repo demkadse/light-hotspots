@@ -59,12 +59,12 @@ async function runPendingReminderCheck() {
       const ownerId = await getTemplateOwnerId(template);
       const ownerLabel = ownerId ? `<@${ownerId}>` : "unbekannt";
       lines.push(
-        `Offen seit laengerer Zeit: ${template.title} (${template.date} ${template.time}) von ${ownerLabel}`
+        `Offen seit längerer Zeit: ${template.title} (${template.date} ${template.time}) von ${ownerLabel}`
       );
     }
 
     await channel.send({
-      content: `Reminder fuer offene Approvals:\n${lines.join("\n")}`
+      content: `Reminder für offene Approvals:\n${lines.join("\n")}`
     });
   } catch (error) {
     console.error("PENDING REMINDER ERROR:", error);
@@ -129,11 +129,11 @@ client.on("interactionCreate", async (interaction) => {
       let content = "Fehler.";
 
       if (error.code === "ADMIN_ONLY") {
-        content = "Diese Aktion ist nur fuer Admins verfuegbar.";
+        content = "Diese Aktion ist nur für Admins verfügbar.";
       } else if (error.code === "ACTION_COOLDOWN") {
         content = error.message;
       } else if (error.code === "SYNC_PATH_FORBIDDEN") {
-        content = "Der Bot darf diese Datei aus Sicherheitsgruenden nicht automatisch pushen.";
+        content = "Der Bot darf diese Datei aus Sicherheitsgründen nicht automatisch pushen.";
       }
 
       try {

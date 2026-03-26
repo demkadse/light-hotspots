@@ -56,7 +56,7 @@ export async function handleRejectModal(interaction, client) {
       }
 
       await user.send(
-`Dein Event wurde leider abgelehnt.\n\n**${template.title}**\nOrt: ${template.venue || "-"}\nDatum: ${template.date || "-"}\nZeit: ${template.time || "-"}\n\nGruende:\n${formatRejectReason(reason)}\n\nBitte korrigiere die genannten Punkte und reiche das Event danach gern erneut ein.`
+`Dein Event wurde leider abgelehnt.\n\n**${template.title}**\nOrt: ${template.venue || "-"}\nDatum: ${template.date || "-"}\nZeit: ${template.time || "-"}\n\nGründe:\n${formatRejectReason(reason)}\n\nBitte korrigiere die genannten Punkte und reiche das Event danach gern erneut ein.`
       );
     } catch (error) {
       console.warn("DM fehlgeschlagen:", error.message);

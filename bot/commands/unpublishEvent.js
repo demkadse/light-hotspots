@@ -11,7 +11,7 @@ import { getPublishedTemplates } from "../services/templateService.js";
 
 export const data = new SlashCommandBuilder()
   .setName("unpublish-event")
-  .setDescription("Waehlt ein veroeffentlichtes Event zum Zuruecknehmen aus");
+  .setDescription("Wählt ein veröffentlichtes Event zum Zurücknehmen aus");
 
 export async function execute(interaction) {
   assertAdminUser(interaction);
@@ -21,7 +21,7 @@ export async function execute(interaction) {
 
   if (publishedTemplates.length === 0) {
     await replyAndExpire(interaction, {
-      content: "Es gibt aktuell keine veroeffentlichten Events zum Unpublishen.",
+      content: "Es gibt aktuell keine veröffentlichten Events zum Unpublishen.",
       ephemeral: true
     });
     return;
@@ -38,13 +38,13 @@ export async function execute(interaction) {
 
   const select = new StringSelectMenuBuilder()
     .setCustomId("admin:selectUnpublishEvent")
-    .setPlaceholder("Veroeffentlichtes Event auswaehlen")
+    .setPlaceholder("Veröffentlichtes Event auswählen")
     .addOptions(options);
 
   const row = new ActionRowBuilder().addComponents(select);
 
   await replyAndExpire(interaction, {
-    content: "Waehle das Event aus, das von der Website entfernt werden soll:",
+    content: "Wähle das Event aus, das von der Website entfernt werden soll:",
     components: [row],
     ephemeral: true
   }, 120000);

@@ -22,7 +22,7 @@ export async function handleSelect(interaction) {
 
     if (!template) {
       await replyAndExpire(interaction, {
-        content: "Das ausgewaehlte Event wurde nicht gefunden.",
+        content: "Das ausgewählte Event wurde nicht gefunden.",
         ephemeral: true
       });
       return;
@@ -31,7 +31,7 @@ export async function handleSelect(interaction) {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`event:unpublish:${template.id}`)
-        .setLabel("Veroeffentlichung zuruecknehmen")
+        .setLabel("Veröffentlichung zurücknehmen")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId("event:unpublish_cancel:selection")
@@ -40,7 +40,7 @@ export async function handleSelect(interaction) {
     );
 
     await replyAndExpire(interaction, {
-      content: `Ausgewaehlt: ${template.title} (${template.date})`,
+      content: `Ausgewählt: ${template.title} (${template.date})`,
       components: [row],
       ephemeral: true
     }, 120000);
@@ -54,7 +54,7 @@ export async function handleSelect(interaction) {
 
   const modal = new ModalBuilder()
     .setCustomId(`event_modal_step1_${value}`)
-    .setTitle("Event erstellen | Basis");
+    .setTitle("1/3 | Basis");
 
   const createInput = (id, label, placeholder, val = "") =>
     new ActionRowBuilder().addComponents(

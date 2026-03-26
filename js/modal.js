@@ -102,6 +102,7 @@ function openModal(event) {
   const details = document.createElement("div");
   details.className = "modal-details-grid";
   appendDetailItem(details, "Venue", event.venue || "Ort offen");
+  appendDetailItem(details, "Server", event.server);
   appendDetailItem(details, "Host", formatHostName(event));
   appendDetailItem(details, "Venue-Leitung", event.venue_lead);
   appendDetailItem(details, "Zeit", formatTimeRange(event));

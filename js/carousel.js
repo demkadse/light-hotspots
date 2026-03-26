@@ -149,6 +149,7 @@ function buildCard(event) {
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
+  appendMetaItem(meta, "Server", event.server);
   appendMetaItem(meta, "Host", formatHostName(event));
 
   if (event.venue_lead) {

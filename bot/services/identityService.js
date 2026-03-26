@@ -60,7 +60,7 @@ async function writePrivateUserMap(data) {
 export function hashDiscordUserId(userId) {
   const hash = createUserHash(userId);
   if (!hash) {
-    throw new Error("Ungueltige Discord-User-ID fuer Hashing");
+    throw new Error("Ungültige Discord-User-ID für Hashing");
   }
 
   return hash;
