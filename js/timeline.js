@@ -361,14 +361,7 @@ function updateFeaturedEvent(activeDayEvents) {
 }
 
 function updateHeroStats() {
-  const todayKey = getDayKey(startOfDay(new Date()));
   const visibleEvents = getVisibleEvents();
-  const todayVisible = visibleEvents.filter(event => normalizeDateKey(event.date) === todayKey);
-  const types = new Set(visibleEvents.map(getEventType).filter(Boolean));
-
-  document.getElementById("today-count").textContent = String(todayVisible.length);
-  document.getElementById("week-count").textContent = String(visibleEvents.length);
-  document.getElementById("type-count").textContent = String(types.size);
   document.getElementById("result-count").textContent = `${visibleEvents.length} sichtbare Events`;
 }
 
