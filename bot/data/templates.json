@@ -72,5 +72,16 @@
     "link": null,
     "notes": "18+",
     "rejection_reason": null
+  },
+  {
+    "id": "7fd3fcb8-824c-4269-bce8-9558a81eb411",
+    "title": "Beispiel-Event",
+    "venue": "Limsa Lominsa",
+    "date": "26.03.2026",
+    "time": "20:00",
+    "description": "Das Event-Beispiel dient zur Demonstration. Hier wäre eine ausführlichere Beschreibung zum Event angezeigt.",
+    "status": "draft",
+    "created_by": "840120737527627796",
+    "created_at": "2026-03-26T09:45:16.964Z"
   }
 ]
