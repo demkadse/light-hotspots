@@ -167,19 +167,52 @@ function getFeaturedPriority(event) {
   return priorityIndex >= 0 ? priorityIndex : Number.POSITIVE_INFINITY;
 }
 
+function getCurrentWeekRange() {
+  const today = startOfDay(new Date());
+  const day = today.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() + mondayOffset);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  return { today, weekStart, weekEnd };
+}
+
+function isEventInCurrentWeekUpcoming(event) {
+  const eventDateKey = normalizeDateKey(event.date);
+  if (!eventDateKey) {
+    return false;
+  }
+
+  const eventDate = startOfDay(new Date(`${eventDateKey}T00:00:00`));
+  const { today, weekEnd } = getCurrentWeekRange();
+
+  return eventDate.getTime() >= today.getTime() && eventDate.getTime() <= weekEnd.getTime();
+}
+
+function compareFeaturedEvents(a, b) {
+  const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
+  if (priorityDiff !== 0) {
+    return priorityDiff;
+  }
+
+  const dateDiff = normalizeDateKey(a.date).localeCompare(normalizeDateKey(b.date));
+  if (dateDiff !== 0) {
+    return dateDiff;
+  }
+
+  return compareEvents(a, b);
+}
+
 function pickFeaturedEvent(events) {
   if (!events || events.length === 0) {
     return null;
   }
 
-  return [...events].sort((a, b) => {
-    const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
-    if (priorityDiff !== 0) {
-      return priorityDiff;
-    }
-
-    return compareEvents(a, b);
-  })[0];
+  return [...events].sort(compareFeaturedEvents)[0];
 }
 
 function eventMatchesFilters(event, day) {
@@ -344,13 +377,14 @@ function updateFeaturedEvent(activeDayEvents) {
   const copy = document.getElementById("featured-event-copy");
   const button = document.getElementById("featured-event-open");
   const visibleEvents = getVisibleEvents();
-  const featured = pickFeaturedEvent(activeDayEvents) || pickFeaturedEvent(visibleEvents);
+  const weeklyUpcomingEvents = visibleEvents.filter(isEventInCurrentWeekUpcoming);
+  const featured = pickFeaturedEvent(weeklyUpcomingEvents);
 
   state.featuredEvent = featured;
 
   if (!featured) {
     title.textContent = "Noch kein Event ausgewählt";
-    copy.textContent = "Sobald sichtbare Events vorhanden sind, erscheint hier ein schneller Einstieg.";
+    copy.textContent = "Für den Rest dieser Woche steht aktuell kein Event im Fokus.";
     button.hidden = true;
     return;
   }
