@@ -81,12 +81,10 @@ function buildRelatedEvents(event) {
 function openModal(event) {
   modalContent.replaceChildren();
 
-  if (event.image) {
-    const image = document.createElement("img");
-    image.alt = event.title || "Veranstaltungsbild";
-    image.src = event.image;
-    modalContent.appendChild(image);
-  }
+  const image = document.createElement("img");
+  image.alt = event.title || "Veranstaltungsbild";
+  image.src = window.getEventImageSource?.(event) || event.image || "placeholder.png";
+  modalContent.appendChild(image);
 
   const topRow = document.createElement("div");
   topRow.className = "modal-top-row";

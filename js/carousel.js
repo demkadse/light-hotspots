@@ -174,20 +174,12 @@ function buildCard(event) {
 
   const media = document.createElement("div");
   media.className = "event-media";
-
-  if (event.image) {
-    const image = document.createElement("img");
-    image.className = "event-image";
-    image.src = event.image;
-    image.alt = event.title || "Veranstaltungsbild";
-    image.loading = "lazy";
-    media.appendChild(image);
-  } else {
-    const fallback = document.createElement("div");
-    fallback.className = "event-image event-image-fallback";
-    fallback.textContent = formatTypeLabel(event);
-    media.appendChild(fallback);
-  }
+  const image = document.createElement("img");
+  image.className = "event-image";
+  image.src = window.getEventImageSource?.(event) || event.image || "placeholder.png";
+  image.alt = event.title || "Veranstaltungsbild";
+  image.loading = "lazy";
+  media.appendChild(image);
 
   const titleBanner = document.createElement("div");
   titleBanner.className = "event-title-banner";

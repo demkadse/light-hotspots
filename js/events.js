@@ -1,4 +1,5 @@
 const DATA_PATH = "events/data/";
+const PLACEHOLDER_IMAGE_PATH = "placeholder.png";
 
 let indexCache = null;
 let indexLoadFailed = false;
@@ -54,3 +55,10 @@ async function getAllIndexedEvents() {
 function didIndexLoadFail() {
   return indexLoadFailed;
 }
+
+function getEventImageSource(event) {
+  const image = typeof event?.image === "string" ? event.image.trim() : "";
+  return image || PLACEHOLDER_IMAGE_PATH;
+}
+
+window.getEventImageSource = getEventImageSource;
