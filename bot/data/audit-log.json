@@ -198,5 +198,13 @@
     "target_id": "d4aa6417-9d01-446f-8549-b1baeb1549b5",
     "summary": "Club Katzenfutter",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "fd2607ba-e616-4e98-9c61-c82ed5564e59",
+    "created_at": "2026-03-26T14:26:10.057Z",
+    "action": "template.updated",
+    "target_id": "7fd3fcb8-824c-4269-bce8-9558a81eb411",
+    "summary": "Beispiel-Event",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
