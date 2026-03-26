@@ -5,7 +5,7 @@
   "feed_url": "https://light-hotspots.talaani.de/feeds/weekly-summary.json",
   "description": "Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.",
   "language": "de-DE",
-  "generated_at": "2026-03-26T14:56:11.488Z",
+  "generated_at": "2026-03-26T12:00:00.000Z",
   "weekly_window": {
     "start_date": "2026-03-26",
     "end_date": "2026-04-01"
@@ -14,16 +14,17 @@
     "title": "Wochenvorschau 26.03. bis 01.04.: 1 Event an 1 Tag",
     "intro": "Das ist die ruhige Wochenübersicht für die kommenden sieben Tage im Light Hotspots Kalender.",
     "sections": [
-      "Donnerstag, 26.03.:\n- 21:00 Uhr | Beispiel-Event (ABGESAGT) | in Limsa Lominsa | Server: Shiva | Host: Das hier ist ein Test!"
+      "Donnerstag, 26.03.:\n- 21:00 Uhr | Beispiel-Event | in Limsa Lominsa | Server: Shiva | Host: Beispiel-Bernhardt"
     ]
   },
   "items": [
     {
       "id": "2026-03-26:beispiel-event",
       "url": "https://light-hotspots.talaani.de/?event=beispiel-event",
-      "title": "Beispiel-Event (ABGESAGT)",
-      "content_text": "Donnerstag, 26.03.\nStart: 21:00 Uhr\nVenue: Limsa Lominsa\nServer: Shiva\nStatus: Abgesagt\nHost: Das hier ist ein Test!\nDas Event-Beispiel dient zur Demonstration. Hier wäre eine ausführlichere Beschreibung zum Event angezeigt.",
-      "date_published": "2026-03-26T14:56:11.488Z",
+      "title": "Beispiel-Event",
+      "image": "https://light-hotspots.talaani.de/placeholder.png",
+      "content_text": "Donnerstag, 26.03.\nStart: 21:00 Uhr\nVenue: Limsa Lominsa\nServer: Shiva\nHost: Beispiel-Bernhardt\nHinweise: Das hier ist ein Test! Hier stehen Hinweise!\nDas Event-Beispiel dient zur Demonstration. Hier wäre eine ausführlichere Beschreibung zum Event angezeigt.",
+      "date_published": "2026-03-26T12:00:00.000Z",
       "tags": [
         "Taverne",
         "Limsa Lominsa"
