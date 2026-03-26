@@ -294,7 +294,7 @@ color: rgba(245, 241, 232, 0.86);
 
 .toolbar {
 display: grid;
-grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.95fr) auto;
+grid-template-columns: minmax(280px, 0.92fr) minmax(620px, 1.45fr) auto;
 grid-template-areas:
 "scope filters status";
 gap: 12px 16px;
@@ -406,7 +406,7 @@ min-width: 0;
 .filter-stack {
 grid-area: filters;
 display: grid;
-grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 1.08fr);
 gap: 16px 18px;
 align-items: start;
 justify-items: stretch;
@@ -1273,7 +1273,7 @@ text-align: left;
 }
 
 .filter-stack {
-grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 1.05fr);
 }
 
 .toolbar-help-button {
@@ -1281,7 +1281,7 @@ width: 100%;
 }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 920px) {
 .filter-stack {
 grid-template-columns: 1fr;
 }
