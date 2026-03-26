@@ -2,5 +2,7 @@
 bot/.env
 bot/data/private-user-map.json
 bot/data/private-calendar-feed-state.json
+bot/data/audit-log.json
+logs/events/
 node_modules/
 .doofeleute
