@@ -293,17 +293,19 @@ function clampText(value, maxLength) {
 
 function buildCompactWeekLines(groups) {
   return groups.flatMap(group => {
-    const lines = [`__**${group.label}**__`];
+    const lines = [`## ${group.label}`];
 
     for (const event of group.events) {
       const eventLine = [
-        `> \`${formatFeedTime(event)}\``,
-        `**${buildFeedEventTitle(event)}**`,
-        event.venue ? `- *${event.venue}*` : null
+        `> **${buildFeedEventTitle(event)}**`,
+        `\`${formatFeedTime(event)}\``,
+        event.venue ? `• *${event.venue}*` : null
       ].filter(Boolean).join(" ");
 
       lines.push(eventLine);
     }
+
+    lines.push("");
 
     return lines;
   });
@@ -311,25 +313,24 @@ function buildCompactWeekLines(groups) {
 
 function buildEventSummaryLine(event, groupLabel) {
   return [
-    `**${groupLabel}**`,
-    `\`${formatFeedTime(event)}\``,
-    event.status === "cancelled" ? "`Abgesagt`" : null
-  ].filter(Boolean).join("  •  ");
+    `## ${buildFeedEventTitle(event)}`,
+    `**${groupLabel}** • \`${formatFeedTime(event)}\`${event.status === "cancelled" ? " • `Abgesagt`" : ""}`
+  ].filter(Boolean).join("\n");
 }
 
 function buildPrimaryInfo(event) {
   return [
-    event.type || event.event_type ? `**Typ**\n${event.type || event.event_type}` : null,
-    event.venue ? `**Venue**\n${event.venue}` : null,
-    event.server ? `**Server**\n${event.server}` : null
+    event.type || event.event_type ? `**Typ**\n> ${event.type || event.event_type}` : null,
+    event.venue ? `**Venue**\n> ${event.venue}` : null,
+    event.server ? `**Server**\n> ${event.server}` : null
   ].filter(Boolean);
 }
 
 function buildSecondaryInfo(event) {
   return [
-    event.host ? `**Veranstalter**\n${event.host}` : null,
-    event.venue_lead ? `**Venue-Leitung**\n${event.venue_lead}` : null,
-    event.notes ? `**Hinweise**\n${event.notes}` : null
+    event.host ? `**Veranstalter**\n> ${event.host}` : null,
+    event.venue_lead ? `**Venue-Leitung**\n> ${event.venue_lead}` : null,
+    event.notes ? `**Hinweise**\n> ${event.notes}` : null
   ].filter(Boolean);
 }
 
@@ -409,12 +410,12 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
         .setURL(buildEventUrl(event))
         .setDescription(clampText(descriptionParts.join("\n"), 4096))
         .setImage(getEventImageUrl(event))
-        .setFooter({ text: `Light Hotspots Kalender | ${group.label}` });
+        .setFooter({ text: `Light Hotspots • ${group.label}` });
 
       const primaryInfo = buildPrimaryInfo(event);
       primaryInfo.forEach((value, index) => {
         embed.addFields({
-          name: index === 0 ? "Details" : "\u200b",
+          name: index === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
           inline: true
         });
@@ -423,7 +424,7 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
       const secondaryInfo = buildSecondaryInfo(event);
       secondaryInfo.forEach((value, index) => {
         embed.addFields({
-          name: index === 0 && primaryInfo.length === 0 ? "Details" : "\u200b",
+          name: index === 0 && primaryInfo.length === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
           inline: index < 2
         });
@@ -442,7 +443,7 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
 
       if (links) {
         embed.addFields({
-          name: "Weiterfuehrende Links",
+          name: "Links",
           value: clampText(links, 1024),
           inline: false
         });
