@@ -423,8 +423,8 @@ function updateActiveDayMeta() {
 function updateSlide() {
   const renderedDays = getRenderedDays();
   const track = document.getElementById("timeline-track");
-  const viewport = document.querySelector(".timeline-viewport");
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
+  const slideElements = [...track.querySelectorAll(".day-slide")];
 
   if (renderedDays.length === 0) {
     return;
@@ -435,7 +435,9 @@ function updateSlide() {
   if (isMobile) {
     track.style.transform = "";
   } else {
-    track.style.transform = `translateY(-${state.slideIndex * viewport.clientHeight}px)`;
+    const targetSlide = slideElements[state.slideIndex];
+    const targetOffset = targetSlide ? targetSlide.offsetTop : 0;
+    track.style.transform = `translateY(-${targetOffset}px)`;
   }
 
   Array.from(document.querySelectorAll(".timeline-dot")).forEach((dot, index) => {
