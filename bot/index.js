@@ -16,8 +16,10 @@ import { processPendingReminders } from "./services/templateService.js";
 import { CHANNELS } from "./config/channels.js";
 import { getTemplateOwnerId } from "./services/identityService.js";
 import { postWeeklyCalendarFeedIfDue } from "./services/calendarFeedService.js";
+import { migrateAllPrivacyDataAndSync } from "./services/privacyMigrationService.js";
 
 validateConfig();
+await runPrivacyMigrationOnStartup();
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
@@ -26,6 +28,18 @@ const client = new Client({
 client.once("clientReady", () => {
   console.log(`Bot online: ${client.user.tag}`);
 });
+
+async function runPrivacyMigrationOnStartup() {
+  try {
+    const result = await migrateAllPrivacyDataAndSync();
+
+    if (result.changed) {
+      console.log(`Privacy migration updated ${result.changedFiles.length} file(s).`);
+    }
+  } catch (error) {
+    console.error("PRIVACY MIGRATION ERROR:", error);
+  }
+}
 
 async function runPendingReminderCheck() {
   try {

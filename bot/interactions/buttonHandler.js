@@ -44,6 +44,10 @@ function formatTemplateSummary(template) {
 }
 
 async function sendTemplateDm(client, userId, message) {
+  if (!userId) {
+    return;
+  }
+
   try {
     const user = await client.users.fetch(userId);
     await user.send(message);

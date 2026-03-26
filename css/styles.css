@@ -266,6 +266,8 @@ padding: 12px 18px 0;
 border-top: 1px solid rgba(201, 228, 255, 0.08);
 display: flex;
 justify-content: flex-end;
+gap: 16px;
+flex-wrap: wrap;
 }
 
 .site-footer-link {
@@ -875,6 +877,19 @@ z-index: 1000;
 display: flex;
 }
 
+#transparency-modal {
+position: fixed;
+inset: 0;
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+}
+
+#transparency-modal.active {
+display: flex;
+}
+
 .modal-overlay {
 position: absolute;
 inset: 0;
@@ -1067,6 +1082,17 @@ cursor: pointer;
 }
 
 #legal-notice-close {
+position: absolute;
+top: 10px;
+right: 14px;
+border: 0;
+background: transparent;
+color: var(--text);
+font-size: 28px;
+cursor: pointer;
+}
+
+#transparency-close {
 position: absolute;
 top: 10px;
 right: 14px;
