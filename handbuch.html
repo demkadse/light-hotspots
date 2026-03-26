@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Handbuch | Light Hotspots</title>
+<meta name="description" content="Benutzerhandbuch fuer den Light Hotspots Kalender und den Event-Bot auf Discord.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="handbook-page">
+<div class="site-shell handbook-shell">
+<header class="hero handbook-hero">
+<div class="hero-copy handbook-hero-copy">
+<p class="eyebrow">Light Hotspots</p>
+<h1>Benutzerhandbuch</h1>
+<p class="hero-text">
+Diese Seite erklaert alle sichtbaren Funktionen der Kalender-Website und den kompletten Nutzerprozess im Discord-Bot
+vom Erstellen bis zum Absagen eines Events.
+</p>
+<div class="hero-actions">
+<a class="hero-button hero-button-primary" href="index.html">Zum Kalender</a>
+<a id="handbook-discord-cta" class="hero-button hero-button-secondary" href="#" target="_blank" rel="noreferrer noopener">Discord oeffnen</a>
+</div>
+</div>
+<div class="hero-panel handbook-summary-panel">
+<div class="hero-panel-section">
+<span class="panel-label">Inhalt</span>
+<strong>Website und Discord-Bot</strong>
+<p>Alle Nutzerfunktionen an einem Ort, ohne Admin- oder Slash-Command-Details.</p>
+</div>
+<div class="featured-event handbook-highlight-card">
+<span class="panel-label">Schnellzugriff</span>
+<strong>Interaktives Inhaltsverzeichnis</strong>
+<p>Die Navigation springt direkt in den passenden Abschnitt und markiert den aktuell gelesenen Bereich.</p>
+</div>
+</div>
+</header>
+
+<main class="handbook-layout" aria-label="Handbuch">
+<aside class="handbook-sidebar">
+<div class="handbook-sidebar-card">
+<div class="handbook-sidebar-head">
+<span class="panel-label">Navigation</span>
+<button id="handbook-toc-toggle" class="toolbar-help-button handbook-toc-toggle" type="button" aria-expanded="false" aria-controls="handbook-toc">Inhaltsverzeichnis</button>
+</div>
+<nav id="handbook-toc" class="handbook-toc" aria-label="Inhaltsverzeichnis">
+<a class="handbook-toc-link" href="#grundidee">1. Grundidee</a>
+<a class="handbook-toc-link" href="#website-aufbau">2. Website-Aufbau</a>
+<a class="handbook-toc-link" href="#website-navigation">3. Filter und Navigation</a>
+<a class="handbook-toc-link" href="#event-karten">4. Event-Karten</a>
+<a class="handbook-toc-link" href="#detailansicht">5. Detailansicht</a>
+<a class="handbook-toc-link" href="#zusatzbereiche">6. Zusatzbereiche</a>
+<a class="handbook-toc-link" href="#discord-start">7. Discord-Einstieg</a>
+<a class="handbook-toc-link" href="#event-erstellen">8. Event erstellen</a>
+<a class="handbook-toc-link" href="#event-pruefung">9. Pruefung und Status</a>
+<a class="handbook-toc-link" href="#event-bearbeiten">10. Event bearbeiten</a>
+<a class="handbook-toc-link" href="#event-absagen">11. Event absagen</a>
+<a class="handbook-toc-link" href="#wochenfeed">12. Wochenfeed</a>
+<a class="handbook-toc-link" href="#kurzablauf">13. Kurzablauf</a>
+</nav>
+</div>
+</aside>
+
+<article class="handbook-content">
+<section id="grundidee" class="handbook-section">
+<span class="panel-label">1. Grundidee</span>
+<h2>Wofuer der Kalender gedacht ist</h2>
+<p>
+Der Light Hotspots Kalender ist eine Uebersichtsseite fuer Rollenspiel-Events auf dem Light-Datenzentrum.
+Er hilft dabei, aktuelle und kommende Termine schnell zu finden, nach Eventarten oder Orten zu filtern
+und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
+</p>
+<div class="handbook-callout">
+<strong>Wichtig zu wissen</strong>
+<p>Die Website dient hauptsaechlich der Darstellung. Das Erstellen, Bearbeiten und Absagen eigener Events geschieht ueber den Discord-Bot.</p>
+</div>
+</section>
+
+<section id="website-aufbau" class="handbook-section">
+<span class="panel-label">2. Website</span>
+<h2>Aufbau der Kalender-Website</h2>
+<div class="handbook-grid">
+<div class="handbook-card">
+<h3>Kopfbereich</h3>
+<p>Zeigt den Titel des Kalenders, einen kurzen Einleitungstext, den Discord-Button und den aktuellen Fokusbereich.</p>
+</div>
+<div class="handbook-card">
+<h3>Filterbereich</h3>
+<p>Hier lassen sich Zeitfenster, Typen, Venues und die Sichtbarkeit von Events und Venues einstellen.</p>
+</div>
+<div class="handbook-card">
+<h3>Tagesansicht</h3>
+<p>Jeder Tag des aktuellen Monats wird als eigene Station mit Event-Karten dargestellt.</p>
+</div>
+<div class="handbook-card">
+<h3>Fussbereich</h3>
+<p>Enthaelt zusaetzliche Informationsbereiche wie Rechtshinweis, Transparenz und den Zugang zum Handbuch.</p>
+</div>
+</div>
+</section>
+
+<section id="website-navigation" class="handbook-section">
+<span class="panel-label">3. Website</span>
+<h2>Filter und Navigation</h2>
+<h3>Zeitfenster</h3>
+<p>Die Schaltflaechen <code>Alle Tage</code>, <code>Heute</code> und <code>Wochenende</code> schraenken die angezeigten Tage ein.</p>
+<h3>Schnellnavigation</h3>
+<p>Je nach Situation bietet der Kalender Schnellziele wie <code>Morgen</code>, <code>Monatsanfang</code> oder <code>Erstes Event</code>.</p>
+<h3>Typ- und Venue-Filter</h3>
+<p>Nutzer koennen gezielt nach bestimmten Eventtypen oder Locations filtern. Zusaetzliche Schnellfilter-Chips helfen bei haeufigen Typen.</p>
+<h3>Events und Venues</h3>
+<p>Die Anzeige kann auf klassische Events, auf Venues oder auf beides gleichzeitig begrenzt werden.</p>
+<div class="handbook-note">
+<p>Der Kalender merkt sich den zuletzt genutzten Zustand, darunter Filter, Kategorien und aktiven Tag.</p>
+</div>
+</section>
+
+<section id="event-karten" class="handbook-section">
+<span class="panel-label">4. Website</span>
+<h2>Event-Karten</h2>
+<p>Die Event-Karten sind die kompakte Schnellansicht eines Eintrags. Je nach verfuegbaren Daten koennen sie enthalten:</p>
+<ul>
+<li>Bannerbild oder Platzhalterbild</li>
+<li>Titel des Events</li>
+<li>Kategorie und Typ</li>
+<li>Uhrzeit</li>
+<li>Venue und Server</li>
+<li>Veranstalter</li>
+<li>Kurzbeschreibung</li>
+<li>Hinweis auf vorhandene Links</li>
+</ul>
+<p>Wird kein Banner angegeben, verwendet die Seite automatisch das Platzhalterbild, damit jede Karte vollstaendig aussieht.</p>
+<p>Abgesagte Events bleiben sichtbar, werden aber klar als abgesagt markiert.</p>
+</section>
+
+<section id="detailansicht" class="handbook-section">
+<span class="panel-label">5. Website</span>
+<h2>Detailansicht eines Events</h2>
+<p>Beim Anklicken einer Event-Karte oeffnet sich ein Detailfenster mit allen verfuegbaren Angaben.</p>
+<div class="handbook-grid">
+<div class="handbook-card">
+<h3>Grunddaten</h3>
+<p>Titel, Kategorie, Typ, Datum, Uhrzeit, Venue, Server und Veranstalter.</p>
+</div>
+<div class="handbook-card">
+<h3>Erweiterte Angaben</h3>
+<p>Venue-Leitung, Wiederholung, Hinweise und Status bei abgesagten Events.</p>
+</div>
+<div class="handbook-card">
+<h3>Links</h3>
+<p>Direkte Schaltflaechen fuer Discord-Server oder externe Informationsseiten, falls vorhanden.</p>
+</div>
+<div class="handbook-card">
+<h3>Weitere Events</h3>
+<p>Falls passend, zeigt die Detailansicht weitere Veranstaltungen desselben Abends an.</p>
+</div>
+</div>
+</section>
+
+<section id="zusatzbereiche" class="handbook-section">
+<span class="panel-label">6. Website</span>
+<h2>Zusatzbereiche auf der Website</h2>
+<p>Im Fussbereich der Seite befinden sich weitere Informationsfenster:</p>
+<ul>
+<li><strong>Rechtshinweis</strong>: Hinweise zur Plattform und zur konkreten Gestaltung</li>
+<li><strong>Transparenz</strong>: Offenlegung zur verwendeten technischen Unterstuetzung</li>
+<li><strong>Unterschiede Events/Venues</strong>: Erklaerung der Kategorisierung</li>
+<li><strong>Handbuch</strong>: diese Dokumentationsseite</li>
+</ul>
+</section>
+
+<section id="discord-start" class="handbook-section">
+<span class="panel-label">7. Discord-Bot</span>
+<h2>So beginnt der Event-Prozess auf Discord</h2>
+<p>Im Discord-Server gibt es ein Event-Panel mit einer Start-Schaltflaeche. Nach dem Klick darauf sehen Nutzer normalerweise drei Wege:</p>
+<ul>
+<li><code>Neues Event erstellen</code></li>
+<li><code>Bestehendes Event bearbeiten</code></li>
+<li><code>Veroeffentlichtes Event absagen</code></li>
+</ul>
+<p>Damit deckt der Bot den kompletten normalen Nutzerablauf ab, ohne dass Nutzer technische Befehle kennen muessen.</p>
+</section>
+
+<section id="event-erstellen" class="handbook-section">
+<span class="panel-label">8. Discord-Bot</span>
+<h2>Neues Event erstellen</h2>
+<p>Die Event-Erstellung ist als klarer 3-Schritte-Ablauf aufgebaut.</p>
+<div class="handbook-step-list">
+<div class="handbook-step">
+<span class="handbook-step-number">1</span>
+<div>
+<h3>Basisdaten</h3>
+<p>Pflichtfelder sind Titel, Location, Datum, Uhrzeit und Beschreibung.</p>
+<p>Formatregeln: Datum im Format <code>TT.MM.JJJJ</code>, Uhrzeit im Format <code>HH:MM</code>.</p>
+</div>
+</div>
+<div class="handbook-step">
+<span class="handbook-step-number">2</span>
+<div>
+<h3>Details</h3>
+<p>Hier koennen Endzeit, Eventtyp, Host-Anzeigename, Venue-Leitung und Server hinterlegt werden.</p>
+<p>Der Server ist spaetestens vor dem Einreichen zur Pruefung erforderlich.</p>
+</div>
+</div>
+<div class="handbook-step">
+<span class="handbook-step-number">3</span>
+<div>
+<h3>Extras</h3>
+<p>Optional moeglich sind Bild-URL, Discord-Link, externer Link, Wiederholung und Hinweise.</p>
+<p>Die Bild-URL muss auf eine Bilddatei zeigen, Discord-Links muessen zu <code>discord.gg</code> oder <code>discord.com</code> fuehren.</p>
+</div>
+</div>
+</div>
+<div class="handbook-callout">
+<strong>Vorschau nach jedem Schritt</strong>
+<p>Nach jedem Schritt zeigt der Bot eine Vorschau des aktuellen Events. So lassen sich Eingaben kontrollieren und bei Bedarf noch vor dem Absenden korrigieren.</p>
+</div>
+</section>
+
+<section id="event-pruefung" class="handbook-section">
+<span class="panel-label">9. Discord-Bot</span>
+<h2>Pruefung und Status eines Events</h2>
+<p>Nach dem Klick auf <code>Jetzt zur Pruefung senden</code> passiert aus Nutzersicht Folgendes:</p>
+<ul>
+<li>Das Event wird mit dem Status <code>pending</code> eingereicht.</li>
+<li>Es ist noch nicht sofort oeffentlich sichtbar.</li>
+<li>Nach der Pruefung gibt es eine Rueckmeldung.</li>
+<li>Bei Freigabe wird das Event auf der Website sichtbar.</li>
+<li>Bei Ablehnung wird ein Grund hinterlegt, damit das Event ueberarbeitet werden kann.</li>
+</ul>
+<h3>Wichtige Status aus Nutzersicht</h3>
+<ul>
+<li><code>draft</code>: begonnen, aber noch nicht eingereicht</li>
+<li><code>pending</code>: zur Pruefung gesendet</li>
+<li><code>approved</code>: freigegeben und sichtbar</li>
+<li><code>cancelled</code>: sichtbar, aber als abgesagt markiert</li>
+<li><code>rejected</code>: abgelehnt und muss ueberarbeitet werden</li>
+</ul>
+</section>
+
+<section id="event-bearbeiten" class="handbook-section">
+<span class="panel-label">10. Discord-Bot</span>
+<h2>Bestehendes Event bearbeiten</h2>
+<p>Ueber <code>Bestehendes Event bearbeiten</code> koennen Nutzer ihre vorhandenen Eintraege erneut oeffnen.</p>
+<p>Der Bot zeigt dazu eine Auswahlliste mit den eigenen Events. Typischerweise sichtbar sind Titel, Datum und aktueller Status.</p>
+<p>Nach der Auswahl wird das Event wieder im 3-Schritte-System geoeffnet. Der Ablauf ist derselbe wie bei einer Neuerstellung:</p>
+<ul>
+<li>Basisdaten bearbeiten</li>
+<li>Details bearbeiten</li>
+<li>Extras bearbeiten</li>
+<li>erneut zur Pruefung senden</li>
+</ul>
+</section>
+
+<section id="event-absagen" class="handbook-section">
+<span class="panel-label">11. Discord-Bot</span>
+<h2>Veroeffentlichtes Event absagen</h2>
+<p>Wenn ein bereits sichtbares Event nicht stattfinden kann, koennen Nutzer es ueber den Bot absagen lassen.</p>
+<div class="handbook-grid">
+<div class="handbook-card">
+<h3>Auswahl</h3>
+<p>Der Bot zeigt alle eigenen Events, die bereits freigegeben wurden.</p>
+</div>
+<div class="handbook-card">
+<h3>Bestaetigung</h3>
+<p>Vor dem Absagen fragt der Bot noch einmal nach, ob das Event wirklich als abgesagt markiert werden soll.</p>
+</div>
+<div class="handbook-card">
+<h3>Wirkung</h3>
+<p>Das Event wird nicht geloescht, sondern bleibt sichtbar und wird klar als abgesagt markiert.</p>
+</div>
+<div class="handbook-card">
+<h3>Sichtbarkeit</h3>
+<p>Besucher sehen weiterhin, dass das Event geplant war, aber nicht stattfindet.</p>
+</div>
+</div>
+</section>
+
+<section id="wochenfeed" class="handbook-section">
+<span class="panel-label">12. Zusatzfunktion</span>
+<h2>Wochenfeed</h2>
+<p>Zusatzlich zum eigentlichen Kalender gibt es einen Wochenfeed fuer die naechsten sieben Tage.</p>
+<ul>
+<li>Discord-Feed</li>
+<li>RSS-Feed</li>
+<li>JSON-Feed</li>
+</ul>
+<p>Der Feed zeigt zuerst eine kompakte Wochenuebersicht und danach fuer jedes Event eine eigene Darstellung mit allen verfuegbaren Informationen.</p>
+</section>
+
+<section id="kurzablauf" class="handbook-section">
+<span class="panel-label">13. Schnelluebersicht</span>
+<h2>Typischer Ablauf fuer Nutzer</h2>
+<ol>
+<li>Kalender oeffnen und passende Events ansehen.</li>
+<li>Bei Bedarf ueber den Button zum Discord-Server wechseln.</li>
+<li>Im Discord den Event-Ablauf starten.</li>
+<li>Basisdaten, Details und Extras ausfuellen.</li>
+<li>Die Vorschau kontrollieren.</li>
+<li>Das Event zur Pruefung senden.</li>
+<li>Auf Rueckmeldung warten.</li>
+<li>Nach Freigabe das Event auf der Website wiederfinden.</li>
+<li>Spaeter bei Bedarf bearbeiten oder absagen.</li>
+</ol>
+<div class="handbook-callout">
+<strong>Kurz gesagt</strong>
+<p>Die Website ist die gut lesbare Event-Uebersicht. Der Discord-Bot ist das Werkzeug fuer Einreichung, Bearbeitung und Absage.</p>
+</div>
+</section>
+</article>
+</main>
+
+<footer class="site-footer handbook-footer" aria-label="Seitenhinweise">
+<a class="site-footer-link" href="index.html">Kalender</a>
+<a class="site-footer-link" href="handbuch.html">Handbuch</a>
+<a id="handbook-footer-discord" class="site-footer-link" href="#" target="_blank" rel="noreferrer noopener">Discord</a>
+</footer>
+</div>
+
+<script src="js/siteConfig.js"></script>
+<script src="js/handbook.js"></script>
+</body>
+</html>
