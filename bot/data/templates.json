@@ -6,7 +6,7 @@
     "date": "27.03.2026",
     "time": "20:00",
     "description": "Die Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.",
-    "status": "draft",
+    "status": "pending",
     "category": "event",
     "recurrence_rule": null,
     "created_by_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03",
@@ -16,10 +16,11 @@
     "host_display_name": null,
     "venue_lead": "Nyee Fuyu",
     "server": "Twintania",
-    "updated_at": "2026-03-26T21:03:41.778Z",
+    "updated_at": "2026-03-26T21:04:31.182Z",
     "image": "https://cdn.discordapp.com/attachments/1100546332495728803/1486826957919224033/Logo1.0.png?ex=69c6eb02&is=69c59982&hm=1ce75aee71253e2810feaf4cadef022b76e64168057a2379c93f2b3617aecf54&",
     "discord_link": "https://discord.gg/RqEdSu8hdD",
     "link": "https://mermaidproject.carrd.co/#",
-    "notes": "Warnungen: Alkohol, Nacktheit"
+    "notes": "Warnungen: Alkohol, Nacktheit",
+    "rejection_reason": null
   }
 ]
