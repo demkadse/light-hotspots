@@ -2,11 +2,11 @@ function formatHostName(event) {
   const host = event.host || event.host_display_name || event.created_by || "";
 
   if (!host) {
-    return "Unbekannter Host";
+    return "Unbekannter Veranstalter";
   }
 
   if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Host des ${event.venue}` : "Discord-Host";
+    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
   }
 
   return host;
@@ -124,7 +124,7 @@ function buildCard(event) {
     const image = document.createElement("img");
     image.className = "event-image";
     image.src = event.image;
-    image.alt = event.title || "Eventbild";
+    image.alt = event.title || "Veranstaltungsbild";
     image.loading = "lazy";
     media.appendChild(image);
   } else {
@@ -176,7 +176,7 @@ function buildCard(event) {
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
   appendMetaItem(meta, "Server", event.server);
-  appendMetaItem(meta, "Host", formatHostName(event));
+  appendMetaItem(meta, "Veranstalter", formatHostName(event));
 
   if (event.venue_lead) {
     appendMetaItem(meta, "Leitung", event.venue_lead);
@@ -193,7 +193,7 @@ function buildCard(event) {
   if (event.discord_link || event.link) {
     const linkHint = document.createElement("span");
     linkHint.className = "event-link-hint";
-    linkHint.textContent = event.discord_link ? "Mit Event-Discord" : "Mit externem Link";
+    linkHint.textContent = event.discord_link ? "Mit Discord-Server" : "Mit externem Link";
     info.appendChild(linkHint);
   }
 

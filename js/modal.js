@@ -5,11 +5,11 @@ function formatHostName(event) {
   const host = event.host || event.host_display_name || event.created_by || "";
 
   if (!host) {
-    return "Unbekannter Host";
+    return "Unbekannter Veranstalter";
   }
 
   if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Host des ${event.venue}` : "Discord-Host";
+    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
   }
 
   return host;
@@ -83,7 +83,7 @@ function openModal(event) {
 
   if (event.image) {
     const image = document.createElement("img");
-    image.alt = event.title || "Eventbild";
+    image.alt = event.title || "Veranstaltungsbild";
     image.src = event.image;
     modalContent.appendChild(image);
   }
@@ -128,7 +128,7 @@ function openModal(event) {
   appendDetailItem(details, "Typ", formatTypeLabel(event));
   appendDetailItem(details, "Venue", event.venue || "Ort offen");
   appendDetailItem(details, "Server", event.server);
-  appendDetailItem(details, "Host", formatHostName(event));
+  appendDetailItem(details, "Veranstalter", formatHostName(event));
   appendDetailItem(details, "Venue-Leitung", event.venue_lead);
   appendDetailItem(details, "Wiederholung", event.recurrence_rule === "weekly" ? "Wöchentlich" : null);
   appendDetailItem(details, "Zeit", formatTimeRange(event));
@@ -165,7 +165,7 @@ function openModal(event) {
     cta.href = event.discord_link;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Event-Discord öffnen";
+    cta.textContent = "Discord-Server öffnen";
     linkRow.appendChild(cta);
   }
 
