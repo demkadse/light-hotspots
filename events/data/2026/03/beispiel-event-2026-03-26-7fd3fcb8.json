@@ -19,8 +19,9 @@
   "link": null,
   "links": [],
   "notes": "Das hier ist ein Test! Hier stehen Hinweise!",
-  "status": "scheduled",
+  "status": "cancelled",
   "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e",
   "created_at": "2026-03-26T14:27:31.162Z",
-  "file": "2026/03/beispiel-event-2026-03-26-7fd3fcb8.json"
+  "file": "2026/03/beispiel-event-2026-03-26-7fd3fcb8.json",
+  "cancelled_at": "2026-03-26T14:31:00.272Z"
 }
