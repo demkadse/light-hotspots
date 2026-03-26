@@ -28,6 +28,7 @@ import { assertActionCooldown } from "../services/cooldownService.js";
 import { cleanupBotMessages } from "../services/cleanupService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { CHANNELS } from "../config/channels.js";
+import { getTemplateOwnerId } from "../services/identityService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -394,6 +395,7 @@ export async function handleButton(interaction, client) {
       await deferEphemeral(interaction);
       const draft = await getTemplate(templateId);
       const template = await submitTemplateForApproval(templateId);
+      const ownerId = await getTemplateOwnerId(template);
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
 
       if (!channel) {
@@ -415,7 +417,7 @@ export async function handleButton(interaction, client) {
       );
 
       await channel.send({
-        content: `Neues Event von <@${template.created_by}>`,
+        content: ownerId ? `Neues Event von <@${ownerId}>` : "Neues Event eingereicht",
         embeds: [embed],
         components: [row]
       });
@@ -429,7 +431,7 @@ export async function handleButton(interaction, client) {
 
       await sendTemplateDm(
         client,
-        template.created_by,
+        ownerId,
         `Dein Event wird gerade ueberprueft.\n\n${formatTemplateSummary(template)}\n\nDu wirst benachrichtigt, sobald es ein Update gibt.`
       );
 
@@ -449,6 +451,7 @@ export async function handleButton(interaction, client) {
 
       try {
         const template = await approveTemplate(templateId);
+        const ownerId = await getTemplateOwnerId(await getTemplate(templateId));
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`event:unpublish:${templateId}`)
@@ -475,7 +478,7 @@ export async function handleButton(interaction, client) {
 
         await sendTemplateDm(
           client,
-          template.created_by,
+          ownerId,
           `Dein Event wurde bestaetigt. Viel Erfolg!\n\n${formatTemplateSummary(template)}\n\nEs ist jetzt fuer die Community sichtbar.`
         );
 

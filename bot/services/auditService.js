@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 import { CHANNELS } from "../config/channels.js";
 import { syncRepoFiles } from "./gitSyncService.js";
+import { sanitizeAuditEntriesForStorage } from "./identityService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,14 +22,23 @@ async function ensureAuditLog() {
 async function readAuditLog() {
   await ensureAuditLog();
   const raw = await fs.readFile(AUDIT_LOG_PATH, "utf-8");
-  return JSON.parse(raw);
+  const entries = JSON.parse(raw);
+  const sanitized = await sanitizeAuditEntriesForStorage(entries);
+
+  if (sanitized.changed) {
+    await fs.writeFile(AUDIT_LOG_PATH, JSON.stringify(sanitized.entries, null, 2), "utf-8");
+  }
+
+  return sanitized.entries;
 }
 
 async function writeAuditLog(entries) {
-  await fs.writeFile(AUDIT_LOG_PATH, JSON.stringify(entries, null, 2), "utf-8");
+  const sanitized = await sanitizeAuditEntriesForStorage(entries);
+  await fs.writeFile(AUDIT_LOG_PATH, JSON.stringify(sanitized.entries, null, 2), "utf-8");
 }
 
 export async function recordAuditEntry(client, entry) {
+  const actorId = entry.actor_id || null;
   const auditEntry = {
     id: crypto.randomUUID(),
     created_at: new Date().toISOString(),
@@ -46,7 +56,7 @@ export async function recordAuditEntry(client, entry) {
   try {
     const channel = await client.channels.fetch(CHANNELS.EVENT_LOG);
     if (channel?.isTextBased()) {
-      const actor = auditEntry.actor_id ? `<@${auditEntry.actor_id}>` : "system";
+      const actor = actorId ? `<@${actorId}>` : "system";
       const target = auditEntry.target_id ? ` (${auditEntry.target_id})` : "";
       await channel.send(
         `[AUDIT] ${auditEntry.action} by ${actor}: ${auditEntry.summary}${target}`

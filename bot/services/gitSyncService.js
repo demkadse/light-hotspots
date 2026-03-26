@@ -11,6 +11,8 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const ALLOWED_FILE_PATTERNS = [
   /^bot\/data\/templates\.json$/,
   /^bot\/data\/audit-log\.json$/,
+  /^feeds\/weekly-summary\.xml$/,
+  /^feeds\/weekly-summary\.json$/,
   /^events\/data\/index\.json$/,
   /^events\/data\/\d{4}\/\d{2}\/[^/]+\.json$/
 ];

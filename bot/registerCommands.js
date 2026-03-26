@@ -30,7 +30,10 @@ const commands = [
     ),
   new SlashCommandBuilder()
     .setName("unpublish-event")
-    .setDescription("Waehlt ein veroeffentlichtes Event zum Zuruecknehmen aus")
+    .setDescription("Waehlt ein veroeffentlichtes Event zum Zuruecknehmen aus"),
+  new SlashCommandBuilder()
+    .setName("force-calendar-feed")
+    .setDescription("Postet die Wochenvorschau sofort in den Kalenderfeed")
 ];
 
 const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);

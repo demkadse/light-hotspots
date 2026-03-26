@@ -2,6 +2,12 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { syncRepoFiles } from "./gitSyncService.js";
+import {
+  buildUserIdentityFields,
+  matchesUserHash,
+  rememberTemplateOwner,
+  sanitizeTemplatesForStorage
+} from "./identityService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,11 +47,19 @@ async function writeJSON(filePath, data) {
 
 async function readTemplates() {
   await ensureFile(TEMPLATE_PATH);
-  return readJSON(TEMPLATE_PATH, []);
+  const templates = await readJSON(TEMPLATE_PATH, []);
+  const sanitized = await sanitizeTemplatesForStorage(templates);
+
+  if (sanitized.changed) {
+    await writeJSON(TEMPLATE_PATH, sanitized.templates);
+  }
+
+  return sanitized.templates;
 }
 
 async function writeTemplates(templates) {
-  await writeJSON(TEMPLATE_PATH, templates);
+  const sanitized = await sanitizeTemplatesForStorage(templates);
+  await writeJSON(TEMPLATE_PATH, sanitized.templates);
 }
 
 function normalizeTemplateField(value) {
@@ -292,6 +306,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     };
 
     await writeTemplates(templates);
+    await rememberTemplateOwner(templates[index].id, userId);
     await syncRepoFiles(
       [TEMPLATE_PATH],
       `Update event template ${templates[index].id}`
@@ -302,13 +317,14 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const newTemplate = {
     id: crypto.randomUUID(),
     ...data,
-    created_by: userId,
+    ...buildUserIdentityFields(userId),
     status: "draft",
     created_at: new Date().toISOString()
   };
 
   templates.push(newTemplate);
   await writeTemplates(templates);
+  await rememberTemplateOwner(newTemplate.id, userId);
   await syncRepoFiles(
     [TEMPLATE_PATH],
     `Create event template ${newTemplate.id}`
@@ -319,7 +335,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
 export async function getTemplatesByUser(userId) {
   const templates = await readTemplates();
-  return templates.filter(template => template.created_by === userId);
+  return templates.filter(template => matchesUserHash(template, userId));
 }
 
 export async function getTemplate(templateId) {
@@ -333,7 +349,7 @@ export async function findReusableTemplateDraft(userId, data, withinMinutes = 18
   const now = Date.now();
 
   return templates
-    .filter(template => template.created_by === userId)
+    .filter(template => matchesUserHash(template, userId))
     .filter(isReusableDraftTemplate)
     .filter(template => hasSameCoreContent(template, data))
     .filter(template => {
@@ -417,7 +433,7 @@ export async function approveTemplate(templateId) {
     title: template.title,
     type: template.event_type || template.type || "event",
     venue: template.venue,
-    host: template.host_display_name || template.host || template.created_by,
+    host: template.host_display_name || template.host || "Unbekannt",
     venue_lead: template.venue_lead || null,
     date: `${year}-${month}-${day}`,
     start_time: template.time,
@@ -428,7 +444,7 @@ export async function approveTemplate(templateId) {
     link: template.link || null,
     links: [template.discord_link, template.link].filter(Boolean),
     notes: template.notes || null,
-    created_by: template.created_by,
+    created_by_hash: template.created_by_hash || null,
     created_at: new Date().toISOString()
   };
 

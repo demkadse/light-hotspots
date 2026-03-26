@@ -9,10 +9,13 @@ import { execute as setupEvents } from "./commands/setupEventPanel.js";
 import { execute as setupCleanup } from "./commands/setupCleanupPanel.js";
 import { execute as resyncEvents } from "./commands/resyncEvents.js";
 import { execute as unpublishEvent } from "./commands/unpublishEvent.js";
+import { execute as forceCalendarFeed } from "./commands/forceCalendarFeed.js";
 import { CONFIG, validateConfig } from "./config/config.js";
 import { replyAndExpire } from "./services/interactionResponseService.js";
 import { processPendingReminders } from "./services/templateService.js";
 import { CHANNELS } from "./config/channels.js";
+import { getTemplateOwnerId } from "./services/identityService.js";
+import { postWeeklyCalendarFeedIfDue } from "./services/calendarFeedService.js";
 
 validateConfig();
 
@@ -37,15 +40,32 @@ async function runPendingReminderCheck() {
       return;
     }
 
-    const lines = reminded.map(template =>
-      `Offen seit laengerer Zeit: ${template.title} (${template.date} ${template.time}) von <@${template.created_by}>`
-    );
+    const lines = [];
+    for (const template of reminded) {
+      const ownerId = await getTemplateOwnerId(template);
+      const ownerLabel = ownerId ? `<@${ownerId}>` : "unbekannt";
+      lines.push(
+        `Offen seit laengerer Zeit: ${template.title} (${template.date} ${template.time}) von ${ownerLabel}`
+      );
+    }
 
     await channel.send({
       content: `Reminder fuer offene Approvals:\n${lines.join("\n")}`
     });
   } catch (error) {
     console.error("PENDING REMINDER ERROR:", error);
+  }
+}
+
+async function runCalendarFeedCheck() {
+  try {
+    const result = await postWeeklyCalendarFeedIfDue(client);
+
+    if (result.posted) {
+      console.log(`Calendar feed posted for ${result.startDate} to ${result.endDate}`);
+    }
+  } catch (error) {
+    console.error("CALENDAR FEED ERROR:", error);
   }
 }
 
@@ -66,6 +86,10 @@ client.on("interactionCreate", async (interaction) => {
 
       if (interaction.commandName === "unpublish-event") {
         return await unpublishEvent(interaction);
+      }
+
+      if (interaction.commandName === "force-calendar-feed") {
+        return await forceCalendarFeed(interaction);
       }
     }
 
@@ -116,4 +140,9 @@ setInterval(() => {
   void runPendingReminderCheck();
 }, 15 * 60 * 1000);
 
+setInterval(() => {
+  void runCalendarFeedCheck();
+}, 5 * 60 * 1000);
+
 void runPendingReminderCheck();
+void runCalendarFeedCheck();

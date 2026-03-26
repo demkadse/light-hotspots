@@ -6,6 +6,7 @@ import {
 import { assertAdminUser } from "../services/permissionService.js";
 import { assertActionCooldown } from "../services/cooldownService.js";
 import { recordAuditEntry } from "../services/auditService.js";
+import { getTemplateOwnerId } from "../services/identityService.js";
 
 function formatRejectReason(reason) {
   const lines = reason
@@ -33,6 +34,7 @@ export async function handleRejectModal(interaction, client) {
     const templateId = interaction.customId.split("_").pop();
     const reason = interaction.fields.getTextInputValue("reason");
     const template = await getTemplate(templateId);
+    const ownerId = await getTemplateOwnerId(template);
 
     await rejectTemplate(templateId, reason);
     await replyAndExpire(interaction, {
@@ -48,7 +50,11 @@ export async function handleRejectModal(interaction, client) {
     });
 
     try {
-      const user = await client.users.fetch(template.created_by);
+      const user = ownerId ? await client.users.fetch(ownerId) : null;
+      if (!user) {
+        return;
+      }
+
       await user.send(
 `Dein Event wurde leider abgelehnt.\n\n**${template.title}**\nOrt: ${template.venue || "-"}\nDatum: ${template.date || "-"}\nZeit: ${template.time || "-"}\n\nGruende:\n${formatRejectReason(reason)}\n\nBitte korrigiere die genannten Punkte und reiche das Event danach gern erneut ein.`
       );
