@@ -15,7 +15,24 @@ export async function execute(interaction) {
   assertActionCooldown(interaction.user.id, "force-calendar-feed", 30000);
   await deferEphemeral(interaction);
 
-  const result = await forcePostWeeklyCalendarFeed(interaction.client);
+  let result;
+
+  try {
+    result = await forcePostWeeklyCalendarFeed(interaction.client);
+  } catch (error) {
+    if (error.code === "CALENDAR_FEED_MISSING_PERMISSIONS") {
+      await replyAndExpire(interaction, {
+        content: [
+          "Die Feed-Dateien wurden aktualisiert, aber der Bot darf im Kalenderfeed-Channel nicht posten.",
+          "Bitte gib dem Bot dort `Nachrichten senden` und `Channel anzeigen`."
+        ].join("\n"),
+        ephemeral: true
+      }, 120000);
+      return;
+    }
+
+    throw error;
+  }
 
   await recordAuditEntry(interaction.client, {
     action: "calendar_feed.forced",

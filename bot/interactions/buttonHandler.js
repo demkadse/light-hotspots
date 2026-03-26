@@ -30,7 +30,10 @@ import { cleanupBotMessages } from "../services/cleanupService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { CHANNELS } from "../config/channels.js";
 import { getTemplateOwnerId } from "../services/identityService.js";
-import { forcePostWeeklyCalendarFeed } from "../services/calendarFeedService.js";
+import {
+  forcePostWeeklyCalendarFeed,
+  writeAndSyncWeeklyCalendarFeedFiles
+} from "../services/calendarFeedService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -720,8 +723,8 @@ export async function handleButton(interaction, client) {
       let feedUpdated = false;
 
       try {
-        await forcePostWeeklyCalendarFeed(client);
-        feedUpdated = true;
+        const feedResult = await writeAndSyncWeeklyCalendarFeedFiles();
+        feedUpdated = Boolean(feedResult);
       } catch (feedError) {
         console.error("CALENDAR FEED FORCE ERROR:", feedError);
       }
@@ -735,7 +738,7 @@ export async function handleButton(interaction, client) {
 
       await replyAndExpire(interaction, {
         content: feedUpdated
-          ? `Event als abgesagt markiert: ${result.title}. Der Feed wurde direkt aktualisiert.`
+          ? `Event als abgesagt markiert: ${result.title}. Die Feed-Dateien wurden direkt aktualisiert.`
           : `Event als abgesagt markiert: ${result.title}. Der Feed konnte gerade nicht automatisch aktualisiert werden.`,
         ephemeral: true
       });

@@ -358,8 +358,16 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 
   const digest = await buildWeeklyCalendarDigest(referenceDate);
 
-  for (const message of digest.discordMessages) {
-    await channel.send(message);
+  try {
+    for (const message of digest.discordMessages) {
+      await channel.send(message);
+    }
+  } catch (error) {
+    if (error?.code === 50013) {
+      return { posted: false, reason: "missing_permissions" };
+    }
+
+    throw error;
   }
 
   await writeFeedState({
@@ -387,8 +395,19 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
 
   const digest = await writeAndSyncWeeklyCalendarFeedFiles(referenceDate);
 
-  for (const message of digest.discordMessages) {
-    await channel.send(message);
+  try {
+    for (const message of digest.discordMessages) {
+      await channel.send(message);
+    }
+  } catch (error) {
+    if (error?.code === 50013) {
+      const wrappedError = new Error("Der Bot darf im Kalenderfeed-Channel keine Nachrichten senden.");
+      wrappedError.code = "CALENDAR_FEED_MISSING_PERMISSIONS";
+      wrappedError.digest = digest;
+      throw wrappedError;
+    }
+
+    throw error;
   }
 
   await writeFeedState({

@@ -1,3 +1,5 @@
+import { MessageFlags } from "discord.js";
+
 function scheduleDelete(interaction, delayMs) {
   const timer = setTimeout(async () => {
     try {
@@ -16,20 +18,37 @@ function shouldIgnoreInteractionError(error) {
   return error?.code === 10062 || error?.code === 40060;
 }
 
+function normalizeInteractionPayload(payload) {
+  if (!payload || typeof payload !== "object" || !("ephemeral" in payload)) {
+    return payload;
+  }
+
+  const nextPayload = { ...payload };
+
+  if (nextPayload.ephemeral) {
+    nextPayload.flags = nextPayload.flags ?? MessageFlags.Ephemeral;
+  }
+
+  delete nextPayload.ephemeral;
+  return nextPayload;
+}
+
 export async function replyAndExpire(interaction, payload, delayMs = 30000) {
+  const normalizedPayload = normalizeInteractionPayload(payload);
+
   try {
     if (interaction.deferred) {
-      await interaction.editReply(payload);
+      await interaction.editReply(normalizedPayload);
       scheduleDelete(interaction, delayMs);
       return true;
     }
 
     if (interaction.replied) {
-      await interaction.followUp(payload);
+      await interaction.followUp(normalizedPayload);
       return true;
     }
 
-    await interaction.reply(payload);
+    await interaction.reply(normalizedPayload);
     scheduleDelete(interaction, delayMs);
     return true;
   } catch (error) {
@@ -45,7 +64,7 @@ export async function replyAndExpire(interaction, payload, delayMs = 30000) {
 export async function deferEphemeral(interaction) {
   try {
     if (!interaction.deferred && !interaction.replied) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     }
 
     return true;
