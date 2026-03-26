@@ -1,71 +1,158 @@
 # Benutzerhandbuch
 
-## Light Hotspots Kalender
+## Light Hotspots Kalender und Discord-Bot
 
-Der Light Hotspots Kalender ist eine Uebersichtsseite fuer Rollenspiel-Events auf dem Light-Datenzentrum. Nutzer koennen dort kommende Termine ansehen, filtern und sich zu einzelnen Events alle wichtigen Informationen anzeigen lassen.
+Dieses Handbuch richtet sich an normale Nutzerinnen und Nutzer des Light Hotspots Kalenders und des dazugehoerigen Discord-Bots. Es erklaert:
 
-## Zweck des Kalenders
+- alle sichtbaren Bereiche und Funktionen der Kalender-Website
+- den kompletten Nutzerablauf zum Erstellen, Bearbeiten und Absagen eines Events ueber Discord
 
-Der Kalender hilft dabei, RP-Events schnell zu finden und sich einen Ueberblick ueber den aktuellen Monat zu verschaffen. Die Seite ist darauf ausgelegt, sowohl eine schnelle Tagesansicht als auch eine genauere Detailansicht pro Event zu bieten.
+Nicht behandelt werden:
 
-## Startseite und Grundaufbau
+- Admin-Funktionen
+- interne Moderationsablaeufe
+- Slash-Befehle fuer Team oder Verwaltung
 
-Beim Oeffnen der Seite sehen Nutzer oben den Kopfbereich mit:
+## 1. Wofuer der Kalender gedacht ist
 
-- dem Titel des Kalenders
-- einem Hinweis auf den aktuellen Fokus
-- einem Button, ueber den man ein eigenes Event ueber Discord einreichen kann
+Der Light Hotspots Kalender ist eine Uebersichtsseite fuer Rollenspiel-Events auf dem Light-Datenzentrum. Er soll Nutzern helfen,
 
-Darunter folgt der eigentliche Kalenderbereich mit Filtern, Tagesnavigation und den Event-Karten.
+- aktuelle und kommende Events schnell zu finden
+- nach bestimmten Arten von Events zu filtern
+- sich alle wichtigen Informationen zu einer Veranstaltung auf einen Blick anzusehen
+- ueber Discord eigene Events einzureichen
 
-## Navigation im Kalender
+Die Website dient in erster Linie der Darstellung. Das Erstellen und Bearbeiten von Events erfolgt ueber den Discord-Bot auf dem zugehoerigen Discord-Server.
 
-Der Kalender zeigt den aktuellen Monat als navigierbare Tagesansicht.
+## 2. Aufbau der Website
+
+Die Kalender-Website besteht aus mehreren klaren Bereichen:
+
+1. Kopfbereich mit Titel, Fokus-Info und Link zum Discord-Server
+2. Filter- und Navigationsbereich
+3. Monats- beziehungsweise Tagesansicht mit Event-Karten
+4. Detailansicht pro Event
+5. Fussbereich mit Zusatzinformationen
+
+## 3. Der Kopfbereich der Website
+
+Ganz oben auf der Seite sehen Nutzer:
+
+- den Titel des Kalenders
+- einen kurzen Einleitungstext
+- einen auffaelligen Button zum Discord-Server
+- einen kleinen Fokusbereich fuer den aktuell relevanten Tag oder ein hervorgehobenes Event
+
+### 3.1 Der Discord-Button
+
+Der Button im Kopfbereich fuehrt direkt zum Discord-Server. Dort erfolgt die eigentliche Event-Erstellung ueber den Bot.
+
+Typischer Zweck dieses Buttons:
+
+- dem Server beitreten
+- ein Event einreichen
+- ein bestehendes Event bearbeiten
+- ein veroefentlichtes Event absagen
+
+### 3.2 Der Fokusbereich
+
+Der Fokusbereich zeigt:
+
+- den aktuell aktiven Tag
+- eine kurze Einordnung, wie viele sichtbare Events an diesem Tag vorhanden sind
+- wenn vorhanden: ein hervorgehobenes Event aus der aktuellen Woche
+
+Wenn fuer die laufende Woche kein geeignetes Event vorliegt, erscheint dort stattdessen ein neutraler Hinweis.
+
+## 4. Filter und Navigation auf der Website
+
+Unter dem Kopfbereich beginnt die eigentliche Kalendersteuerung.
+
+### 4.1 Zeitfenster
+
+Es gibt drei Schaltflaechen fuer das Zeitfenster:
+
+- `Alle Tage`
+- `Heute`
+- `Wochenende`
+
+Damit koennen Nutzer die gesamte Monatsansicht, nur den heutigen Tag oder nur Wochenendtage anzeigen lassen.
+
+### 4.2 Schnellnavigation
+
+Der Kalender bietet zusaetzliche Schnellziele, zum Beispiel:
+
+- `Morgen`
+- `Monatsanfang`
+- `Erstes Event`
+
+Diese Schnellnavigation hilft dabei, mit einem Klick zu relevanten Stellen im Monat zu springen.
+
+### 4.3 Typ-Filter
+
+Ueber den Typ-Filter koennen Nutzer gezielt nach Eventarten filtern. Je nach eingetragenen Daten kann das zum Beispiel sein:
+
+- Taverne
+- Club
+- Markt
+- Restaurant
+- Badehaus
+
+Zusatzlich gibt es kleine Schnellfilter-Chips fuer haeufige Typen.
+
+### 4.4 Venue-Filter
+
+Ueber den Venue-Filter kann die Anzeige auf einen bestimmten Ort oder eine bestimmte Location beschraenkt werden.
+
+### 4.5 Kategorien: Events und Venues
+
+Der Kalender unterscheidet zwei Hauptgruppen:
+
+- `Events`
+- `Venues`
 
 Nutzer koennen:
 
-- zwischen allen Tagen des Monats wechseln
-- direkt auf heute fokussieren
-- sich nur das Wochenende anzeigen lassen
-- ueber die Tagesnavigation durch den Monat springen
-- zwischen Tagen per Bedienoberflaeche oder auf Mobilgeraeten per Wischbewegung wechseln
+- nur Events anzeigen
+- nur Venues anzeigen
+- beide gleichzeitig anzeigen
 
-Die aktuell aktive Auswahl wird gespeichert. Beim erneuten Oeffnen der Seite merkt sich der Kalender daher die zuletzt genutzten Filter und den zuletzt betrachteten Tag.
+Falls beide deaktiviert werden wuerden, setzt der Kalender automatisch mindestens eine sichtbare Kategorie zurueck, damit die Seite nie leer durch einen ungueltigen Zustand wird.
 
-## Fokusbereich
+### 4.6 Zustandsmerker
 
-Im oberen Bereich zeigt der Kalender:
+Der Kalender merkt sich den zuletzt genutzten Zustand, darunter:
 
-- den aktuell ausgewaehlten Tag
-- eine kurze Zusammenfassung, wie viele sichtbare Events an diesem Tag vorhanden sind
-- ein hervorgehobenes Event der laufenden Woche, wenn ein passender Eintrag vorhanden ist
+- gewaehltes Zeitfenster
+- gewaehlter Typ
+- gewaehlte Venue
+- aktivierte Kategorien
+- letzter aktiver Tag
 
-Falls in der aktuellen Woche kein geeignetes Event vorhanden ist, wird dort kein Fokus-Event angezeigt.
+Das bedeutet: Beim erneuten Oeffnen erscheint die Seite in vielen Faellen wieder in der zuletzt benutzten Ansicht.
 
-## Filterfunktionen
+## 5. Die Monats- und Tagesansicht
 
-Der Kalender bietet mehrere Moeglichkeiten, die Anzeige einzugrenzen:
+Der Hauptbereich des Kalenders zeigt die Tage des aktuellen Monats.
 
-- Zeitfenster: Alle Tage, Heute oder Wochenende
-- Typ-Filter: Anzeige nur bestimmter Eventarten
-- Venue-Filter: Anzeige nur fuer eine bestimmte Location
-- Kategorie-Toggle: Nur Events, nur Venues oder beides gleichzeitig
+Jeder Tag hat:
 
-Diese Filter lassen sich kombinieren. Dadurch koennen Nutzer sehr gezielt nach bestimmten Formaten oder Orten suchen.
+- einen Marker wie `Heute`, `Morgen`, `Wochenende` oder `Diese Woche`
+- das voll ausgeschriebene Datum
+- eine kurze Unterzeile mit der Anzahl sichtbarer Events
+- die Event-Karten des Tages
 
-## Unterschied zwischen Events und Venues
+Wenn an einem Tag keine Events sichtbar sind, bleibt der Tag trotzdem Teil der Navigation.
 
-Der Kalender unterscheidet zwei Hauptkategorien:
+## 6. Event-Karten
 
-- Events: klassische RP-Angebote wie Tavernen, Bars, Restaurants, Badehaeuser oder aehnliche Abende
-- Venues: eher dauerhafte oder clubartige Locations wie Clubs und Nightclubs
+Ein Tag kann eine oder mehrere Event-Karten enthalten. Diese Karten sind die kompakte Schnellansicht eines Events.
 
-Ein eigener Infobutton auf der Seite erklaert diesen Unterschied noch einmal direkt im Kalender.
+### 6.1 Was auf einer Event-Karte steht
 
-## Event-Karten
+Eine Karte kann unter anderem enthalten:
 
-Jeder Tag kann eine oder mehrere Event-Karten enthalten. Diese Karten zeigen die wichtigsten Informationen auf einen Blick:
-
+- Bannerbild oder Platzhalterbild
 - Titel des Events
 - Kategorie
 - Typ
@@ -73,20 +160,32 @@ Jeder Tag kann eine oder mehrere Event-Karten enthalten. Diese Karten zeigen die
 - Venue
 - Server
 - Veranstalter
-- Kurzbeschreibung
-- optionalen Hinweis, ob ein Discord-Server oder externer Link vorhanden ist
+- kurze Beschreibung
+- Hinweise darauf, ob ein Discord-Link oder externer Link vorhanden ist
 
-Wenn ein Event abgesagt wurde, wird dies auf der Karte deutlich markiert.
+### 6.2 Banner und Platzhalter
 
-## Banner und Platzhalterbild
+Wenn beim Event ein eigenes Banner hinterlegt wurde, zeigt die Karte dieses Bild an.
 
-Events koennen ein eigenes Bannerbild besitzen. Wenn kein Banner hinterlegt wurde, zeigt der Kalender automatisch ein festes Platzhalterbild an. Dadurch bleibt die Darstellung immer vollstaendig und optisch einheitlich.
+Wenn kein Banner vorhanden ist, wird automatisch ein festes Platzhalterbild verwendet. Dadurch sehen auch Events ohne eigenes Bild vollstaendig und sauber aus.
 
-## Event-Details
+### 6.3 Mehrere Events an einem Tag
 
-Beim Anklicken einer Event-Karte oeffnet sich ein Detailfenster. Dort koennen Nutzer weitere Informationen sehen:
+Wenn an einem Tag mehrere Events eingetragen sind, werden sie in einer verschiebbaren oder scrollbaren Darstellung gezeigt. Auf Desktop und Mobilgeraeten ist die Darstellung so ausgelegt, dass Nutzer bequem zwischen mehreren Karten wechseln koennen.
 
-- grosses Bannerbild
+### 6.4 Abgesagte Events
+
+Wenn ein Event abgesagt wurde, bleibt es sichtbar, wird aber deutlich als abgesagt markiert. Das ist wichtig, damit Besucher nicht denken, das Event sei einfach verschwunden.
+
+## 7. Detailansicht eines Events
+
+Beim Anklicken einer Event-Karte oeffnet sich ein Detailfenster.
+
+### 7.1 Inhalte der Detailansicht
+
+Dort koennen Nutzer alle verfuegbaren Informationen sehen:
+
+- grosses Bannerbild oder Platzhalterbild
 - Titel
 - Kategorie
 - Typ
@@ -95,74 +194,293 @@ Beim Anklicken einer Event-Karte oeffnet sich ein Detailfenster. Dort koennen Nu
 - Server
 - Veranstalter
 - Venue-Leitung
-- Wiederholungsinformation, falls vorhanden
+- Wiederholungsinformation
 - Beschreibung
 - Hinweise
 - Status bei abgesagten Events
 
-Wenn ein Discord-Link oder ein externer Link hinterlegt ist, erscheinen im Detailfenster direkte Schaltflaechen zum Oeffnen dieser Links.
+### 7.2 Links in der Detailansicht
 
-## Weitere Events am selben Abend
+Wenn vorhanden, erscheinen Schaltflaechen fuer:
 
-Im Detailfenster kann der Kalender zusaetzlich weitere passende Events desselben Abends vorschlagen. Nutzer koennen diese Vorschlaege direkt anklicken und dadurch schnell zwischen mehreren Veranstaltungen desselben Tages wechseln.
+- Discord-Server des Events
+- externe Webseiten oder Zusatzinfos
 
-## Einreichen eigener Events
+So kann der Nutzer direkt weiterklicken, ohne erst lange suchen zu muessen.
 
-Ueber den auffaelligen Button im Kopfbereich koennen Nutzer den zugehoerigen Discord-Server oeffnen und dort ein eigenes Event einreichen. Die Einreichung selbst erfolgt also nicht direkt auf der Website, sondern ueber den Discord-Bot.
+### 7.3 Weitere Events am selben Abend
 
-## Wochenfeed
+Das Detailfenster kann ausserdem weitere passende Veranstaltungen desselben Abends anzeigen. Diese Vorschlaege sind direkt anklickbar und helfen beim schnellen Wechsel zwischen mehreren Events desselben Tages.
 
-Der Kalender stellt zusaetzlich einen Wochenfeed bereit. Dieser fasst die naechsten sieben Tage zusammen.
+## 8. Zusatzbereiche im Fuss der Website
 
-Verfuegbar sind:
+Im unteren Bereich der Website befinden sich weitere Informationsdialoge.
 
-- ein Discord-Feed
-- ein RSS-Feed
-- ein JSON-Feed
+### 8.1 Rechtshinweis
 
-Der Wochenfeed zeigt zunaechst eine kompakte Wochenuebersicht und danach fuer jedes Event eine eigene Detaildarstellung mit allen verfuegbaren Informationen.
+Hier stehen Hinweise zur Plattform, zur konkreten Gestaltung und zu urheberrechtlichen Aspekten.
 
-## Rechtshinweis und Transparenz
+### 8.2 Transparenz
 
-Im Fussbereich der Seite finden Nutzer zusaetzliche Informationsbereiche:
+Hier wird offengelegt, dass fuer die technische Umsetzung KI-Unterstuetzung verwendet wurde.
 
-- Rechtshinweis
-- Transparenz
+### 8.3 Hinweis zu Events und Venues
 
-Diese Inhalte werden in separaten Dialogfenstern angezeigt und koennen jederzeit geoeffnet und wieder geschlossen werden.
+Ein zusaetzlicher Infodialog erklaert den Unterschied zwischen klassischen Events und Venues, damit Nutzer die Kategorisierung besser verstehen.
 
-## Mobile Nutzung
+## 9. Mobile Nutzung
 
-Der Kalender ist so aufgebaut, dass er auch auf mobilen Geraeten gut nutzbar bleibt. Besonders wichtig sind dabei:
+Der Kalender ist auch fuer Mobilgeraete ausgelegt.
 
-- horizontale Event-Navigation pro Tag
-- Wischsteuerung
-- grosse, klar erkennbare Karten
-- direkt erreichbare Detailansichten
+Wichtige Punkte dabei:
 
-## Typischer Nutzungsablauf
+- Karten bleiben gut lesbar
+- Tageswechsel funktioniert auch auf kleineren Bildschirmen
+- Event-Details sind ueber das Modal gut erreichbar
+- Filter bleiben direkt bedienbar
 
-Ein typischer Ablauf fuer Nutzer sieht so aus:
+## 10. Der Discord-Bot fuer Nutzer
 
-1. Seite oeffnen
-2. Auf heute, Wochenende oder alle Tage filtern
-3. Bei Bedarf nach Typ, Venue oder Kategorie einschranken
-4. Interessante Event-Karte auswaehlen
-5. Details im Popup ansehen
-6. Bei Bedarf ueber Discord oder externe Links weitergehen
+Die Website dient der Anzeige. Alles, was mit dem Anlegen oder Pflegen eigener Events zu tun hat, geschieht ueber den Discord-Bot.
 
-## Kurzfassung
+Nutzer sehen auf dem Discord-Server ein Event-System mit einer Start-Schaltflaeche. Ueber diesen Einstieg beginnt der Event-Ablauf.
 
-Der Kalender bietet fuer Nutzer vor allem diese Funktionen:
+## 11. Start des Event-Prozesses im Discord
 
-- Monatsuebersicht fuer RP-Events
+Im Discord-Server gibt es ein Event-Panel mit einer Start-Schaltflaeche.
+
+Nach dem Klick auf `Start` stehen fuer normale Nutzer typischerweise drei Wege offen:
+
+- `Neues Event erstellen`
+- `Bestehendes Event bearbeiten`
+- `Veröffentlichtes Event absagen`
+
+Damit deckt der Bot den kompletten normalen Nutzerprozess ab.
+
+## 12. Neues Event erstellen
+
+Die Event-Erstellung ist als klarer 3-Schritte-Ablauf aufgebaut.
+
+### 12.1 Schritt 1 von 3: Basisdaten
+
+Im ersten Formular werden die Pflichtangaben abgefragt:
+
+- Titel
+- Location
+- Datum
+- Uhrzeit
+- Beschreibung
+
+#### Wichtige Formatregeln
+
+- Das Datum muss im Format `TT.MM.JJJJ` eingegeben werden.
+- Die Uhrzeit muss im Format `HH:MM` eingegeben werden.
+
+Ohne diese Angaben kann das Event nicht gespeichert werden.
+
+### 12.2 Schritt 2 von 3: Details
+
+Im zweiten Schritt werden weitere Informationen erfasst. Einige davon sind optional, ein Teil ist aber fuer die spaetere Freigabe wichtig.
+
+Moegliche Angaben:
+
+- Endzeit
+- Eventtyp
+- Host-Anzeigename
+- Venue-Leitung
+- Server
+
+Wichtig:
+
+- Der `Server` ist spaetestens vor dem Einreichen zur Pruefung erforderlich.
+- Die Endzeit muss, falls angegeben, ebenfalls im Format `HH:MM` eingetragen werden.
+
+### 12.3 Schritt 3 von 3: Extras
+
+Im dritten Schritt koennen weitere optionale Informationen hinterlegt werden:
+
+- Bild-URL
+- Discord-Link
+- externer Link
+- Wiederholung
+- Hinweise
+
+#### Regeln fuer Extras
+
+- Die Bild-URL muss mit `http://` oder `https://` beginnen und auf eine Bilddatei zeigen.
+- Der Discord-Link muss auf `discord.gg` oder `discord.com` verweisen.
+- Die Wiederholung darf leer bleiben oder als `weekly` eingetragen werden.
+
+### 12.4 Vorschau nach jedem Schritt
+
+Nach jedem Schritt zeigt der Bot eine Vorschau des aktuellen Events.
+
+Diese Vorschau hilft dabei:
+
+- Eingaben zu kontrollieren
+- fehlende Informationen zu erkennen
+- vor dem Absenden noch Korrekturen vorzunehmen
+
+Zwischen den Schritten kann man gezielt wieder zu `Details` oder `Extras` zurueckspringen und Dinge aendern.
+
+### 12.5 Zur Pruefung senden
+
+Wenn alle gewuenschten Angaben eingetragen wurden, kann das Event ueber die entsprechende Schaltflaeche zur Pruefung gesendet werden.
+
+Ab diesem Punkt:
+
+- bekommt das Event den Status `pending`
+- wird es intern zur Freigabe weitergegeben
+- erhaelt der Nutzer eine Rueckmeldung, dass die Einreichung eingegangen ist
+
+Falls der Server noch fehlt, verweigert der Bot die Einreichung mit einem Hinweis, dass dieser zuerst nachgetragen werden muss.
+
+## 13. Was nach dem Einreichen passiert
+
+Nach dem Absenden wird das Event intern geprueft.
+
+Fuer Nutzer wichtig:
+
+- Das Event ist noch nicht sofort oeffentlich sichtbar.
+- Nach der Pruefung gibt es eine Rueckmeldung.
+- Bei Freigabe wird das Event auf der Website sichtbar.
+- Bei Ablehnung wird ein Grund hinterlegt, damit man weiss, was angepasst werden muss.
+
+Der Bot kann Nutzer zusaetzlich per Direktnachricht informieren, wenn sich der Status aendert.
+
+## 14. Bestehendes Event bearbeiten
+
+Nutzer koennen ueber `Bestehendes Event bearbeiten` ihre vorhandenen Event-Eintraege erneut oeffnen.
+
+### 14.1 Auswahl eines vorhandenen Events
+
+Der Bot zeigt eine Auswahlliste mit den eigenen Events. Dort sieht man in der Regel:
+
+- Titel
+- Datum
+- aktuellen Status
+
+Nach der Auswahl wird das Event wieder im 3-Schritte-System geoeffnet.
+
+### 14.2 Bearbeitungslogik
+
+Der Bearbeitungsablauf ist derselbe wie bei einer Neuerstellung:
+
+- Basisdaten bearbeiten
+- Details bearbeiten
+- Extras bearbeiten
+- erneut zur Pruefung senden
+
+Der grosse Vorteil: Man muss das Event nicht komplett neu anlegen.
+
+## 15. Veroeffentlichtes Event absagen
+
+Wenn ein bereits sichtbares Event nicht stattfinden kann, koennen Nutzer es absagen lassen.
+
+### 15.1 Auswahl eines veroeffentlichten Events
+
+Der Bot zeigt eine Auswahl aller eigenen Events, die bereits freigegeben wurden.
+
+### 15.2 Bestaetigung
+
+Nach der Auswahl fragt der Bot noch einmal nach, ob das Event wirklich als abgesagt markiert werden soll.
+
+Wichtig:
+
+- Das Event wird nicht komplett geloescht.
+- Es bleibt sichtbar.
+- Es wird stattdessen klar als `abgesagt` markiert.
+
+Das ist wichtig fuer Besucher, damit sie sehen, dass ein geplanter Termin nicht stattfindet.
+
+## 16. Automatische Hilfen des Bots
+
+Der Bot hilft Nutzern an mehreren Stellen:
+
+- validiert Datum und Uhrzeit
+- prueft URLs
+- erkennt fehlende Pflichtfelder
+- zeigt nach jedem Schritt eine Vorschau
+- erlaubt spaeteres Weiterbearbeiten
+- kann moegliche Duplikate erkennen
+
+Dadurch wird der Nutzerprozess deutlich fehlertoleranter und leichter nachvollziehbar.
+
+## 17. Status eines Events aus Nutzersicht
+
+Aus Sicht eines normalen Nutzers gibt es vor allem diese wichtigen Zustaende:
+
+- `draft`: Event wurde begonnen, aber noch nicht eingereicht
+- `pending`: Event wurde zur Pruefung gesendet
+- `approved`: Event wurde freigegeben und ist sichtbar
+- `cancelled`: Event ist sichtbar, aber als abgesagt markiert
+- `rejected`: Event wurde abgelehnt und muss ueberarbeitet werden
+
+Diese Status helfen dabei zu verstehen, wo sich ein Event gerade im Ablauf befindet.
+
+## 18. Wochenfeed
+
+Zusatzlich zum eigentlichen Kalender gibt es einen Wochenfeed.
+
+Er wird fuer die naechsten sieben Tage erstellt und steht in mehreren Formen bereit:
+
+- als Discord-Feed
+- als RSS-Feed
+- als JSON-Feed
+
+Der Feed zeigt:
+
+- eine kompakte Wochenuebersicht
+- danach fuer jedes Event eine eigene Detaildarstellung
+
+Wenn in einem Zeitraum keine Events vorhanden sind, zeigt der Feed eine leere Wochenvorschau.
+
+## 19. Typischer Ablauf fuer Nutzer
+
+Ein normaler Nutzer arbeitet meist in diesem Ablauf:
+
+1. Kalender oeffnen und passende Events ansehen
+2. bei Bedarf dem Discord-Server ueber den Button beitreten
+3. im Discord den Event-Ablauf starten
+4. Basisdaten, Details und Extras ausfuellen
+5. Event-Vorschau kontrollieren
+6. Event zur Pruefung senden
+7. auf Rueckmeldung warten
+8. nach Freigabe das Event auf der Website wiederfinden
+9. spaeter bei Bedarf bearbeiten oder absagen
+
+## 20. Kurzuebersicht aller Nutzerfunktionen
+
+### Auf der Website
+
+- Monatsansicht
 - Tagesnavigation
-- Wochenend- und Heute-Filter
-- Typ-, Venue- und Kategorie-Filter
-- Event-Karten mit kompakten Informationen
-- Detailansicht mit allen verfuegbaren Angaben
-- automatische Banner-Platzhalter
-- direkte Links zu Discord oder externen Seiten
-- zusaetzlichen Wochenfeed fuer die naechsten sieben Tage
+- Fokusbereich
+- Filter nach Zeitfenster, Typ und Venue
+- Umschaltung zwischen Events und Venues
+- Schnellnavigation
+- Event-Karten
+- Detailansicht
+- Links zu Discord und externen Seiten
+- Zusatzdialoge fuer Rechtshinweis, Transparenz und Kategorisierung
+- Wochenfeed
 
-Damit ist der Kalender als saubere, schnelle und leicht verstaendliche Event-Uebersicht fuer Endnutzer einsatzbereit.
+### Im Discord-Bot
+
+- neues Event erstellen
+- bestehendes Event bearbeiten
+- veroeffentlichtes Event absagen
+- Event in drei Schritten ausfuellen
+- Eingaben pruefen lassen
+- Vorschau ansehen
+- Event zur Pruefung senden
+
+## 21. Fazit
+
+Der Light Hotspots Kalender ist fuer Nutzer so aufgebaut, dass die Website als saubere Event-Uebersicht dient, waehrend der Discord-Bot den eigentlichen Bearbeitungsprozess uebernimmt. Zusammen ergeben beide Systeme einen klaren Ablauf:
+
+- auf der Website informieren
+- ueber Discord einreichen
+- nach Freigabe wieder auf der Website sichtbar werden
+
+Damit ist das System fuer normale Nutzer einfach, nachvollziehbar und ohne technische Vorkenntnisse bedienbar.
