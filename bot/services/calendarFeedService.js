@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { EmbedBuilder } from "discord.js";
 
 import { CHANNELS } from "../config/channels.js";
 import { syncRepoFiles } from "./gitSyncService.js";
@@ -248,40 +249,72 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
     month: "2-digit"
   });
 
-  const messages = [
-    `## Light Hotspots Wochenvorschau\n${summary.intro}\n\nZeitraum: **${startLabel} bis ${endLabel}**\nFeed: ${FEED_URL}`
-  ];
+  const title = `Light Hotspots Wochenvorschau | ${startLabel} bis ${endLabel}`;
+  const baseEmbed = new EmbedBuilder()
+    .setColor(0xf3ba6c)
+    .setTitle(title)
+    .setURL(SITE_URL)
+    .setDescription([
+      summary.intro,
+      "",
+      `Zeitraum: **${startLabel} bis ${endLabel}**`
+    ].join("\n"))
+    .setFooter({ text: "Light Hotspots Kalender" });
 
   if (groups.length === 0) {
-    messages[0] += "\n\nAktuell sind keine Events geplant.";
-    return messages;
+    return [{
+      embeds: [
+        baseEmbed
+          .addFields({
+            name: "Diese Woche",
+            value: "Aktuell sind keine Events geplant."
+          })
+          .setTimestamp(new Date())
+      ]
+    }];
   }
+
+  const embeds = [];
+  let currentEmbed = EmbedBuilder.from(baseEmbed);
+  let fieldsOnCurrentEmbed = 0;
 
   for (const group of groups) {
-    const block = [
-      `### ${group.label}`,
-      ...group.events.map(event => {
-        const parts = [
-          event.start_time ? `${event.start_time} Uhr` : "Uhrzeit offen",
-          `**${buildFeedEventTitle(event)}**`,
-          event.venue ? `in ${event.venue}` : null,
-          event.server ? `Server: ${event.server}` : null,
-          event.host ? `Host: ${event.host}` : null
-        ].filter(Boolean);
+    const lines = group.events.map(event => {
+      const parts = [
+        event.start_time ? `**${event.start_time} Uhr**` : "**Uhrzeit offen**",
+        buildFeedEventTitle(event),
+        event.venue ? `in ${event.venue}` : null,
+        event.server ? `Server: ${event.server}` : null,
+        event.host ? `Host: ${event.host}` : null
+      ].filter(Boolean);
 
-        return `- ${parts.join(" | ")}`;
-      })
-    ].join("\n");
+      return `• ${parts.join(" | ")}`;
+    });
 
-    const current = messages[messages.length - 1];
-    if (`${current}\n\n${block}`.length > DISCORD_LIMIT) {
-      messages.push(block);
-    } else {
-      messages[messages.length - 1] = `${current}\n\n${block}`;
+    let value = lines.join("\n");
+    if (value.length > 1024) {
+      value = `${value.slice(0, 1000)}\n…`;
     }
+
+    if (fieldsOnCurrentEmbed === 5) {
+      embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
+      currentEmbed = new EmbedBuilder()
+        .setColor(0xf3ba6c)
+        .setTitle(title)
+        .setURL(SITE_URL)
+        .setFooter({ text: "Light Hotspots Kalender" });
+      fieldsOnCurrentEmbed = 0;
+    }
+
+    currentEmbed.addFields({
+      name: group.label,
+      value
+    });
+    fieldsOnCurrentEmbed += 1;
   }
 
-  return messages;
+  embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
+  return embeds;
 }
 
 export function shouldRunCalendarFeedNow(date = new Date()) {
