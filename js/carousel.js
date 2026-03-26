@@ -147,6 +147,9 @@ function buildCard(event) {
   const headerRow = document.createElement("div");
   headerRow.className = "event-card-header";
 
+  const chipRow = document.createElement("div");
+  chipRow.className = "event-card-chip-row";
+
   const chip = document.createElement("span");
   chip.className = "event-chip";
   chip.textContent = formatCategoryLabel(event);
@@ -159,7 +162,8 @@ function buildCard(event) {
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  headerRow.append(chip, typeChip, timeChip);
+  chipRow.append(chip, typeChip, timeChip);
+  headerRow.appendChild(chipRow);
 
   if (isCancelled(event)) {
     const statusChip = document.createElement("span");

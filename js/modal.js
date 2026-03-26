@@ -91,6 +91,9 @@ function openModal(event) {
   const topRow = document.createElement("div");
   topRow.className = "modal-top-row";
 
+  const topChipRow = document.createElement("div");
+  topChipRow.className = "modal-chip-row";
+
   const typeChip = document.createElement("span");
   typeChip.className = "event-chip";
   typeChip.textContent = formatCategoryLabel(event);
@@ -103,7 +106,8 @@ function openModal(event) {
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  topRow.append(typeChip, detailChip, timeChip);
+  topChipRow.append(typeChip, detailChip, timeChip);
+  topRow.appendChild(topChipRow);
 
   if (isCancelled(event)) {
     const statusChip = document.createElement("span");

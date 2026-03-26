@@ -309,6 +309,7 @@ display: flex;
 flex-wrap: wrap;
 gap: 10px;
 align-items: center;
+align-content: flex-start;
 }
 
 .scope-button,
@@ -359,6 +360,11 @@ align-content: flex-start;
 min-height: 30px;
 }
 
+.quick-jumps {
+flex-basis: 100%;
+padding-top: 2px;
+}
+
 .filter-select {
 height: 44px;
 width: 100%;
@@ -399,6 +405,7 @@ display: grid;
 grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 1.05fr);
 gap: 14px;
 align-items: start;
+justify-items: stretch;
 }
 
 .filter-stack .filter-group:first-child {
@@ -451,12 +458,14 @@ display: flex;
 flex-wrap: wrap;
 gap: 8px;
 align-items: center;
+align-content: flex-start;
 min-height: 44px;
 }
 
 .filter-toggle {
 height: 44px;
 padding-inline: 14px;
+flex: 0 1 auto;
 }
 
 .filter-toggle.active,
@@ -468,9 +477,12 @@ color: #ffe6c2;
 
 .toolbar-help-button {
 width: fit-content;
+max-width: 100%;
 text-align: center;
 cursor: pointer;
 align-self: flex-start;
+white-space: normal;
+line-height: 1.35;
 }
 
 .toolbar-status {
@@ -763,10 +775,19 @@ overflow: hidden;
 
 .event-card-header {
 display: flex;
-align-items: center;
+align-items: flex-start;
 justify-content: space-between;
 gap: 10px;
 flex-wrap: wrap;
+}
+
+.event-card-chip-row {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+align-items: center;
+flex: 1 1 100%;
+min-width: 0;
 }
 
 .event-info p {
@@ -783,6 +804,8 @@ border-radius: 999px;
 font-size: 0.72rem;
 letter-spacing: 0.1em;
 text-transform: uppercase;
+line-height: 1.25;
+white-space: normal;
 }
 
 .event-chip {
@@ -1070,12 +1093,21 @@ margin: 0;
 
 .modal-top-row {
 display: flex;
-align-items: center;
+align-items: flex-start;
 justify-content: space-between;
 gap: 12px;
 flex-wrap: wrap;
 margin-bottom: 14px;
 padding-right: 44px;
+}
+
+.modal-chip-row {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+align-items: center;
+flex: 1 1 100%;
+min-width: 0;
 }
 
 .modal-window h2 {
@@ -1149,6 +1181,7 @@ display: flex;
 flex-wrap: wrap;
 gap: 12px;
 margin-top: 22px;
+align-items: flex-start;
 }
 
 .modal-related {
@@ -1240,6 +1273,10 @@ text-align: left;
 
 .filter-stack {
 grid-template-columns: 1fr;
+}
+
+.toolbar-help-button {
+width: 100%;
 }
 }
 
@@ -1342,6 +1379,10 @@ grid-template-areas:
 padding: 16px;
 }
 
+.toolbar-status {
+min-width: 0;
+}
+
 .scope-switch,
 .quick-jumps,
 .type-chip-row,
@@ -1434,5 +1475,9 @@ border-radius: 22px;
 
 .modal-details-grid {
 grid-template-columns: 1fr;
+}
+
+.modal-top-row {
+padding-right: 34px;
 }
 }
