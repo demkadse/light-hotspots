@@ -5,7 +5,7 @@
   "feed_url": "https://light-hotspots.talaani.de/feeds/weekly-summary.json",
   "description": "Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.",
   "language": "de-DE",
-  "generated_at": "2026-03-26T14:31:40.578Z",
+  "generated_at": "2026-03-26T14:41:03.063Z",
   "weekly_window": {
     "start_date": "2026-03-26",
     "end_date": "2026-04-01"
@@ -23,7 +23,7 @@
       "url": "https://light-hotspots.talaani.de/?event=beispiel-event",
       "title": "Beispiel-Event (ABGESAGT)",
       "content_text": "Donnerstag, 26.03.\nStart: 21:00 Uhr\nVenue: Limsa Lominsa\nServer: Shiva\nStatus: Abgesagt\nHost: Das hier ist ein Test!\nDas Event-Beispiel dient zur Demonstration. Hier wäre eine ausführlichere Beschreibung zum Event angezeigt.",
-      "date_published": "2026-03-26T14:31:40.578Z",
+      "date_published": "2026-03-26T14:41:03.063Z",
       "tags": [
         "Taverne",
         "Limsa Lominsa"
