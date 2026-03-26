@@ -420,6 +420,30 @@ function updateActiveDayMeta() {
   updateFeaturedEvent(eventsForDay);
 }
 
+function syncDesktopSlideHeights() {
+  const track = document.getElementById("timeline-track");
+  const viewport = document.querySelector(".timeline-viewport");
+  const slides = [...track.querySelectorAll(".day-slide")];
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+  if (isMobile || !viewport) {
+    track.style.height = "";
+    slides.forEach(slide => {
+      slide.style.height = "";
+      slide.style.flexBasis = "";
+    });
+    return null;
+  }
+
+  const viewportHeight = viewport.clientHeight;
+  slides.forEach(slide => {
+    slide.style.height = `${viewportHeight}px`;
+    slide.style.flexBasis = `${viewportHeight}px`;
+  });
+  track.style.height = `${viewportHeight * slides.length}px`;
+  return viewportHeight;
+}
+
 function updateSlide() {
   const renderedDays = getRenderedDays();
   const track = document.getElementById("timeline-track");
@@ -431,6 +455,7 @@ function updateSlide() {
   }
 
   state.slideIndex = Math.min(state.slideIndex, renderedDays.length - 1);
+  syncDesktopSlideHeights();
 
   if (isMobile) {
     track.style.transform = "";
@@ -562,9 +587,6 @@ function renderQuickJumps() {
 function renderDaySlide(day, index, eventsForDay, hasActiveFilters, days) {
   const slide = document.createElement("section");
   slide.className = "day-slide";
-  if (eventsForDay.length === 0) {
-    slide.classList.add("day-empty");
-  }
 
   const header = document.createElement("header");
   header.className = "day-header";
@@ -623,10 +645,17 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters, days) {
   header.append(copy, headerMeta);
   slide.appendChild(header);
 
-  const carousel = createCarousel(eventsForDay);
-  if (carousel.childElementCount > 0 && eventsForDay.length > 0) {
-    slide.appendChild(carousel);
+  const body = document.createElement("div");
+  body.className = "day-body";
+
+  if (eventsForDay.length > 0) {
+    const carousel = createCarousel(eventsForDay);
+    if (carousel.childElementCount > 0) {
+      body.appendChild(carousel);
+    }
   }
+
+  slide.appendChild(body);
 
   return slide;
 }
