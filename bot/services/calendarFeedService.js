@@ -279,41 +279,42 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
   let fieldsOnCurrentEmbed = 0;
 
   for (const group of groups) {
-    const lines = group.events.map(event => {
-      const parts = [
-        event.start_time ? `**${event.start_time} Uhr**` : "**Uhrzeit offen**",
-        buildFeedEventTitle(event),
-        event.venue ? `in ${event.venue}` : null,
-        event.server ? `Server: ${event.server}` : null,
-        event.host ? `Host: ${event.host}` : null
+    for (const event of group.events) {
+      const lines = [
+        event.start_time ? `Zeit: **${event.start_time} Uhr**` : "Zeit: **offen**",
+        event.venue ? `Venue: **${event.venue}**` : null,
+        event.server ? `Server: **${event.server}**` : null,
+        event.host ? `Host: **${event.host}**` : null
       ].filter(Boolean);
 
-      return `• ${parts.join(" | ")}`;
-    });
+      let value = lines.join("\n");
+      if (value.length > 1024) {
+        value = `${value.slice(0, 1000)}\n…`;
+      }
 
-    let value = lines.join("\n");
-    if (value.length > 1024) {
-      value = `${value.slice(0, 1000)}\n…`;
+      if (fieldsOnCurrentEmbed === 5) {
+        embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
+        currentEmbed = new EmbedBuilder()
+          .setColor(0xf3ba6c)
+          .setTitle(title)
+          .setURL(SITE_URL)
+          .setFooter({ text: "Light Hotspots Kalender" });
+        fieldsOnCurrentEmbed = 0;
+      }
+
+      currentEmbed.addFields({
+        name: `${group.label} | ${buildFeedEventTitle(event)}`,
+        value,
+        inline: false
+      });
+      fieldsOnCurrentEmbed += 1;
     }
-
-    if (fieldsOnCurrentEmbed === 5) {
-      embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
-      currentEmbed = new EmbedBuilder()
-        .setColor(0xf3ba6c)
-        .setTitle(title)
-        .setURL(SITE_URL)
-        .setFooter({ text: "Light Hotspots Kalender" });
-      fieldsOnCurrentEmbed = 0;
-    }
-
-    currentEmbed.addFields({
-      name: group.label,
-      value
-    });
-    fieldsOnCurrentEmbed += 1;
   }
 
-  embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
+  if (fieldsOnCurrentEmbed > 0) {
+    embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
+  }
+
   return embeds;
 }
 
