@@ -9,7 +9,9 @@ const state = {
   filters: {
     scope: "all",
     type: "",
-    venue: ""
+    venue: "",
+    showEvents: true,
+    showVenues: true
   },
   touchStartY: null
 };
@@ -34,6 +36,18 @@ function normalizeDateKey(value) {
 
 function getDayKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function parseVisibilityFlag(value, fallback = true) {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return value !== "0" && value !== "false";
 }
 
 function buildDays() {
@@ -131,6 +145,16 @@ function getEventType(event) {
   return (event.type || event.event_type || "").trim();
 }
 
+function isEventCategoryVisible(event) {
+  const category = window.classifyEventCategory?.(event) || "event";
+
+  if (category === "venue") {
+    return state.filters.showVenues;
+  }
+
+  return state.filters.showEvents;
+}
+
 function compareEvents(a, b) {
   const timeA = a.start_time || a.time || "";
   const timeB = b.start_time || b.time || "";
@@ -161,6 +185,10 @@ function pickFeaturedEvent(events) {
 function eventMatchesFilters(event, day) {
   const { type, venue } = state.filters;
   const renderedDays = getRenderedDays();
+
+  if (!isEventCategoryVisible(event)) {
+    return false;
+  }
 
   if (type && getEventType(event) !== type) {
     return false;
@@ -235,6 +263,9 @@ function updateUrlState() {
     url.searchParams.delete("venue");
   }
 
+  url.searchParams.set("showEvents", state.filters.showEvents ? "1" : "0");
+  url.searchParams.set("showVenues", state.filters.showVenues ? "1" : "0");
+
   window.history.replaceState({}, "", url);
 }
 
@@ -258,6 +289,13 @@ function restoreState() {
   state.filters.scope = params.get("scope") || stored?.filters?.scope || "all";
   state.filters.type = params.get("type") || stored?.filters?.type || "";
   state.filters.venue = params.get("venue") || stored?.filters?.venue || "";
+  state.filters.showEvents = parseVisibilityFlag(params.get("showEvents"), parseVisibilityFlag(stored?.filters?.showEvents, true));
+  state.filters.showVenues = parseVisibilityFlag(params.get("showVenues"), parseVisibilityFlag(stored?.filters?.showVenues, true));
+
+  if (!state.filters.showEvents && !state.filters.showVenues) {
+    state.filters.showEvents = true;
+    state.filters.showVenues = true;
+  }
 
   const renderedDays = getRenderedDays();
   const targetDayKey = params.get("day") || stored?.dayKey;
@@ -442,6 +480,21 @@ function populateFilterOptions() {
   renderTypeChips(uniqueTypes);
 }
 
+function syncCategoryToggle(buttonId, isActive) {
+  const button = document.getElementById(buttonId);
+  if (!button) {
+    return;
+  }
+
+  button.classList.toggle("active", isActive);
+  button.setAttribute("aria-pressed", String(isActive));
+}
+
+function updateCategoryToggleState() {
+  syncCategoryToggle("category-toggle-event", state.filters.showEvents);
+  syncCategoryToggle("category-toggle-venue", state.filters.showVenues);
+}
+
 function renderQuickJumps() {
   const container = document.getElementById("quick-jumps");
   const renderedDays = getRenderedDays();
@@ -452,7 +505,6 @@ function renderQuickJumps() {
 
   const candidates = [
     { label: "Morgen", index: renderedDays.findIndex(day => getDayKey(day) === getDayKey(tomorrow)) },
-    { label: "Wochenende", index: renderedDays.findIndex(day => isWeekend(day) && startOfDay(day).getTime() >= startOfDay(new Date()).getTime()) },
     { label: "Monatsanfang", index: 0 },
     { label: "Erstes Event", index: renderedDays.findIndex(day => getEventsForDay(day).length > 0) }
   ];
@@ -550,7 +602,13 @@ function renderDaySlide(day, index, eventsForDay, hasActiveFilters, days) {
 
 async function renderTimeline() {
   const track = document.getElementById("timeline-track");
-  const hasActiveFilters = Boolean(state.filters.type || state.filters.venue || state.filters.scope !== "all");
+  const hasActiveFilters = Boolean(
+    state.filters.type ||
+    state.filters.venue ||
+    state.filters.scope !== "all" ||
+    !state.filters.showEvents ||
+    !state.filters.showVenues
+  );
   const renderedDays = getRenderedDays();
   const dayCounts = [];
   track.replaceChildren();
@@ -563,6 +621,7 @@ async function renderTimeline() {
 
   renderTimelineDots(dayCounts);
   renderQuickJumps();
+  updateCategoryToggleState();
   updateHeroStats();
   updateSlide();
   window.EVENT_CONTEXT = { allEvents: state.allEvents, visibleEvents: getVisibleEvents() };
@@ -591,6 +650,36 @@ function bindFilterControls() {
 
   document.getElementById("venue-filter").addEventListener("change", event => {
     state.filters.venue = event.target.value;
+    state.slideIndex = getPreferredSlideIndex();
+    void renderTimeline();
+  });
+
+  document.getElementById("category-toggle-event")?.addEventListener("click", () => {
+    const nextValue = !state.filters.showEvents;
+    if (!nextValue && !state.filters.showVenues) {
+      return;
+    }
+
+    state.filters.showEvents = nextValue;
+    if (!state.filters.showEvents && !state.filters.showVenues) {
+      state.filters.showVenues = true;
+    }
+
+    state.slideIndex = getPreferredSlideIndex();
+    void renderTimeline();
+  });
+
+  document.getElementById("category-toggle-venue")?.addEventListener("click", () => {
+    const nextValue = !state.filters.showVenues;
+    if (!nextValue && !state.filters.showEvents) {
+      return;
+    }
+
+    state.filters.showVenues = nextValue;
+    if (!state.filters.showEvents && !state.filters.showVenues) {
+      state.filters.showEvents = true;
+    }
+
     state.slideIndex = getPreferredSlideIndex();
     void renderTimeline();
   });
@@ -686,6 +775,7 @@ async function initTimeline() {
     button.setAttribute("aria-pressed", String(button.dataset.scope === state.filters.scope));
   });
 
+  updateCategoryToggleState();
   await renderTimeline();
 }
 

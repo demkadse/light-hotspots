@@ -19,6 +19,10 @@ function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
 }
 
+function formatCategoryLabel(event) {
+  return window.getEventCategoryLabel?.(event) || "Event";
+}
+
 function isCancelled(event) {
   return event.status === "cancelled";
 }
@@ -89,13 +93,17 @@ function openModal(event) {
 
   const typeChip = document.createElement("span");
   typeChip.className = "event-chip";
-  typeChip.textContent = formatTypeLabel(event);
+  typeChip.textContent = formatCategoryLabel(event);
+
+  const detailChip = document.createElement("span");
+  detailChip.className = "event-time-chip";
+  detailChip.textContent = formatTypeLabel(event);
 
   const timeChip = document.createElement("span");
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  topRow.append(typeChip, timeChip);
+  topRow.append(typeChip, detailChip, timeChip);
 
   if (isCancelled(event)) {
     const statusChip = document.createElement("span");
@@ -112,6 +120,8 @@ function openModal(event) {
 
   const details = document.createElement("div");
   details.className = "modal-details-grid";
+  appendDetailItem(details, "Kategorie", formatCategoryLabel(event));
+  appendDetailItem(details, "Typ", formatTypeLabel(event));
   appendDetailItem(details, "Venue", event.venue || "Ort offen");
   appendDetailItem(details, "Server", event.server);
   appendDetailItem(details, "Host", formatHostName(event));

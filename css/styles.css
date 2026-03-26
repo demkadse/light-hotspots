@@ -345,6 +345,10 @@ min-width: 180px;
 justify-content: flex-start;
 }
 
+.filter-group-wide {
+min-width: 0;
+}
+
 .quick-jumps,
 .type-chip-row {
 display: flex;
@@ -364,7 +368,9 @@ outline: none;
 }
 
 .quick-jump-button,
-.type-chip-button {
+.type-chip-button,
+.filter-toggle,
+.toolbar-help-button {
 display: inline-flex;
 align-items: center;
 justify-content: center;
@@ -390,7 +396,7 @@ min-width: 0;
 .filter-stack {
 grid-area: filters;
 display: grid;
-grid-template-columns: minmax(0, 1fr) minmax(210px, 0.85fr);
+grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(240px, 1.05fr);
 gap: 14px;
 align-items: start;
 }
@@ -404,7 +410,9 @@ padding-top: 2px;
 }
 
 .quick-jump-button:hover,
-.type-chip-button:hover {
+.type-chip-button:hover,
+.filter-toggle:hover,
+.toolbar-help-button:hover {
 transform: translateY(-1px);
 border-color: var(--line-strong);
 }
@@ -418,13 +426,16 @@ display: none;
 .scope-button:focus-visible,
 .quick-jump-button:focus-visible,
 .type-chip-button:focus-visible,
+.filter-toggle:focus-visible,
+.toolbar-help-button:focus-visible,
 .site-footer-link:focus-visible,
 .modal-link-button:focus-visible,
 .modal-related-pill:focus-visible,
 .filter-select:focus-visible,
 #modal-close:focus-visible,
 #legal-notice-close:focus-visible,
-#transparency-close:focus-visible {
+#transparency-close:focus-visible,
+#event-venue-info-close:focus-visible {
 outline: 2px solid rgba(243, 186, 108, 0.9);
 outline-offset: 3px;
 }
@@ -433,6 +444,33 @@ outline-offset: 3px;
 background: var(--accent-soft);
 border-color: rgba(243, 186, 108, 0.36);
 color: #ffe6c2;
+}
+
+.filter-toggle-row {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+align-items: center;
+min-height: 44px;
+}
+
+.filter-toggle {
+height: 44px;
+padding-inline: 14px;
+}
+
+.filter-toggle.active,
+.toolbar-help-button {
+background: var(--accent-soft);
+border-color: rgba(243, 186, 108, 0.36);
+color: #ffe6c2;
+}
+
+.toolbar-help-button {
+width: fit-content;
+text-align: center;
+cursor: pointer;
+align-self: flex-start;
 }
 
 .toolbar-status {
@@ -940,6 +978,19 @@ z-index: 1000;
 display: flex;
 }
 
+#event-venue-info-modal {
+position: fixed;
+inset: 0;
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 1000;
+}
+
+#event-venue-info-modal.active {
+display: flex;
+}
+
 .modal-overlay {
 position: absolute;
 inset: 0;
@@ -1158,6 +1209,17 @@ font-size: 28px;
 cursor: pointer;
 }
 
+#event-venue-info-close {
+position: absolute;
+top: 10px;
+right: 14px;
+border: 0;
+background: transparent;
+color: var(--text);
+font-size: 28px;
+cursor: pointer;
+}
+
 @media (max-width: 1080px) {
 .hero {
 grid-template-columns: 1fr;
@@ -1282,7 +1344,8 @@ padding: 16px;
 
 .scope-switch,
 .quick-jumps,
-.type-chip-row {
+.type-chip-row,
+.filter-toggle-row {
 gap: 8px;
 }
 

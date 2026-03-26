@@ -66,6 +66,12 @@ function buildPreviewEmbed(template, duplicates) {
     });
   }
 
+  embed.addFields({
+    name: "Kategorie",
+    value: template.category === "venue" ? "Venue" : "Event",
+    inline: true
+  });
+
   if (template.host_display_name) {
     embed.addFields({
       name: "Host",

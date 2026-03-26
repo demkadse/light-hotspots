@@ -79,6 +79,15 @@ Ein kuratierter Monatsblick auf Tavernen, Clubabende, offene RP-Treffs und Commu
 <option value="">Alle Venues</option>
 </select>
 </div>
+
+<div class="filter-group filter-group-wide">
+<label class="filter-label">Anzeige</label>
+<div class="filter-toggle-row" role="group" aria-label="Events und Venues einblenden">
+<button id="category-toggle-event" class="filter-toggle active" type="button" aria-pressed="true">Events</button>
+<button id="category-toggle-venue" class="filter-toggle active" type="button" aria-pressed="true">Venues</button>
+</div>
+<button id="event-venue-info-open" class="toolbar-help-button" type="button">Unterschiede Events/Venues</button>
+</div>
 </div>
 
 <div class="toolbar-status">
@@ -146,10 +155,32 @@ Mir ist wichtig, damit offen umzugehen. Gegenüber echten Entwicklerinnen und En
 </div>
 </div>
 
+<div id="event-venue-info-modal" aria-hidden="true">
+<div class="modal-overlay event-venue-info-overlay"></div>
+<div class="legal-modal-window" role="dialog" aria-modal="true" aria-labelledby="event-venue-info-title">
+<button id="event-venue-info-close" type="button" aria-label="Hinweis zu Events und Venues schließen">x</button>
+<h2 id="event-venue-info-title">Unterschiede Events/Venues</h2>
+<p class="legal-copy">
+Auf dieser Seite unterscheiden wir zwischen <strong>Events</strong> und <strong>Venues</strong>, damit du schneller filtern kannst, welche Art von Termin du gerade suchst.
+</p>
+<p class="legal-copy">
+Als <strong>Events</strong> verstehen wir eher klassische Treffpunkte oder thematische Angebote wie Bars, Restaurants, Badehäuser, Teehäuser, Tavernen oder ähnliche RP-Abende.
+</p>
+<p class="legal-copy">
+Als <strong>Venues</strong> verstehen wir vor allem clubartige oder dauerhaft als Location gedachte Formate wie Clubs, Nightclubs oder ähnliche Party-Locations.
+</p>
+<p class="legal-copy legal-copy-muted">
+Die Einordnung dient nur der Übersicht. Wenn ein Termin thematisch dazwischenliegt, ordnet der Kalender ihn nach der naheliegendsten Hauptform ein.
+</p>
+</div>
+</div>
+
 <script src="js/events.js"></script>
+<script src="js/eventCategories.js"></script>
 <script src="js/modal.js"></script>
 <script src="js/legalNotice.js"></script>
 <script src="js/transparency.js"></script>
+<script src="js/eventVenueInfo.js"></script>
 <script src="js/siteConfig.js"></script>
 <script src="js/carousel.js"></script>
 <script src="js/timeline.js"></script>

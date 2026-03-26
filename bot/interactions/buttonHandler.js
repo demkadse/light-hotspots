@@ -39,6 +39,7 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 function formatTemplateSummary(template) {
   return [
     `**${template.title || "Unbenannt"}**`,
+    template.category === "venue" ? "Kategorie: Venue" : "Kategorie: Event",
     template.venue ? `Ort: ${template.venue}` : null,
     template.server ? `Server: ${template.server}` : null,
     template.recurrence_rule === "weekly" ? "Wiederholung: Wöchentlich" : null,
@@ -116,6 +117,12 @@ function buildApprovalEmbed(template, duplicates) {
       inline: true
     });
   }
+
+  embed.addFields({
+    name: "Kategorie",
+    value: template.category === "venue" ? "Venue" : "Event",
+    inline: true
+  });
 
   if (template.host_display_name) {
     embed.addFields({

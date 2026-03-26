@@ -16,6 +16,10 @@ function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
 }
 
+function formatCategoryLabel(event) {
+  return window.getEventCategoryLabel?.(event) || "Event";
+}
+
 function isCancelled(event) {
   return event.status === "cancelled";
 }
@@ -145,13 +149,17 @@ function buildCard(event) {
 
   const chip = document.createElement("span");
   chip.className = "event-chip";
-  chip.textContent = formatTypeLabel(event);
+  chip.textContent = formatCategoryLabel(event);
+
+  const typeChip = document.createElement("span");
+  typeChip.className = "event-time-chip";
+  typeChip.textContent = formatTypeLabel(event);
 
   const timeChip = document.createElement("span");
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  headerRow.append(chip, timeChip);
+  headerRow.append(chip, typeChip, timeChip);
 
   if (isCancelled(event)) {
     const statusChip = document.createElement("span");

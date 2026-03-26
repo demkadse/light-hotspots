@@ -18,6 +18,21 @@ const REPO_ROOT = path.resolve(BOT_ROOT, "..");
 const TEMPLATE_PATH = path.join(BOT_ROOT, "data", "templates.json");
 const EVENTS_BASE_PATH = path.join(REPO_ROOT, "events", "data");
 const RECURRING_WEEKS = 26;
+const VENUE_CATEGORY_KEYWORDS = ["club", "clubs", "nightclub", "nightclubs", "nachtclub", "nachtclubs"];
+const EVENT_CATEGORY_KEYWORDS = [
+  "bar",
+  "bars",
+  "restaurant",
+  "restaurants",
+  "badehaus",
+  "badehäuser",
+  "badehaeuser",
+  "teehaus",
+  "teehäuser",
+  "teehaeuser",
+  "taverne",
+  "tavernen"
+];
 
 // =========================
 // HELPERS
@@ -66,6 +81,35 @@ async function writeTemplates(templates) {
 
 function normalizeTemplateField(value) {
   return (value || "").trim().toLowerCase();
+}
+
+function detectCategoryFromTemplateLike(data) {
+  const source = [data.category, data.event_type, data.type, data.venue]
+    .map(normalizeTemplateField)
+    .filter(Boolean)
+    .join(" ");
+
+  if (VENUE_CATEGORY_KEYWORDS.some(keyword => source.includes(keyword))) {
+    return "venue";
+  }
+
+  if (EVENT_CATEGORY_KEYWORDS.some(keyword => source.includes(keyword))) {
+    return "event";
+  }
+
+  return "event";
+}
+
+function applyDerivedCategory(data, fallback = {}) {
+  const base = {
+    ...fallback,
+    ...data
+  };
+
+  return {
+    ...data,
+    category: detectCategoryFromTemplateLike(base)
+  };
 }
 
 function isReusableDraftTemplate(template) {
@@ -372,10 +416,12 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     const index = templates.findIndex(t => t.id === templateId);
     if (index === -1) throw new Error("Template nicht gefunden");
 
+    const nextData = applyDerivedCategory(data, templates[index]);
+
     templates[index] = {
       ...templates[index],
-      ...data,
-      recurrence_rule: data.recurrence_rule ?? templates[index].recurrence_rule ?? null,
+      ...nextData,
+      recurrence_rule: nextData.recurrence_rule ?? templates[index].recurrence_rule ?? null,
       updated_at: new Date().toISOString()
     };
 
@@ -390,7 +436,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
   const newTemplate = {
     id: crypto.randomUUID(),
-    ...data,
+    ...applyDerivedCategory(data),
     recurrence_rule: data.recurrence_rule ?? null,
     ...buildUserIdentityFields(userId),
     status: "draft",
@@ -524,6 +570,7 @@ export async function approveTemplate(templateId) {
       series_id: template.recurrence_rule === "weekly" ? `${template.id}:weekly` : null,
       occurrence_index: template.recurrence_rule === "weekly" ? occurrenceIndex : 0,
       recurrence_rule: template.recurrence_rule || null,
+      category: detectCategoryFromTemplateLike(template),
       title: template.title,
       type: template.event_type || template.type || "event",
       venue: template.venue,
