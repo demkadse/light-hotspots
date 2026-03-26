@@ -136,6 +136,46 @@ function buildFeedEventTitle(event) {
   return event.status === "cancelled" ? `${event.title} (ABGESAGT)` : event.title;
 }
 
+function getFeedAccent(event) {
+  if (event.status === "cancelled") {
+    return "🟥";
+  }
+
+  const type = (event.type || event.event_type || "").toLowerCase();
+
+  if (type.includes("taverne")) return "🟨";
+  if (type.includes("markt")) return "🟧";
+  if (type.includes("club")) return "🟪";
+  if (type.includes("open")) return "🟦";
+  if (type.includes("salon")) return "🟫";
+  return "🟦";
+}
+
+function formatFeedLocation(event) {
+  const locationParts = [
+    event.server ? `(${event.server})` : null,
+    event.venue || null
+  ].filter(Boolean);
+
+  return locationParts.join(" ");
+}
+
+function formatFeedTime(event) {
+  if (event.start_time && event.end_time) {
+    return `${event.start_time}–${event.end_time}`;
+  }
+
+  if (event.start_time) {
+    return `${event.start_time}`;
+  }
+
+  if (event.end_time) {
+    return `bis ${event.end_time}`;
+  }
+
+  return "offen";
+}
+
 function createSummary(groups, startDate, endDate) {
   const totalEvents = groups.reduce((sum, group) => sum + group.events.length, 0);
   const startLabel = formatDateInBerlin(new Date(`${startDate}T12:00:00Z`), {
@@ -274,48 +314,38 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
     }];
   }
 
-  const embeds = [];
-  let currentEmbed = EmbedBuilder.from(baseEmbed);
-  let fieldsOnCurrentEmbed = 0;
+  const messages = [{ embeds: [baseEmbed.setTimestamp(new Date())] }];
 
   for (const group of groups) {
-    for (const event of group.events) {
-      const lines = [
-        event.start_time ? `Zeit: **${event.start_time} Uhr**` : "Zeit: **offen**",
-        event.venue ? `Venue: **${event.venue}**` : null,
-        event.server ? `Server: **${event.server}**` : null,
-        event.host ? `Host: **${event.host}**` : null
+    const dayEmbed = new EmbedBuilder()
+      .setColor(0x5ea8d6)
+      .setTitle(group.label)
+      .setFooter({ text: "Light Hotspots Kalender" });
+
+    for (const event of group.events.slice(0, 10)) {
+      const fieldLines = [
+        `${getFeedAccent(event)} **${buildFeedEventTitle(event)}**`,
+        formatFeedLocation(event) ? `Ort: ${formatFeedLocation(event)}` : null,
+        event.host ? `Host: ${event.host}` : null,
+        `Zeit: \`${formatFeedTime(event)}\``
       ].filter(Boolean);
 
-      let value = lines.join("\n");
+      let value = fieldLines.join("\n");
       if (value.length > 1024) {
         value = `${value.slice(0, 1000)}\n…`;
       }
 
-      if (fieldsOnCurrentEmbed === 5) {
-        embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
-        currentEmbed = new EmbedBuilder()
-          .setColor(0xf3ba6c)
-          .setTitle(title)
-          .setURL(SITE_URL)
-          .setFooter({ text: "Light Hotspots Kalender" });
-        fieldsOnCurrentEmbed = 0;
-      }
-
-      currentEmbed.addFields({
-        name: `${group.label} | ${buildFeedEventTitle(event)}`,
+      dayEmbed.addFields({
+        name: "\u200b",
         value,
         inline: false
       });
-      fieldsOnCurrentEmbed += 1;
     }
+
+    messages.push({ embeds: [dayEmbed] });
   }
 
-  if (fieldsOnCurrentEmbed > 0) {
-    embeds.push({ embeds: [currentEmbed.setTimestamp(new Date())] });
-  }
-
-  return embeds;
+  return messages;
 }
 
 export function shouldRunCalendarFeedNow(date = new Date()) {
