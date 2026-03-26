@@ -17,6 +17,7 @@ import {
   approveTemplate,
   getTemplate,
   unpublishTemplate,
+  cancelPublishedTemplate,
   findPotentialDuplicates
 } from "../services/templateService.js";
 import {
@@ -29,6 +30,7 @@ import { cleanupBotMessages } from "../services/cleanupService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { CHANNELS } from "../config/channels.js";
 import { getTemplateOwnerId } from "../services/identityService.js";
+import { forcePostWeeklyCalendarFeed } from "../services/calendarFeedService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +41,7 @@ function formatTemplateSummary(template) {
     `**${template.title || "Unbenannt"}**`,
     template.venue ? `Ort: ${template.venue}` : null,
     template.server ? `Server: ${template.server}` : null,
+    template.recurrence_rule === "weekly" ? "Wiederholung: Wöchentlich" : null,
     template.date ? `Datum: ${template.date}` : null,
     template.time ? `Zeit: ${buildTimeLabel(template)}` : null
   ].filter(Boolean).join("\n");
@@ -126,6 +129,14 @@ function buildApprovalEmbed(template, duplicates) {
     embed.addFields({
       name: "Server",
       value: template.server,
+      inline: true
+    });
+  }
+
+  if (template.recurrence_rule === "weekly") {
+    embed.addFields({
+      name: "Wiederholung",
+      value: "Wöchentlich",
       inline: true
     });
   }
@@ -248,6 +259,10 @@ export async function handleButton(interaction, client) {
         new ButtonBuilder()
           .setCustomId("event:edit")
           .setLabel("Bestehendes Event bearbeiten")
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId("event:cancel")
+          .setLabel("Veröffentlichtes Event absagen")
           .setStyle(ButtonStyle.Secondary)
       );
 
@@ -292,6 +307,40 @@ export async function handleButton(interaction, client) {
 
       await replyAndExpire(interaction, {
         content: "Wähle das Event aus, dessen 3-Schritte-Ablauf du fortsetzen möchtest:",
+        components: [row],
+        ephemeral: true
+      }, 120000);
+
+      return;
+    }
+
+    if (id === "event:cancel") {
+      const templates = (await getTemplatesByUser(interaction.user.id))
+        .filter(template => template.status === "approved");
+
+      if (templates.length === 0) {
+        await replyAndExpire(interaction, {
+          content: "Du hast aktuell kein veröffentlichtes Event, das abgesagt werden kann.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      const options = templates.slice(0, 25).map(template => ({
+        label: (template.title || "Unbenannt").slice(0, 100),
+        value: template.id,
+        description: `${template.date || "kein Datum"} | ${template.venue || "kein Ort"}`.slice(0, 100)
+      }));
+
+      const select = new StringSelectMenuBuilder()
+        .setCustomId("event:selectCancellationTemplate")
+        .setPlaceholder("Veröffentlichtes Event auswählen")
+        .addOptions(options);
+
+      const row = new ActionRowBuilder().addComponents(select);
+
+      await replyAndExpire(interaction, {
+        content: "Wähle das veröffentlichte Event aus, das als abgesagt markiert werden soll:",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -363,6 +412,15 @@ export async function handleButton(interaction, client) {
             .setLabel("Externer Link (optional)")
             .setPlaceholder("https://...")
             .setValue(template?.link || "")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(false)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("recurrence_rule")
+            .setLabel("Wiederholung (optional)")
+            .setPlaceholder("leer lassen oder weekly")
+            .setValue(template?.recurrence_rule || "")
             .setStyle(TextInputStyle.Short)
             .setRequired(false)
         ),
@@ -622,6 +680,56 @@ export async function handleButton(interaction, client) {
 
       await replyAndExpire(interaction, {
         content: `Veröffentlichung zurückgenommen: ${result.title}`,
+        ephemeral: true
+      });
+
+      return;
+    }
+
+    if (id === "event:cancel_abort") {
+      await replyAndExpire(interaction, {
+        content: "Absage abgebrochen.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (id.startsWith("event:cancel_confirm:")) {
+      assertActionCooldown(interaction.user.id, `cancel:${id}`, 30000);
+      await deferEphemeral(interaction);
+      const templateId = id.split(":")[2];
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        throw new Error("Template nicht gefunden");
+      }
+
+      const ownsTemplate = (await getTemplatesByUser(interaction.user.id)).some(entry => entry.id === templateId);
+      if (!ownsTemplate) {
+        throw new Error("Du darfst dieses Event nicht absagen.");
+      }
+
+      const result = await cancelPublishedTemplate(templateId);
+      let feedUpdated = false;
+
+      try {
+        await forcePostWeeklyCalendarFeed(client);
+        feedUpdated = true;
+      } catch (feedError) {
+        console.error("CALENDAR FEED FORCE ERROR:", feedError);
+      }
+
+      await recordAuditEntry(client, {
+        action: "template.cancelled",
+        actor_id: interaction.user.id,
+        target_id: templateId,
+        summary: result.title || "Unbenannt"
+      });
+
+      await replyAndExpire(interaction, {
+        content: feedUpdated
+          ? `Event als abgesagt markiert: ${result.title}. Der Feed wurde direkt aktualisiert.`
+          : `Event als abgesagt markiert: ${result.title}. Der Feed konnte gerade nicht automatisch aktualisiert werden.`,
         ephemeral: true
       });
 

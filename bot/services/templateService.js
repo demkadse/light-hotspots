@@ -17,6 +17,7 @@ const REPO_ROOT = path.resolve(BOT_ROOT, "..");
 
 const TEMPLATE_PATH = path.join(BOT_ROOT, "data", "templates.json");
 const EVENTS_BASE_PATH = path.join(REPO_ROOT, "events", "data");
+const RECURRING_WEEKS = 26;
 
 // =========================
 // HELPERS
@@ -85,13 +86,52 @@ export async function getAllTemplates() {
 
 export async function getPublishedTemplates() {
   const templates = await readTemplates();
-  return templates.filter(template => template.status === "approved");
+  return templates.filter(template =>
+    ["approved", "cancelled"].includes(template.status) ||
+    (Array.isArray(template.published_files) && template.published_files.length > 0)
+  );
 }
 
 async function readEventIndex() {
   const indexPath = path.join(EVENTS_BASE_PATH, "index.json");
   const index = await readJSON(indexPath, { events: [] });
   return { indexPath, index };
+}
+
+async function resolvePublishedFilesForTemplate(template, existingIndex = null) {
+  if (template.published_files?.length) {
+    return template.published_files;
+  }
+
+  const { index } = existingIndex ? { index: existingIndex } : await readEventIndex();
+  const templateDate = template.date?.includes(".")
+    ? (() => {
+        const { day, month, year } = parseDate(template.date);
+        return `${year}-${month}-${day}`;
+      })()
+    : template.date;
+
+  const matches = [];
+
+  for (const entry of index.events) {
+    if (entry.date !== templateDate) {
+      continue;
+    }
+
+    const event = await readJSON(path.join(EVENTS_BASE_PATH, entry.file), null);
+    if (!event) {
+      continue;
+    }
+
+    if (
+      normalizeTemplateField(event.title) === normalizeTemplateField(template.title) &&
+      normalizeTemplateField(event.venue) === normalizeTemplateField(template.venue)
+    ) {
+      matches.push(entry.file);
+    }
+  }
+
+  return matches.length > 0 ? matches : [buildPublishedFileInfo(template).file];
 }
 
 function slugify(text) {
@@ -107,10 +147,42 @@ function parseDate(dateStr) {
   return { day, month, year };
 }
 
-function buildPublishedFileInfo(template) {
-  const { day, month, year } = parseDate(template.date);
+function formatDateParts(date) {
+  return {
+    day: String(date.getUTCDate()).padStart(2, "0"),
+    month: String(date.getUTCMonth() + 1).padStart(2, "0"),
+    year: String(date.getUTCFullYear())
+  };
+}
+
+function parseTemplateDateToUtc(dateStr) {
+  const { day, month, year } = parseDate(dateStr);
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+}
+
+function getOccurrenceDates(template) {
+  const startDate = parseTemplateDateToUtc(template.date);
+  const dates = [startDate];
+
+  if (template.recurrence_rule !== "weekly") {
+    return dates;
+  }
+
+  for (let index = 1; index < RECURRING_WEEKS; index += 1) {
+    const nextDate = new Date(startDate);
+    nextDate.setUTCDate(startDate.getUTCDate() + index * 7);
+    dates.push(nextDate);
+  }
+
+  return dates;
+}
+
+function buildPublishedFileInfo(template, occurrenceDate = parseTemplateDateToUtc(template.date), occurrenceIndex = 0) {
+  const { day, month, year } = formatDateParts(occurrenceDate);
   const slug = slugify(template.title);
-  const fileName = `${slug}-${year}-${month}-${day}.json`;
+  const templateSuffix = template.id ? `-${template.id.slice(0, 8)}` : "";
+  const recurringSuffix = template.recurrence_rule === "weekly" ? `-${String(occurrenceIndex + 1).padStart(2, "0")}` : "";
+  const fileName = `${slug}-${year}-${month}-${day}${templateSuffix}${recurringSuffix}.json`;
   const file = `${year}/${month}/${fileName}`;
   const filePath = path.join(EVENTS_BASE_PATH, file);
 
@@ -303,6 +375,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     templates[index] = {
       ...templates[index],
       ...data,
+      recurrence_rule: data.recurrence_rule ?? templates[index].recurrence_rule ?? null,
       updated_at: new Date().toISOString()
     };
 
@@ -318,6 +391,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const newTemplate = {
     id: crypto.randomUUID(),
     ...data,
+    recurrence_rule: data.recurrence_rule ?? null,
     ...buildUserIdentityFields(userId),
     status: "draft",
     created_at: new Date().toISOString()
@@ -427,53 +501,67 @@ export async function approveTemplate(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
-  const { day, month, year, slug, fileName, file, filePath } = buildPublishedFileInfo(template);
-
-  const dirPath = path.join(EVENTS_BASE_PATH, year, month);
-
-  await fs.mkdir(dirPath, { recursive: true });
-
-  const eventData = {
-    id: slug,
-    title: template.title,
-    type: template.event_type || template.type || "event",
-    venue: template.venue,
-    server: template.server || null,
-    host: template.host_display_name || template.host || "Unbekannt",
-    venue_lead: template.venue_lead || null,
-    date: `${year}-${month}-${day}`,
-    start_time: template.time,
-    end_time: template.end_time || null,
-    image: template.image || null,
-    description: template.description,
-    discord_link: template.discord_link || null,
-    link: template.link || null,
-    links: [template.discord_link, template.link].filter(Boolean),
-    notes: template.notes || null,
-    created_by_hash: template.created_by_hash || null,
-    created_at: new Date().toISOString()
-  };
-
-  eventData.file = file;
-
-  await writeJSON(filePath, eventData);
+  const occurrenceDates = getOccurrenceDates(template);
+  const publishedFiles = [];
+  const syncedPaths = [];
+  let firstEventData = null;
 
   // =========================
   // INDEX
   // =========================
 
   const { indexPath, index } = await readEventIndex();
-  const relativeFile = eventData.file;
 
-  const existing = index.events.find(e => e.file === relativeFile);
+  for (let occurrenceIndex = 0; occurrenceIndex < occurrenceDates.length; occurrenceIndex += 1) {
+    const occurrenceDate = occurrenceDates[occurrenceIndex];
+    const { day, month, year, slug, file, filePath } = buildPublishedFileInfo(template, occurrenceDate, occurrenceIndex);
+    const dirPath = path.join(EVENTS_BASE_PATH, year, month);
 
-  if (existing) {
-    existing.date = eventData.date;
-  } else {
-    index.events.push({
-      file: relativeFile,
-      date: eventData.date
-    });
+    await fs.mkdir(dirPath, { recursive: true });
+
+    const eventData = {
+      id: template.recurrence_rule === "weekly" ? `${slug}-${year}${month}${day}` : slug,
+      series_id: template.recurrence_rule === "weekly" ? `${template.id}:weekly` : null,
+      occurrence_index: template.recurrence_rule === "weekly" ? occurrenceIndex : 0,
+      recurrence_rule: template.recurrence_rule || null,
+      title: template.title,
+      type: template.event_type || template.type || "event",
+      venue: template.venue,
+      server: template.server || null,
+      host: template.host_display_name || template.host || "Unbekannt",
+      venue_lead: template.venue_lead || null,
+      date: `${year}-${month}-${day}`,
+      start_time: template.time,
+      end_time: template.end_time || null,
+      image: template.image || null,
+      description: template.description,
+      discord_link: template.discord_link || null,
+      link: template.link || null,
+      links: [template.discord_link, template.link].filter(Boolean),
+      notes: template.notes || null,
+      status: "scheduled",
+      created_by_hash: template.created_by_hash || null,
+      created_at: new Date().toISOString(),
+      file
+    };
+
+    await writeJSON(filePath, eventData);
+    syncedPaths.push(filePath);
+    publishedFiles.push(file);
+
+    const existing = index.events.find(e => e.file === file);
+    if (existing) {
+      existing.date = eventData.date;
+    } else {
+      index.events.push({
+        file,
+        date: eventData.date
+      });
+    }
+
+    if (!firstEventData) {
+      firstEventData = eventData;
+    }
   }
 
   await writeJSON(indexPath, index);
@@ -481,17 +569,21 @@ export async function approveTemplate(templateId) {
   templates[templateIndex] = {
     ...template,
     status: "approved",
+    published_files: publishedFiles,
     rejection_reason: null,
     updated_at: new Date().toISOString()
   };
 
   await writeTemplates(templates);
   await syncRepoFiles(
-    [TEMPLATE_PATH, indexPath, filePath],
-    `Publish event ${eventData.file}`
+    [TEMPLATE_PATH, indexPath, ...syncedPaths],
+    `Publish event ${publishedFiles[0]}`
   );
 
-  return eventData;
+  return {
+    ...firstEventData,
+    published_files: publishedFiles
+  };
 }
 
 export async function unpublishTemplate(templateId) {
@@ -503,34 +595,89 @@ export async function unpublishTemplate(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
-  const fileInfo = buildPublishedFileInfo(template);
   const { indexPath, index } = await readEventIndex();
+  const publishedFiles = await resolvePublishedFilesForTemplate(template, index);
+  const changedPaths = [];
 
-  try {
-    await fs.unlink(fileInfo.filePath);
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      throw error;
+  for (const file of publishedFiles) {
+    const filePath = path.join(EVENTS_BASE_PATH, file);
+
+    try {
+      await fs.unlink(filePath);
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        throw error;
+      }
     }
+
+    changedPaths.push(filePath);
   }
 
-  index.events = index.events.filter(entry => entry.file !== fileInfo.file);
+  index.events = index.events.filter(entry => !publishedFiles.includes(entry.file));
   await writeJSON(indexPath, index);
 
   templates[templateIndex] = {
     ...template,
     status: "unpublished",
+    published_files: [],
     updated_at: new Date().toISOString()
   };
 
   await writeTemplates(templates);
   await syncRepoFiles(
-    [TEMPLATE_PATH, indexPath, fileInfo.filePath],
-    `Unpublish event ${fileInfo.file}`
+    [TEMPLATE_PATH, indexPath, ...changedPaths],
+    `Unpublish event ${publishedFiles[0]}`
   );
 
   return {
     title: template.title,
-    file: fileInfo.file
+    file: publishedFiles[0]
+  };
+}
+
+export async function cancelPublishedTemplate(templateId) {
+  const templates = await readTemplates();
+  const templateIndex = templates.findIndex(t => t.id === templateId);
+  const template = templates[templateIndex];
+
+  if (!template) {
+    throw new Error("Template nicht gefunden");
+  }
+
+  const { index } = await readEventIndex();
+  const publishedFiles = await resolvePublishedFilesForTemplate(template, index);
+  const changedPaths = [];
+
+  for (const file of publishedFiles) {
+    const filePath = path.join(EVENTS_BASE_PATH, file);
+    const event = await readJSON(filePath, null);
+
+    if (!event) {
+      continue;
+    }
+
+    await writeJSON(filePath, {
+      ...event,
+      status: "cancelled",
+      cancelled_at: new Date().toISOString()
+    });
+    changedPaths.push(filePath);
+  }
+
+  templates[templateIndex] = {
+    ...template,
+    status: "cancelled",
+    updated_at: new Date().toISOString()
+  };
+
+  await writeTemplates(templates);
+  await syncRepoFiles(
+    [TEMPLATE_PATH, ...changedPaths],
+    `Cancel event ${publishedFiles[0]}`
+  );
+
+  return {
+    title: template.title,
+    published_files: publishedFiles
   };
 }

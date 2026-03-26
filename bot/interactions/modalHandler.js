@@ -22,12 +22,30 @@ function normalizeOptional(value) {
   return trimmed ? trimmed : null;
 }
 
+function normalizeRecurrenceRule(value) {
+  const normalized = normalizeOptional(value)?.toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (["weekly", "wöchentlich", "woechentlich"].includes(normalized)) {
+    return "weekly";
+  }
+
+  return normalized;
+}
+
 function buildTimeLabel(template) {
   if (template.time && template.end_time) {
     return `${template.time} - ${template.end_time}`;
   }
 
   return template.time || "-";
+}
+
+function buildRecurrenceLabel(template) {
+  return template.recurrence_rule === "weekly" ? "Wöchentlich" : null;
 }
 
 function buildPreviewEmbed(template, duplicates) {
@@ -60,6 +78,14 @@ function buildPreviewEmbed(template, duplicates) {
     embed.addFields({
       name: "Server",
       value: template.server,
+      inline: true
+    });
+  }
+
+  if (buildRecurrenceLabel(template)) {
+    embed.addFields({
+      name: "Wiederholung",
+      value: buildRecurrenceLabel(template),
       inline: true
     });
   }
@@ -287,13 +313,15 @@ export async function handleModal(interaction, client) {
       image: normalizeOptional(interaction.fields.getTextInputValue("image")),
       discord_link: normalizeOptional(interaction.fields.getTextInputValue("discord_link")),
       link: normalizeOptional(interaction.fields.getTextInputValue("link")),
+      recurrence_rule: normalizeRecurrenceRule(interaction.fields.getTextInputValue("recurrence_rule")),
       notes: normalizeOptional(interaction.fields.getTextInputValue("notes"))
     };
 
     const errors = validateEventInput({
       image: data.image,
       link: data.link,
-      discord_link: data.discord_link
+      discord_link: data.discord_link,
+      recurrence_rule: data.recurrence_rule
     });
     if (errors.length > 0) {
       await replyAndExpire(interaction, {

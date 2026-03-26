@@ -131,6 +131,10 @@ function groupEventsByDate(events) {
   }));
 }
 
+function buildFeedEventTitle(event) {
+  return event.status === "cancelled" ? `${event.title} (ABGESAGT)` : event.title;
+}
+
 function createSummary(groups, startDate, endDate) {
   const totalEvents = groups.reduce((sum, group) => sum + group.events.length, 0);
   const startLabel = formatDateInBerlin(new Date(`${startDate}T12:00:00Z`), {
@@ -154,8 +158,9 @@ function createSummary(groups, startDate, endDate) {
   const lines = groups.map(group => `${group.label}:\n${group.events.map(event => {
     const parts = [
       event.start_time ? `${event.start_time} Uhr` : "Uhrzeit offen",
-      event.title,
+      buildFeedEventTitle(event),
       event.venue ? `in ${event.venue}` : null,
+      event.server ? `Server: ${event.server}` : null,
       event.host ? `Host: ${event.host}` : null
     ].filter(Boolean);
 
@@ -216,11 +221,13 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
       group.events.map(event => ({
         id: `${startDate}:${event.id || event.file || event.title}`,
         url: buildEventUrl(event),
-        title: event.title,
+        title: buildFeedEventTitle(event),
         content_text: [
           group.label,
           event.start_time ? `Start: ${event.start_time} Uhr` : "Start: offen",
           event.venue ? `Venue: ${event.venue}` : null,
+          event.server ? `Server: ${event.server}` : null,
+          event.status === "cancelled" ? "Status: Abgesagt" : null,
           event.host ? `Host: ${event.host}` : null,
           event.description || null
         ].filter(Boolean).join("\n"),
@@ -256,8 +263,9 @@ function createDiscordMessages({ summary, groups, startDate, endDate }) {
       ...group.events.map(event => {
         const parts = [
           event.start_time ? `${event.start_time} Uhr` : "Uhrzeit offen",
-          `**${event.title}**`,
+          `**${buildFeedEventTitle(event)}**`,
           event.venue ? `in ${event.venue}` : null,
+          event.server ? `Server: ${event.server}` : null,
           event.host ? `Host: ${event.host}` : null
         ].filter(Boolean);
 

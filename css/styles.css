@@ -457,13 +457,22 @@ justify-content: center;
 padding: 16px 0;
 border-radius: 30px;
 min-height: 0;
+overflow: hidden;
 }
 
 .timeline-dots {
 display: flex;
 flex-direction: column;
-justify-content: center;
+justify-content: flex-start;
 gap: 10px;
+max-height: 100%;
+padding: 8px 0;
+overflow-y: auto;
+scrollbar-width: none;
+}
+
+.timeline-dots::-webkit-scrollbar {
+display: none;
 }
 
 .timeline-dot {
@@ -727,7 +736,8 @@ margin: 0;
 }
 
 .event-chip,
-.event-time-chip {
+.event-time-chip,
+.event-status-chip {
 display: inline-flex;
 align-items: center;
 padding: 6px 10px;
@@ -746,6 +756,16 @@ color: #ffe4be;
 border: 1px solid rgba(255, 255, 255, 0.1);
 background: rgba(255, 255, 255, 0.04);
 color: var(--text);
+}
+
+.event-status-chip-cancelled {
+border: 1px solid rgba(255, 122, 122, 0.34);
+background: rgba(180, 54, 54, 0.18);
+color: #ffd7d7;
+}
+
+.event-card-cancelled {
+border-color: rgba(255, 122, 122, 0.24);
 }
 
 .event-meta {
@@ -1052,6 +1072,10 @@ color: rgba(245, 241, 232, 0.92);
 
 .modal-copy-muted {
 color: rgba(245, 241, 232, 0.78);
+}
+
+.modal-copy-cancelled {
+color: #ffd7d7;
 }
 
 .modal-link-button {

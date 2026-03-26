@@ -19,6 +19,10 @@ function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
 }
 
+function isCancelled(event) {
+  return event.status === "cancelled";
+}
+
 function formatTimeRange(event) {
   const date = event.date || "";
   const start = event.start_time || event.time || "";
@@ -92,6 +96,13 @@ function openModal(event) {
   timeChip.textContent = formatTimeRange(event);
 
   topRow.append(typeChip, timeChip);
+
+  if (isCancelled(event)) {
+    const statusChip = document.createElement("span");
+    statusChip.className = "event-status-chip event-status-chip-cancelled";
+    statusChip.textContent = "Abgesagt";
+    topRow.appendChild(statusChip);
+  }
   modalContent.appendChild(topRow);
 
   const title = document.createElement("h2");
@@ -105,8 +116,17 @@ function openModal(event) {
   appendDetailItem(details, "Server", event.server);
   appendDetailItem(details, "Host", formatHostName(event));
   appendDetailItem(details, "Venue-Leitung", event.venue_lead);
+  appendDetailItem(details, "Wiederholung", event.recurrence_rule === "weekly" ? "Wöchentlich" : null);
   appendDetailItem(details, "Zeit", formatTimeRange(event));
   modalContent.appendChild(details);
+
+  if (isCancelled(event)) {
+    appendSectionTitle(modalContent, "Status");
+    const cancellationNotice = document.createElement("p");
+    cancellationNotice.className = "modal-copy modal-copy-cancelled";
+    cancellationNotice.textContent = "Dieses Event wurde abgesagt.";
+    modalContent.appendChild(cancellationNotice);
+  }
 
   appendSectionTitle(modalContent, "Beschreibung");
   const description = document.createElement("p");

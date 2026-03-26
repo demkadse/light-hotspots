@@ -16,6 +16,10 @@ function formatTypeLabel(event) {
   return event.type || event.event_type || "Event";
 }
 
+function isCancelled(event) {
+  return event.status === "cancelled";
+}
+
 function formatTimeRange(event) {
   const start = event.start_time || event.time || "";
   const end = event.end_time || "";
@@ -105,6 +109,9 @@ function buildCarouselNav(track) {
 function buildCard(event) {
   const card = document.createElement("article");
   card.className = "event-card";
+  if (isCancelled(event)) {
+    card.classList.add("event-card-cancelled");
+  }
 
   const media = document.createElement("div");
   media.className = "event-media";
@@ -146,6 +153,13 @@ function buildCard(event) {
 
   headerRow.append(chip, timeChip);
 
+  if (isCancelled(event)) {
+    const statusChip = document.createElement("span");
+    statusChip.className = "event-status-chip event-status-chip-cancelled";
+    statusChip.textContent = "Abgesagt";
+    headerRow.appendChild(statusChip);
+  }
+
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
@@ -158,7 +172,9 @@ function buildCard(event) {
 
   const description = document.createElement("p");
   description.className = "event-summary";
-  description.textContent = event.description || "Keine Beschreibung vorhanden.";
+  description.textContent = isCancelled(event)
+    ? `Dieses Event wurde abgesagt.${event.description ? ` ${event.description}` : ""}`
+    : (event.description || "Keine Beschreibung vorhanden.");
 
   info.append(headerRow, meta, description);
 

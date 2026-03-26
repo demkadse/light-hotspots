@@ -14,6 +14,37 @@ import { assertAdminUser } from "../services/permissionService.js";
 export async function handleSelect(interaction) {
   if (!interaction.isStringSelectMenu()) return;
 
+  if (interaction.customId === "event:selectCancellationTemplate") {
+    const templateId = interaction.values[0];
+    const template = await getTemplate(templateId);
+
+    if (!template) {
+      await replyAndExpire(interaction, {
+        content: "Das ausgewählte Event wurde nicht gefunden.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`event:cancel_confirm:${template.id}`)
+        .setLabel("Ja, Event absagen")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("event:cancel_abort")
+        .setLabel("Abbrechen")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    await replyAndExpire(interaction, {
+      content: `Ausgewählt: ${template.title} (${template.date}). Das Event bleibt sichtbar, wird aber als abgesagt markiert.`,
+      components: [row],
+      ephemeral: true
+    }, 120000);
+    return;
+  }
+
   if (interaction.customId === "admin:selectUnpublishEvent") {
     assertAdminUser(interaction);
 

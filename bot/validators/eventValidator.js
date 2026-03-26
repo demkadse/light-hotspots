@@ -58,6 +58,13 @@ export function validateEventInput(event) {
     }
   }
 
+  if ("recurrence_rule" in event && event.recurrence_rule) {
+    const recurrenceRule = event.recurrence_rule.trim().toLowerCase();
+    if (!["weekly", "wöchentlich", "woechentlich"].includes(recurrenceRule)) {
+      errors.push("Wiederholung muss leer bleiben oder `weekly` sein.");
+    }
+  }
+
   if (event.image) {
     const image = event.image.trim();
     const imagePath = (() => {
