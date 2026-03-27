@@ -63,7 +63,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
     embeds: [buildPreviewEmbed(template, duplicates)],
     components: buildWizardComponents(template),
     ephemeral: true
-  }, 120000);
+  }, null);
 }
 
 export async function handleModal(interaction, client) {

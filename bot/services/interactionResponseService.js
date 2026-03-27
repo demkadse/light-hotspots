@@ -1,6 +1,10 @@
 import { MessageFlags } from "discord.js";
 
 function scheduleDelete(interaction, delayMs) {
+  if (!Number.isFinite(delayMs) || delayMs <= 0) {
+    return;
+  }
+
   const timer = setTimeout(async () => {
     try {
       await interaction.deleteReply();

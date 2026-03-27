@@ -126,5 +126,29 @@
     "target_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
     "summary": "Meerjungfrau",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "e09ac03d-fcb2-497d-918c-f7ac2e8f268f",
+    "created_at": "2026-03-27T11:29:52.858Z",
+    "action": "template.opened",
+    "target_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "1ed3419a-8217-4b43-8365-d2b8403c3c56",
+    "created_at": "2026-03-27T11:30:05.522Z",
+    "action": "template.selection_updated",
+    "target_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "ada2b541-e075-4797-969b-d6d1df08c698",
+    "created_at": "2026-03-27T11:32:25.429Z",
+    "action": "template.opened",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]

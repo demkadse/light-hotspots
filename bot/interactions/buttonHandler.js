@@ -73,7 +73,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
     embeds: [buildPreviewEmbed(template, duplicates)],
     components: buildWizardComponents(template, options),
     ephemeral: true
-  }, 120000);
+  }, null);
 }
 
 export async function handleButton(interaction, client) {
@@ -163,7 +163,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle direkt, ob du ein Event oder eine Venue anlegen, ein bestehendes Event bearbeiten oder ein veroeffentlichtes Event absagen moechtest.",
         components: [row],
         ephemeral: true
-      }, 120000);
+      }, null);
 
       return;
     }
@@ -184,7 +184,7 @@ export async function handleButton(interaction, client) {
         content: "Was moechtest du anlegen?",
         components: [row],
         ephemeral: true
-      }, 120000);
+      }, null);
       return;
     }
 
@@ -226,7 +226,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle das Event aus, das du weiterbearbeiten moechtest:",
         components: [row],
         ephemeral: true
-      }, 120000);
+      }, null);
 
       return;
     }
@@ -260,7 +260,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle das veroeffentlichte Event aus, das als abgesagt markiert werden soll:",
         components: [row],
         ephemeral: true
-      }, 120000);
+      }, null);
 
       return;
     }
@@ -318,7 +318,7 @@ export async function handleButton(interaction, client) {
     }
 
     if (id.startsWith("event:plotPage:")) {
-      const [, , , templateId, rawPage] = id.split(":");
+      const [, , templateId, rawPage] = id.split(":");
       await deferEphemeral(interaction);
       const template = await getTemplate(templateId);
 
