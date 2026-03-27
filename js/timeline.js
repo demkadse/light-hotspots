@@ -12,7 +12,10 @@ const state = {
     showEvents: true,
     showVenues: true
   },
-  touchStartY: null
+  touchStartY: null,
+  wheelDeltaBuffer: 0,
+  wheelBufferTimer: null,
+  slideWheelLock: false
 };
 
 function startOfDay(date) {
@@ -753,6 +756,8 @@ function bindFilterControls() {
 
 function bindNavigationControls() {
   const timelineContainer = document.getElementById("timeline-container");
+  const WHEEL_THRESHOLD = 90;
+  const WHEEL_LOCK_MS = 420;
 
   document.addEventListener("wheel", event => {
     if (window.matchMedia("(max-width: 768px)").matches) {
@@ -767,12 +772,35 @@ function bindNavigationControls() {
       return;
     }
 
-    if (Math.abs(event.deltaY) < 20) {
+    if (Math.abs(event.deltaY) < 8) {
       return;
     }
 
-    changeSlide(event.deltaY > 0 ? 1 : -1);
-  }, { passive: true });
+    event.preventDefault();
+
+    if (state.slideWheelLock) {
+      return;
+    }
+
+    state.wheelDeltaBuffer += event.deltaY;
+    clearTimeout(state.wheelBufferTimer);
+    state.wheelBufferTimer = setTimeout(() => {
+      state.wheelDeltaBuffer = 0;
+    }, 160);
+
+    if (Math.abs(state.wheelDeltaBuffer) < WHEEL_THRESHOLD) {
+      return;
+    }
+
+    const direction = state.wheelDeltaBuffer > 0 ? 1 : -1;
+    state.wheelDeltaBuffer = 0;
+    state.slideWheelLock = true;
+    changeSlide(direction);
+
+    window.setTimeout(() => {
+      state.slideWheelLock = false;
+    }, WHEEL_LOCK_MS);
+  }, { passive: false });
 
   document.addEventListener("keydown", event => {
     if (event.key === "ArrowDown" || event.key === "PageDown") {
