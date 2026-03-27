@@ -102,7 +102,7 @@ Zusatzlich gibt es kleine Schnellfilter-Chips fuer haeufige Typen.
 
 ### 4.4 Venue-Filter
 
-Ueber den Venue-Filter kann die Anzeige auf einen bestimmten Ort oder eine bestimmte Location beschraenkt werden.
+Ueber den Venue-Filter kann die Anzeige auf einen bestimmten Ort beschraenkt werden.
 
 ### 4.5 Kategorien: Events und Venues
 
@@ -269,7 +269,7 @@ Die Event-Erstellung ist als klarer 3-Schritte-Ablauf aufgebaut.
 Im ersten Formular werden die Pflichtangaben abgefragt:
 
 - Titel
-- Location
+- Ort
 - Datum
 - Uhrzeit
 - Beschreibung

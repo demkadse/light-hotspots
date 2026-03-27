@@ -145,7 +145,7 @@ function buildCarouselNav(track) {
   const nextButton = document.createElement("button");
   nextButton.type = "button";
   nextButton.className = "carousel-nav-button carousel-nav-button-next";
-  nextButton.setAttribute("aria-label", "Nächste Events");
+  nextButton.setAttribute("aria-label", "Naechste Events");
   nextButton.innerHTML = "<span aria-hidden=\"true\">&rsaquo;</span>";
 
   prevButton.addEventListener("click", event => {
@@ -312,7 +312,7 @@ function createCarousel(eventsForDay) {
 
   const hint = document.createElement("span");
   hint.className = "carousel-hint";
-  hint.textContent = "Wische für weitere Events";
+  hint.textContent = "Wische fuer weitere Events";
 
   shell.append(nav, track, hint);
 

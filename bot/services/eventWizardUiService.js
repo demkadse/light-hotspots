@@ -127,7 +127,7 @@ export function buildBasicsModal(template = null, modalId = "event_modal_basics_
 
   modal.addComponents(
     createInput("title", "Titel", "z.B. Club Night", template?.title),
-    createInput("venue", "Location", "z.B. Limsa Lominsa", template?.venue),
+    createInput("venue", "Ort", "z.B. Limsa Lominsa", template?.venue),
     createInput("date", "Datum", "z.B. 20.03.2026", template?.date),
     createInput("time", "Uhrzeit", "z.B. 20:00", template?.time),
     createInput("description", "Beschreibung", "Worum geht es?", template?.description)

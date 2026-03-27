@@ -5,7 +5,7 @@
     "venue": "KK 21/35",
     "date": "27.03.2026",
     "time": "20:00",
-    "description": "Die Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.",
+    "description": "Die Meerjungfrau laedt in ihr Badehaus ein. Ob ihr an der Strandbar bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Baeder entspannen wollt: Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewaehlten Zimmers besser geniessen zu koennen. Ihr koennt auch unser grosszuegiges Massageangebot in Anspruch nehmen und euch in wohligen Haenden wissen. Im Aussenbereich findet ihr neben Sitzmoeglichkeiten auch einen versteckten Onsen, der ebenfalls zum Entspannen einlaedt. Im Barbereich und im Erdgeschoss sorgt eine Fussbodenheizung fuer wohlige Fuesse. Der Eintritt kostet 50 Gil inklusive Handtuch, Getraenken und Snacks.\nFreut euch zudem auf unser baldiges wiederkehrendes \"Sirenen-See\"-Bad mit den zauberhaften Sirenen.",
     "status": "approved",
     "category": "event",
     "recurrence_rule": null,
@@ -27,20 +27,5 @@
     "published_files": [
       "2026/03/meerjungfrau-2026-03-27-45742dc7.json"
     ]
-  },
-  {
-    "id": "f85e5d81-1854-407e-933d-9476adf91e59",
-    "title": "Funktions-Test",
-    "venue": "Test-Location",
-    "date": "27.03.2026",
-    "time": "20:00",
-    "description": "Dies ist ein Test",
-    "category": "event",
-    "status": "draft",
-    "event_type": "Restaurant",
-    "recurrence_rule": null,
-    "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e",
-    "created_at": "2026-03-27T08:58:45.125Z",
-    "updated_at": "2026-03-27T08:59:13.260Z"
   }
 ]

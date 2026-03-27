@@ -31,7 +31,7 @@ export function validateEventInput(event) {
 
   if (validateCoreFields) {
     if (!event.title?.trim()) errors.push("Titel fehlt.");
-    if (!event.venue?.trim()) errors.push("Location fehlt.");
+    if (!event.venue?.trim()) errors.push("Ort fehlt.");
     if (!event.description?.trim()) errors.push("Beschreibung fehlt.");
     if (!event.date?.trim()) {
       errors.push("Datum fehlt.");

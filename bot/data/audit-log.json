@@ -54,37 +54,5 @@
     "target_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3",
     "summary": "Meerjungfrau",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
-  },
-  {
-    "id": "068d6175-242f-44f5-992f-7fd0e1b48926",
-    "created_at": "2026-03-27T08:58:46.473Z",
-    "action": "template.created",
-    "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
-    "summary": "Funktions-Test",
-    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
-  },
-  {
-    "id": "5b4e8e86-4d1a-4bf6-b762-c3c5eea38498",
-    "created_at": "2026-03-27T08:58:58.896Z",
-    "action": "template.selection_updated",
-    "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
-    "summary": "Funktions-Test",
-    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
-  },
-  {
-    "id": "54504d46-61a0-4dd0-9bc7-ea185e0d76d3",
-    "created_at": "2026-03-27T08:59:07.823Z",
-    "action": "template.selection_updated",
-    "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
-    "summary": "Funktions-Test",
-    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
-  },
-  {
-    "id": "04415b67-e7fa-4383-bff9-1286c3e24555",
-    "created_at": "2026-03-27T08:59:14.482Z",
-    "action": "template.selection_updated",
-    "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
-    "summary": "Funktions-Test",
-    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
