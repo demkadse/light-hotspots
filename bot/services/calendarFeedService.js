@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { EmbedBuilder } from "discord.js";
 
 import { CHANNELS } from "../config/channels.js";
 import { syncRepoFiles } from "./gitSyncService.js";
@@ -294,6 +293,33 @@ function clampText(value, maxLength) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 }
 
+function createEmbed({ color, title, url, description, imageUrl, footerText, timestamp }) {
+  const embed = {
+    color,
+    title,
+    url,
+    fields: []
+  };
+
+  if (description) {
+    embed.description = description;
+  }
+
+  if (imageUrl) {
+    embed.image = { url: imageUrl };
+  }
+
+  if (footerText) {
+    embed.footer = { text: footerText };
+  }
+
+  if (timestamp) {
+    embed.timestamp = new Date(timestamp).toISOString();
+  }
+
+  return embed;
+}
+
 function buildCompactWeekLines(groups) {
   return groups.flatMap(group => {
     const lines = [`## ${group.label}`];
@@ -302,7 +328,7 @@ function buildCompactWeekLines(groups) {
       lines.push([
         `> **${buildFeedEventTitle(event)}**`,
         `\`${formatFeedTime(event)}\``,
-        event.venue ? `• *${event.venue}*` : null
+        event.venue ? `- *${event.venue}*` : null
       ].filter(Boolean).join(" "));
     }
 
@@ -314,7 +340,7 @@ function buildCompactWeekLines(groups) {
 function buildEventSummaryLine(event, groupLabel) {
   return [
     `## ${buildFeedEventTitle(event)}`,
-    `**${groupLabel}** • \`${formatFeedTime(event)}\`${event.status === "cancelled" ? " • `Abgesagt`" : ""}`
+    `**${groupLabel}** - \`${formatFeedTime(event)}\`${event.status === "cancelled" ? " - `Abgesagt`" : ""}`
   ].filter(Boolean).join("\n");
 }
 
@@ -344,21 +370,26 @@ function createDiscordMessages({ groups, startDate, endDate }) {
   });
 
   const title = `Light Hotspots Wochenvorschau | ${startLabel} bis ${endLabel}`;
-  const baseEmbed = new EmbedBuilder()
-    .setColor(0xf3ba6c)
-    .setTitle(title)
-    .setURL(FEED_URL)
-    .setFooter({ text: "Light Hotspots Kalender" });
+  const baseEmbed = createEmbed({
+    color: 0xf3ba6c,
+    title,
+    url: FEED_URL,
+    footerText: "Light Hotspots Kalender"
+  });
 
   if (groups.length === 0) {
     return [{
       embeds: [
-        baseEmbed
-          .addFields({
-            name: "Diese Woche",
-            value: "Aktuell sind keine Events geplant."
-          })
-          .setTimestamp(new Date())
+        {
+          ...baseEmbed,
+          timestamp: new Date().toISOString(),
+          fields: [
+            {
+              name: "Diese Woche",
+              value: "Aktuell sind keine Events geplant."
+            }
+          ]
+        }
       ]
     }];
   }
@@ -385,9 +416,14 @@ function createDiscordMessages({ groups, startDate, endDate }) {
     overviewChunks.push(currentChunk.join("\n"));
   }
 
-  const overviewEmbed = baseEmbed.setTimestamp(new Date());
+  const overviewEmbed = {
+    ...baseEmbed,
+    timestamp: new Date().toISOString(),
+    fields: []
+  };
+
   overviewChunks.forEach((chunk, index) => {
-    overviewEmbed.addFields({
+    overviewEmbed.fields.push({
       name: index === 0 ? "Alle Events auf einen Blick" : "\u200b",
       value: chunk,
       inline: false
@@ -402,16 +438,18 @@ function createDiscordMessages({ groups, startDate, endDate }) {
         event.description || "Keine Beschreibung vorhanden."
       ];
 
-      const embed = new EmbedBuilder()
-        .setColor(event.status === "cancelled" ? 0xc75c5c : 0x5ea8d6)
-        .setTitle(buildFeedEventTitle(event))
-        .setURL(buildEventUrl(event))
-        .setDescription(clampText(descriptionParts.join("\n"), 4096))
-        .setImage(getEventImageUrl(event))
-        .setFooter({ text: `Light Hotspots • ${group.label}` });
+      const embed = createEmbed({
+        color: event.status === "cancelled" ? 0xc75c5c : 0x5ea8d6,
+        title: buildFeedEventTitle(event),
+        url: buildEventUrl(event),
+        description: clampText(descriptionParts.join("\n"), 4096),
+        imageUrl: getEventImageUrl(event),
+        footerText: `Light Hotspots - ${group.label}`
+      });
 
-      buildPrimaryInfo(event).forEach((value, index) => {
-        embed.addFields({
+      const primaryInfo = buildPrimaryInfo(event);
+      primaryInfo.forEach((value, index) => {
+        embed.fields.push({
           name: index === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
           inline: true
@@ -419,8 +457,8 @@ function createDiscordMessages({ groups, startDate, endDate }) {
       });
 
       buildSecondaryInfo(event).forEach((value, index) => {
-        embed.addFields({
-          name: index === 0 && buildPrimaryInfo(event).length === 0 ? "Eckdaten" : "\u200b",
+        embed.fields.push({
+          name: index === 0 && primaryInfo.length === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
           inline: index < 2
         });
@@ -438,7 +476,7 @@ function createDiscordMessages({ groups, startDate, endDate }) {
       ].filter(Boolean).join(" | ");
 
       if (links) {
-        embed.addFields({
+        embed.fields.push({
           name: "Links",
           value: clampText(links, 1024),
           inline: false
