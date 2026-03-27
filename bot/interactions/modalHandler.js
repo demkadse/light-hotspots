@@ -142,12 +142,13 @@ export async function handleModal(interaction, client) {
       return;
     }
 
-    const linkLines = interaction.fields
-      .getTextInputValue("links")
+    const linksAndEditorsLines = interaction.fields
+      .getTextInputValue("links_and_editors")
       .split(/\r?\n/)
       .map(entry => entry.trim())
       .filter(Boolean);
-    const parsedEditors = parseEditorIds(interaction.fields.getTextInputValue("editor_ids"));
+    const linkLines = linksAndEditorsLines.slice(0, 2);
+    const parsedEditors = parseEditorIds(linksAndEditorsLines.slice(2).join("\n"));
     if (parsedEditors.error) {
       await replyAndExpire(interaction, {
         content: parsedEditors.error,

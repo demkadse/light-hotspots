@@ -345,6 +345,11 @@ export function buildBasicsModal(template = null, modalId = "event_modal_basics_
 
 export async function buildExtrasModal(template, templateId) {
   const editorIds = await getTemplateEditorIds(template);
+  const linksAndEditorsValue = [
+    template?.discord_link,
+    template?.link,
+    ...editorIds
+  ].filter(Boolean).join("\n");
   const modal = new ModalBuilder()
     .setCustomId(`event_modal_extras_${templateId}`)
     .setTitle("Zusatzangaben");
@@ -365,13 +370,6 @@ export async function buildExtrasModal(template, templateId) {
     createInput("project_lead", "Projektleitung (optional)", "z.B. Käptn Mira", resolveProjectLead(template)),
     createInput("image", "Banner-URL (optional)", "https://example.com/event.jpg", template?.image),
     createInput(
-      "links",
-      "Links (optional)",
-      "1. Zeile Discord-Link, 2. Zeile externer Link",
-      [template?.discord_link, template?.link].filter(Boolean).join("\n"),
-      TextInputStyle.Paragraph
-    ),
-    createInput(
       "notes",
       "Hinweise (optional)",
       "z.B. Walk-ins willkommen, 18+, OOC-Tell vorab",
@@ -379,10 +377,10 @@ export async function buildExtrasModal(template, templateId) {
       TextInputStyle.Paragraph
     ),
     createInput(
-      "editor_ids",
-      "Weitere Bearbeiter (max. 2 IDs)",
-      "Eine Discord-User-ID pro Zeile",
-      editorIds.join("\n"),
+      "links_and_editors",
+      "Links / Bearbeiter (optional)",
+      "1. Zeile Discord-Link, 2. Zeile externer Link, danach bis zu 2 Discord-User-IDs",
+      linksAndEditorsValue,
       TextInputStyle.Paragraph
     )
   );
