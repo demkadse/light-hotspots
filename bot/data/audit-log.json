@@ -62,5 +62,13 @@
     "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
     "summary": "Funktions-Test",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "5b4e8e86-4d1a-4bf6-b762-c3c5eea38498",
+    "created_at": "2026-03-27T08:58:58.896Z",
+    "action": "template.selection_updated",
+    "target_id": "f85e5d81-1854-407e-933d-9476adf91e59",
+    "summary": "Funktions-Test",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
