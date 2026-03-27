@@ -54,6 +54,10 @@ function getTemplateIdFromModal(customId) {
     return customId.replace("event_modal_extras_", "");
   }
 
+  if (customId.startsWith("event_modal_editors_")) {
+    return customId.replace("event_modal_editors_", "");
+  }
+
   return null;
 }
 
@@ -142,53 +146,18 @@ export async function handleModal(interaction, client) {
       return;
     }
 
-    const linksAndEditorsLines = interaction.fields
-      .getTextInputValue("links_and_editors")
+    const linkLines = interaction.fields
+      .getTextInputValue("links")
       .split(/\r?\n/)
       .map(entry => entry.trim())
       .filter(Boolean);
-    const linkLines = linksAndEditorsLines.slice(0, 2);
-    const parsedEditors = parseEditorIds(linksAndEditorsLines.slice(2).join("\n"));
-    if (parsedEditors.error) {
-      await replyAndExpire(interaction, {
-        content: parsedEditors.error,
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    const ownerId = await getTemplateOwnerId(templateBeforeUpdate);
-    const canManageEditors = ownerId === interaction.user.id || (!ownerId && isTemplateOwner(templateBeforeUpdate, interaction.user.id));
-    const existingEditorIds = await getTemplateEditorIds(templateBeforeUpdate);
-    const requestedEditorIds = parsedEditors.value || [];
-
-    if ((ownerId && requestedEditorIds.includes(ownerId)) || (!ownerId && requestedEditorIds.includes(interaction.user.id))) {
-      await replyAndExpire(interaction, {
-        content: "Der Urheber muss nicht erneut als weiterer Bearbeiter eingetragen werden.",
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    const editorIdsChanged = requestedEditorIds.length !== existingEditorIds.length ||
-      requestedEditorIds.some((value, index) => value !== existingEditorIds[index]);
-
-    if (editorIdsChanged && !canManageEditors) {
-      await replyAndExpire(interaction, {
-        content: "Nur der Urheber darf die Liste der weiteren Bearbeiter aendern.",
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
     const data = {
       end_time: normalizeOptionalField(interaction.fields.getTextInputValue("end_time")),
       project_lead: normalizeOptionalField(interaction.fields.getTextInputValue("project_lead")),
       image: normalizeOptionalField(interaction.fields.getTextInputValue("image")),
       discord_link: normalizeOptionalField(linkLines[0]),
       link: normalizeOptionalField(linkLines[1]),
-      notes: normalizeOptionalField(interaction.fields.getTextInputValue("notes")),
-      editor_user_ids: requestedEditorIds
+      notes: normalizeOptionalField(interaction.fields.getTextInputValue("notes"))
     };
 
     const errors = validateEventInput({
@@ -226,6 +195,79 @@ export async function handleModal(interaction, client) {
       client,
       "template.extras_updated",
       "Zusatzangaben gespeichert. Wenn alles passt, kannst du das Event jetzt zur Pruefung senden."
+    );
+    return;
+  }
+
+  if (interaction.customId.startsWith("event_modal_editors_")) {
+    await deferEphemeral(interaction);
+
+    const templateId = getTemplateIdFromModal(interaction.customId);
+    const templateBeforeUpdate = await getTemplate(templateId);
+    if (!templateBeforeUpdate || !matchesUserHash(templateBeforeUpdate, interaction.user.id)) {
+      await replyAndExpire(interaction, {
+        content: "Du darfst dieses Event nicht bearbeiten.",
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    const parsedEditors = parseEditorIds(interaction.fields.getTextInputValue("editor_ids"));
+    if (parsedEditors.error) {
+      await replyAndExpire(interaction, {
+        content: parsedEditors.error,
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    const ownerId = await getTemplateOwnerId(templateBeforeUpdate);
+    const canManageEditors = ownerId === interaction.user.id || (!ownerId && isTemplateOwner(templateBeforeUpdate, interaction.user.id));
+    const existingEditorIds = await getTemplateEditorIds(templateBeforeUpdate);
+    const requestedEditorIds = parsedEditors.value || [];
+
+    if ((ownerId && requestedEditorIds.includes(ownerId)) || (!ownerId && requestedEditorIds.includes(interaction.user.id))) {
+      await replyAndExpire(interaction, {
+        content: "Der Urheber muss nicht erneut als weiterer Bearbeiter eingetragen werden.",
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    const editorIdsChanged = requestedEditorIds.length !== existingEditorIds.length ||
+      requestedEditorIds.some((value, index) => value !== existingEditorIds[index]);
+
+    if (editorIdsChanged && !canManageEditors) {
+      await replyAndExpire(interaction, {
+        content: "Nur der Urheber darf die Liste der weiteren Bearbeiter aendern.",
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    let template;
+    try {
+      template = await createOrUpdateTemplate({
+        editor_user_ids: requestedEditorIds
+      }, interaction.user.id, templateId);
+    } catch (error) {
+      if (error?.code === "TEMPLATE_EDITOR_MANAGEMENT_DENIED" || error?.code === "TEMPLATE_ACCESS_DENIED") {
+        await replyAndExpire(interaction, {
+          content: error.message,
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      throw error;
+    }
+
+    await replyWithWizardPreview(
+      interaction,
+      template,
+      client,
+      "template.editors_updated",
+      "Weitere Bearbeiter gespeichert."
     );
   }
 }

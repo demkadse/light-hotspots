@@ -31,6 +31,7 @@ import { writeAndSyncWeeklyCalendarFeedFiles } from "../services/calendarFeedSer
 import {
   buildApprovalWaitingMessage,
   buildBasicsModal,
+  buildEditorsModal,
   buildExtrasModal,
   buildPreviewEmbed,
   buildTemplateSummary,
@@ -276,6 +277,13 @@ export async function handleButton(interaction, client) {
       const templateId = id.split(":")[2];
       const template = await getTemplate(templateId);
       await interaction.showModal(await buildExtrasModal(template, templateId));
+      return;
+    }
+
+    if (id.startsWith("event:editors:")) {
+      const templateId = id.split(":")[2];
+      const template = await getTemplate(templateId);
+      await interaction.showModal(await buildEditorsModal(template, templateId));
       return;
     }
 
