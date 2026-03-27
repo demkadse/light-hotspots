@@ -110,6 +110,45 @@ function withCurrentOption(options, currentValue, fallbackLabel = null) {
   ];
 }
 
+const PLOT_PAGE_SIZE = 20;
+
+function getPlotPageCount() {
+  return Math.max(1, Math.ceil(HOUSING_PLOT_OPTIONS.length / PLOT_PAGE_SIZE));
+}
+
+function clampPlotPage(value) {
+  const numericValue = Number(value);
+  const maxPage = getPlotPageCount() - 1;
+
+  if (!Number.isFinite(numericValue)) {
+    return 0;
+  }
+
+  return Math.min(Math.max(Math.trunc(numericValue), 0), maxPage);
+}
+
+function getPlotPageRange(page) {
+  const safePage = clampPlotPage(page);
+  const start = safePage * PLOT_PAGE_SIZE;
+  const end = Math.min(start + PLOT_PAGE_SIZE, HOUSING_PLOT_OPTIONS.length);
+  return {
+    page: safePage,
+    start,
+    end,
+    label: `Häuser ${start + 1}-${end}`
+  };
+}
+
+function getPlotPageFromSelection(plot) {
+  const numericPlot = Number(plot);
+
+  if (!Number.isFinite(numericPlot) || numericPlot < 1) {
+    return 0;
+  }
+
+  return clampPlotPage(Math.floor((numericPlot - 1) / PLOT_PAGE_SIZE));
+}
+
 function createSelectRow({
   customId,
   placeholder,
@@ -238,17 +277,21 @@ export function buildPreviewEmbed(template, duplicates = []) {
   return embed;
 }
 
-export function buildWizardComponents(template) {
+export function buildWizardComponents(template, options = {}) {
   const category = normalizeCategory(template?.category);
   const district = resolveHousingDistrict(template);
   const plot = resolveHousingPlot(template);
+  const plotPage = options.plotPage === undefined
+    ? getPlotPageFromSelection(plot)
+    : clampPlotPage(options.plotPage);
+  const plotRange = getPlotPageRange(plotPage);
   const typeOptions = withCurrentOption(
     getTypeOptions(category),
     template?.event_type || template?.type
   );
   const districtOptions = withCurrentOption(HOUSING_DISTRICT_OPTIONS, district);
   const plotOptions = withCurrentOption(
-    HOUSING_PLOT_OPTIONS,
+    HOUSING_PLOT_OPTIONS.slice(plotRange.start, plotRange.end),
     plot,
     plot ? `Haus ${plot}` : null
   );
@@ -264,7 +307,9 @@ export function buildWizardComponents(template) {
     }),
     createSelectRow({
       customId: `event:house:${template.id}`,
-      placeholder: plot ? `Hausnummer: ${plot}` : "Schritt 2b | Hausnummer waehlen",
+      placeholder: plot
+        ? `Hausnummer: ${plot}`
+        : `Schritt 2b | ${plotRange.label} wählen`,
       options: plotOptions
     }),
     createSelectRow({
@@ -288,6 +333,10 @@ export function buildWizardComponents(template) {
       new ButtonBuilder()
         .setCustomId(`event:extras:${template.id}`)
         .setLabel("3/3 Zusatzangaben")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`event:plotPage:${template.id}:${(plotRange.page + 1) % getPlotPageCount()}`)
+        .setLabel(plotRange.label)
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`event:recurrenceCycle:${template.id}`)

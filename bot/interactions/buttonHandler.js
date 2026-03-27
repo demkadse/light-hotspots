@@ -56,7 +56,7 @@ async function sendTemplateDm(client, userId, message) {
   }
 }
 
-async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
+async function replyWithWizardPreview(interaction, template, client, auditAction, message = null, options = {}) {
   const duplicates = await findPotentialDuplicates(template);
 
   if (auditAction) {
@@ -71,7 +71,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   await replyAndExpire(interaction, {
     content: message || buildWizardMessage(template),
     embeds: [buildPreviewEmbed(template, duplicates)],
-    components: buildWizardComponents(template),
+    components: buildWizardComponents(template, options),
     ephemeral: true
   }, 120000);
 }
@@ -313,6 +313,30 @@ export async function handleButton(interaction, client) {
         nextValue === "none"
           ? "Wiederholung gespeichert: Keine Wiederholung."
           : `Wiederholung gespeichert: ${getRecurrenceLabel(nextValue)}.`
+      );
+      return;
+    }
+
+    if (id.startsWith("event:plotPage:")) {
+      const [, , , templateId, rawPage] = id.split(":");
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewaehlte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.plot_page_opened",
+        "Hausnummernbereich gewechselt. Du kannst jetzt den passenden Plot auswählen.",
+        { plotPage: Number(rawPage) || 0 }
       );
       return;
     }
