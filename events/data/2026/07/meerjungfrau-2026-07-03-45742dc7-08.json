@@ -1,0 +1,31 @@
+{
+  "id": "meerjungfrau-20260703",
+  "series_id": "45742dc7-95f9-4c77-aa88-68c8c3e638d3:biweekly",
+  "occurrence_index": 7,
+  "recurrence_rule": "biweekly",
+  "category": "event",
+  "title": "Meerjungfrau",
+  "type": "Badehaus",
+  "venue": "The Goblet",
+  "housing_district": "The Goblet",
+  "housing_plot": null,
+  "server": "Twintania",
+  "host": "Nyee Fuyu",
+  "project_lead": "Nyee Fuyu",
+  "venue_lead": "Nyee Fuyu",
+  "date": "2026-07-03",
+  "start_time": "20:00",
+  "end_time": "23:00",
+  "image": "https://cdn.discordapp.com/attachments/1100546332495728803/1486826957919224033/Logo1.0.png?ex=69c6eb02&is=69c59982&hm=1ce75aee71253e2810feaf4cadef022b76e64168057a2379c93f2b3617aecf54&",
+  "description": "Die Meerjungfrau laedt in ihr Badehaus ein. Ob ihr an der Strandbar bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Baeder entspannen wollt: Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewaehlten Zimmers besser geniessen zu koennen. Ihr koennt auch unser grosszuegiges Massageangebot in Anspruch nehmen und euch in wohligen Haenden wissen. Im Aussenbereich findet ihr neben Sitzmoeglichkeiten auch einen versteckten Onsen, der ebenfalls zum Entspannen einlaedt. Im Barbereich und im Erdgeschoss sorgt eine Fussbodenheizung fuer wohlige Fuesse. Der Eintritt kostet 50 Gil inklusive Handtuch, Getraenken und Snacks.\nFreut euch zudem auf unser baldiges wiederkehrendes \"Sirenen-See\"-Bad mit den zauberhaften Sirenen.",
+  "discord_link": "https://discord.gg/RqEdSu8hdD",
+  "link": "https://mermaidproject.carrd.co/#",
+  "links": [
+    "https://discord.gg/RqEdSu8hdD",
+    "https://mermaidproject.carrd.co/#"
+  ],
+  "notes": "Warnungen: Alkohol, Nacktheit",
+  "status": "scheduled",
+  "created_at": "2026-03-27T11:22:31.755Z",
+  "file": "2026/07/meerjungfrau-2026-07-03-45742dc7-08.json"
+}
