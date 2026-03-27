@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "a4adc77a-bd39-41b9-8262-e9127cc7bf3f",
+    "created_at": "2026-03-27T10:23:39.157Z",
+    "action": "template.created",
+    "target_id": "ac85cbf8-d728-4f4e-99f8-25bf21dd6d31",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  }
+]

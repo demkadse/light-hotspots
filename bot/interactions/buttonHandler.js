@@ -8,6 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import {
+  createOrUpdateTemplate,
   getTemplatesByUser,
   submitTemplateForApproval,
   approveTemplate,
@@ -36,6 +37,7 @@ import {
   buildWizardComponents,
   buildWizardMessage
 } from "../services/eventWizardUiService.js";
+import { getRecurrenceLabel, normalizeRecurrence } from "../config/eventFormOptions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -274,6 +276,44 @@ export async function handleButton(interaction, client) {
       const templateId = id.split(":")[2];
       const template = await getTemplate(templateId);
       await interaction.showModal(buildExtrasModal(template, templateId));
+      return;
+    }
+
+    if (id.startsWith("event:recurrenceCycle:")) {
+      const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewaehlte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      const currentValue = normalizeRecurrence(template.recurrence_rule) || "none";
+      const nextValue = currentValue === "none"
+        ? "weekly"
+        : currentValue === "weekly"
+          ? "biweekly"
+          : currentValue === "biweekly"
+            ? "triweekly"
+            : "none";
+
+      const nextTemplate = await createOrUpdateTemplate({
+        recurrence_rule: nextValue === "none" ? null : nextValue
+      }, interaction.user.id, templateId);
+
+      await replyWithWizardPreview(
+        interaction,
+        nextTemplate,
+        client,
+        "template.recurrence_updated",
+        nextValue === "none"
+          ? "Wiederholung gespeichert: Keine Wiederholung."
+          : `Wiederholung gespeichert: ${getRecurrenceLabel(nextValue)}.`
+      );
       return;
     }
 

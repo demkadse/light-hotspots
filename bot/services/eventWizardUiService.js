@@ -13,7 +13,6 @@ import {
   HOUSING_DISTRICT_OPTIONS,
   HOUSING_PLOT_OPTIONS,
   SERVER_OPTIONS,
-  RECURRENCE_OPTIONS,
   buildVenueLabel,
   getCategoryLabel,
   getRecurrenceLabel,
@@ -255,11 +254,6 @@ export function buildWizardComponents(template) {
   );
   const serverOptions = withCurrentOption(SERVER_OPTIONS, template?.server);
   const recurrenceValue = normalizeRecurrence(template?.recurrence_rule) || "none";
-  const recurrenceOptions = withCurrentOption(
-    RECURRENCE_OPTIONS,
-    recurrenceValue,
-    recurrenceValue === "none" ? "Keine Wiederholung" : (getRecurrenceLabel(recurrenceValue) || recurrenceValue)
-  );
   const canSubmit = buildMissingRequirementLines(template).length === 0;
 
   return [
@@ -286,13 +280,6 @@ export function buildWizardComponents(template) {
       placeholder: template?.server ? `Server: ${template.server}` : "Schritt 2d | Server waehlen",
       options: serverOptions
     }),
-    createSelectRow({
-      customId: `event:recurrence:${template.id}`,
-      placeholder: recurrenceValue === "none"
-        ? "Wiederholung: Keine"
-        : `Wiederholung: ${getRecurrenceLabel(recurrenceValue) || recurrenceValue}`,
-      options: recurrenceOptions
-    }),
     new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`event:editBasics:${template.id}`)
@@ -301,6 +288,12 @@ export function buildWizardComponents(template) {
       new ButtonBuilder()
         .setCustomId(`event:extras:${template.id}`)
         .setLabel("3/3 Zusatzangaben")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`event:recurrenceCycle:${template.id}`)
+        .setLabel(recurrenceValue === "none"
+          ? "Wiederholung: Keine"
+          : `Wiederholung: ${getRecurrenceLabel(recurrenceValue) || recurrenceValue}`)
         .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
         .setCustomId(`event:submit:${template.id}`)
