@@ -10,15 +10,18 @@ import {
 } from "discord.js";
 
 import {
-  CATEGORY_OPTIONS,
+  HOUSING_DISTRICT_OPTIONS,
+  HOUSING_PLOT_OPTIONS,
   SERVER_OPTIONS,
   RECURRENCE_OPTIONS,
+  buildVenueLabel,
   getCategoryLabel,
   getRecurrenceLabel,
   getTypeOptions,
   isTypeValidForCategory,
   normalizeCategory,
-  normalizeRecurrence
+  normalizeRecurrence,
+  parseVenueSelection
 } from "../config/eventFormOptions.js";
 
 function normalizeOptional(value) {
@@ -54,11 +57,27 @@ function addFieldIfValue(embed, name, value, inline = true) {
   });
 }
 
+function resolveHousingDistrict(template) {
+  return normalizeOptional(template?.housing_district) || parseVenueSelection(template?.venue).district;
+}
+
+function resolveHousingPlot(template) {
+  return normalizeOptional(template?.housing_plot) || parseVenueSelection(template?.venue).plot;
+}
+
+function resolveVenueLabel(template) {
+  return buildVenueLabel(resolveHousingDistrict(template), resolveHousingPlot(template)) || template?.venue || null;
+}
+
 function buildMissingRequirementLines(template) {
   const missing = [];
 
   if (!normalizeCategory(template?.category)) {
     missing.push("Kategorie");
+  }
+
+  if (!resolveVenueLabel(template)) {
+    missing.push("Ort");
   }
 
   if (!normalizeOptional(template?.event_type || template?.type)) {
@@ -127,9 +146,8 @@ export function buildBasicsModal(template = null, modalId = "event_modal_basics_
 
   modal.addComponents(
     createInput("title", "Titel", "z.B. Club Night", template?.title),
-    createInput("venue", "Ort", "z.B. Limsa Lominsa", template?.venue),
     createInput("date", "Datum", "z.B. 20.03.2026", template?.date),
-    createInput("time", "Uhrzeit", "z.B. 20:00", template?.time),
+    createInput("time", "Startzeit", "z.B. 20:00", template?.time),
     createInput("description", "Beschreibung", "Worum geht es?", template?.description)
   );
 
@@ -180,7 +198,7 @@ export function buildPreviewEmbed(template, duplicates = []) {
     .setTitle(template?.title || "Unbenannt")
     .setDescription(template?.description || "-")
     .addFields(
-      { name: "Ort", value: template?.venue || "-", inline: true },
+      { name: "Ort", value: resolveVenueLabel(template) || "-", inline: true },
       { name: "Datum", value: template?.date || "-", inline: true },
       { name: "Zeit", value: formatTimeLabel(template), inline: true }
     );
@@ -223,14 +241,17 @@ export function buildPreviewEmbed(template, duplicates = []) {
 
 export function buildWizardComponents(template) {
   const category = normalizeCategory(template?.category);
+  const district = resolveHousingDistrict(template);
+  const plot = resolveHousingPlot(template);
   const typeOptions = withCurrentOption(
     getTypeOptions(category),
     template?.event_type || template?.type
   );
-  const categoryOptions = withCurrentOption(
-    CATEGORY_OPTIONS,
-    category,
-    category ? getCategoryLabel(category) : null
+  const districtOptions = withCurrentOption(HOUSING_DISTRICT_OPTIONS, district);
+  const plotOptions = withCurrentOption(
+    HOUSING_PLOT_OPTIONS,
+    plot,
+    plot ? `Haus ${plot}` : null
   );
   const serverOptions = withCurrentOption(SERVER_OPTIONS, template?.server);
   const recurrenceValue = normalizeRecurrence(template?.recurrence_rule) || "none";
@@ -243,21 +264,26 @@ export function buildWizardComponents(template) {
 
   return [
     createSelectRow({
-      customId: `event:category:${template.id}`,
-      placeholder: category ? `Kategorie: ${getCategoryLabel(category)}` : "Schritt 2a | Kategorie waehlen",
-      options: categoryOptions
+      customId: `event:district:${template.id}`,
+      placeholder: district ? `Wohngebiet: ${district}` : "Schritt 2a | Wohngebiet waehlen",
+      options: districtOptions
+    }),
+    createSelectRow({
+      customId: `event:house:${template.id}`,
+      placeholder: plot ? `Hausnummer: ${plot}` : "Schritt 2b | Hausnummer waehlen",
+      options: plotOptions
     }),
     createSelectRow({
       customId: `event:type:${template.id}`,
       placeholder: normalizeOptional(template?.event_type || template?.type)
         ? `Typ: ${template.event_type || template.type}`
-        : (category ? "Schritt 2b | Typ waehlen" : "Bitte zuerst die Kategorie waehlen"),
+        : "Schritt 2c | Typ waehlen",
       options: typeOptions,
       disabled: !category
     }),
     createSelectRow({
       customId: `event:server:${template.id}`,
-      placeholder: template?.server ? `Server: ${template.server}` : "Schritt 2c | Server waehlen",
+      placeholder: template?.server ? `Server: ${template.server}` : "Schritt 2d | Server waehlen",
       options: serverOptions
     }),
     createSelectRow({
@@ -292,7 +318,7 @@ export function buildWizardMessage(template) {
     return "Alle Pflichtangaben sind vorhanden. Du kannst jetzt noch Zusatzangaben ergaenzen oder das Event direkt zur Pruefung senden.";
   }
 
-  return `Bitte waehle jetzt die Pflichtangaben per Dropdown aus: ${missing.join(", ")}. Sobald alles gesetzt ist, wird die Einreichung freigeschaltet.`;
+  return `Bitte waehle jetzt die noch offenen Eckdaten per Dropdown aus: ${missing.join(", ")}. Sobald alles gesetzt ist, wird die Einreichung freigeschaltet.`;
 }
 
 export function buildTemplateSummary(template) {
@@ -300,7 +326,7 @@ export function buildTemplateSummary(template) {
     `**${template.title || "Unbenannt"}**`,
     `Kategorie: ${getCategoryLabel(template.category)}`,
     template.event_type || template.type ? `Typ: ${template.event_type || template.type}` : null,
-    template.venue ? `Ort: ${template.venue}` : null,
+    resolveVenueLabel(template) ? `Ort: ${resolveVenueLabel(template)}` : null,
     template.server ? `Server: ${template.server}` : null,
     template.date ? `Datum: ${template.date}` : null,
     template.time ? `Zeit: ${formatTimeLabel(template)}` : null,
@@ -325,6 +351,10 @@ export function buildApprovalWaitingMessage(template) {
 
 export function resolveProjectLeadForDisplay(template) {
   return resolveProjectLead(template);
+}
+
+export function resolveVenueForDisplay(template) {
+  return resolveVenueLabel(template);
 }
 
 export function normalizeOptionalField(value) {

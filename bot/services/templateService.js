@@ -10,6 +10,7 @@ import {
   sanitizeTemplatesForStorage
 } from "./identityService.js";
 import {
+  buildVenueLabel,
   isTypeValidForCategory,
   normalizeCategory,
   normalizeRecurrence
@@ -471,6 +472,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const newTemplate = {
     id: crypto.randomUUID(),
     ...applyDerivedCategory(data),
+    venue: data.venue ?? buildVenueLabel(data.housing_district, data.housing_plot),
     recurrence_rule: data.recurrence_rule ?? null,
     ...buildUserIdentityFields(userId),
     status: "draft",
@@ -532,6 +534,10 @@ export async function submitTemplateForApproval(templateId) {
 
   if (!templates[index].event_type?.trim()) {
     throw new Error("Typ fehlt. Bitte waehle zuerst den passenden Typ per Dropdown.");
+  }
+
+  if (!templates[index].venue?.trim()) {
+    throw new Error("Ort fehlt. Bitte waehle zuerst Wohngebiet und Hausnummer per Dropdown.");
   }
 
   if (!templates[index].server?.trim()) {
@@ -616,6 +622,8 @@ export async function approveTemplate(templateId) {
       title: template.title,
       type: template.event_type || template.type || "Event",
       venue: template.venue,
+      housing_district: template.housing_district || null,
+      housing_plot: template.housing_plot || null,
       server: template.server || null,
       host: template.project_lead || template.venue_lead || template.host_display_name || template.host || null,
       project_lead: template.project_lead || template.venue_lead || template.host_display_name || null,

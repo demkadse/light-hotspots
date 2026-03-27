@@ -72,7 +72,6 @@ export async function handleModal(interaction, client) {
 
     const data = {
       title: interaction.fields.getTextInputValue("title").trim(),
-      venue: interaction.fields.getTextInputValue("venue").trim(),
       date: interaction.fields.getTextInputValue("date").trim(),
       time: interaction.fields.getTextInputValue("time").trim(),
       description: interaction.fields.getTextInputValue("description").trim(),
@@ -104,7 +103,7 @@ export async function handleModal(interaction, client) {
       template,
       client,
       templateId ? "template.updated" : "template.created",
-      "Basisdaten gespeichert. Waehle jetzt Kategorie, Typ und Server ueber die Menues darunter."
+      "Basisdaten gespeichert. Waehle jetzt Wohngebiet, Hausnummer, Typ und Server ueber die Menues darunter."
     );
     return;
   }

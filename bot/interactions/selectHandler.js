@@ -5,6 +5,11 @@ import {
 } from "discord.js";
 
 import {
+  buildVenueLabel,
+  normalizeRecurrence,
+  parseVenueSelection
+} from "../config/eventFormOptions.js";
+import {
   createOrUpdateTemplate,
   findPotentialDuplicates,
   getTemplate
@@ -20,7 +25,6 @@ import {
   buildWizardComponents,
   buildWizardMessage,
   normalizeOptionalField,
-  normalizeRecurrence,
   shouldResetTypeForCategory
 } from "../services/eventWizardUiService.js";
 import { recordAuditEntry } from "../services/auditService.js";
@@ -43,20 +47,28 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   }, 120000);
 }
 
+function buildHousingUpdate(customId, value, template) {
+  const existingDistrict = normalizeOptionalField(template?.housing_district) || parseVenueSelection(template?.venue).district;
+  const existingPlot = normalizeOptionalField(template?.housing_plot) || parseVenueSelection(template?.venue).plot;
+
+  const district = customId.startsWith("event:district:") ? value : existingDistrict;
+  const plot = customId.startsWith("event:house:") ? value : existingPlot;
+
+  return {
+    data: {
+      housing_district: district,
+      housing_plot: plot,
+      venue: buildVenueLabel(district, plot)
+    },
+    message: customId.startsWith("event:district:")
+      ? "Wohngebiet gespeichert."
+      : "Hausnummer gespeichert."
+  };
+}
+
 function buildSelectionUpdate(customId, value, template) {
-  if (customId.startsWith("event:category:")) {
-    const update = {
-      category: value
-    };
-
-    if (shouldResetTypeForCategory(template?.event_type || template?.type, value)) {
-      update.event_type = null;
-    }
-
-    return {
-      data: update,
-      message: "Kategorie gespeichert. Bitte pruefe jetzt den Typ, damit er zur gewaehlten Kategorie passt."
-    };
+  if (customId.startsWith("event:district:") || customId.startsWith("event:house:")) {
+    return buildHousingUpdate(customId, value, template);
   }
 
   if (customId.startsWith("event:type:")) {
@@ -77,6 +89,21 @@ function buildSelectionUpdate(customId, value, template) {
     return {
       data: { recurrence_rule: normalizeRecurrence(value) },
       message: "Wiederholung gespeichert."
+    };
+  }
+
+  if (customId.startsWith("event:category:")) {
+    const update = {
+      category: value
+    };
+
+    if (shouldResetTypeForCategory(template?.event_type || template?.type, value)) {
+      update.event_type = null;
+    }
+
+    return {
+      data: update,
+      message: "Kategorie gespeichert. Bitte pruefe jetzt den Typ, damit er zur gewaehlten Kategorie passt."
     };
   }
 
@@ -159,21 +186,17 @@ export async function handleSelect(interaction, client) {
     return;
   }
 
+  const templateId = interaction.customId.split(":")[2];
   const selectionValue = normalizeOptionalField(interaction.values[0]);
   await deferEphemeral(interaction);
 
-  const update = buildSelectionUpdate(
-    interaction.customId,
-    selectionValue,
-    await getTemplate(interaction.customId.split(":")[2])
-  );
+  const currentTemplate = await getTemplate(templateId);
+  const update = buildSelectionUpdate(interaction.customId, selectionValue, currentTemplate);
 
   if (!update) {
     return;
   }
 
-  const templateId = interaction.customId.split(":")[2];
   const nextTemplate = await createOrUpdateTemplate(update.data, interaction.user.id, templateId);
-
   await replyWithWizardPreview(interaction, nextTemplate, client, "template.selection_updated", update.message);
 }
