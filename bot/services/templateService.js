@@ -452,10 +452,15 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     if (index === -1) throw new Error("Template nicht gefunden");
 
     const nextData = applyDerivedCategory(data, templates[index]);
+    const nextVenue = nextData.venue ?? buildVenueLabel(
+      nextData.housing_district ?? templates[index].housing_district,
+      nextData.housing_plot ?? templates[index].housing_plot
+    );
 
     templates[index] = {
       ...templates[index],
       ...nextData,
+      venue: nextVenue ?? templates[index].venue ?? null,
       recurrence_rule: nextData.recurrence_rule ?? templates[index].recurrence_rule ?? null,
       updated_at: new Date().toISOString()
     };
