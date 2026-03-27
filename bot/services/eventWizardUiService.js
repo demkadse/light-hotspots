@@ -301,6 +301,10 @@ function buildDetailRows(template) {
         .setLabel(recurrenceValue === "none"
           ? "Wiederholung: Keine"
           : `Wiederholung: ${getRecurrenceLabel(recurrenceValue) || recurrenceValue}`)
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId(`event:editors:${template.id}`)
+        .setLabel("Bearbeiter")
         .setStyle(ButtonStyle.Secondary)
     ),
     new ActionRowBuilder().addComponents(
@@ -344,12 +348,6 @@ export function buildBasicsModal(template = null, modalId = "event_modal_basics_
 }
 
 export async function buildExtrasModal(template, templateId) {
-  const editorIds = await getTemplateEditorIds(template);
-  const linksAndEditorsValue = [
-    template?.discord_link,
-    template?.link,
-    ...editorIds
-  ].filter(Boolean).join("\n");
   const modal = new ModalBuilder()
     .setCustomId(`event_modal_extras_${templateId}`)
     .setTitle("Zusatzangaben");
@@ -377,11 +375,32 @@ export async function buildExtrasModal(template, templateId) {
       TextInputStyle.Paragraph
     ),
     createInput(
-      "links_and_editors",
-      "Links / Bearbeiter (optional)",
-      "1. Zeile Discord-Link, 2. Zeile externer Link, danach bis zu 2 Discord-User-IDs",
-      linksAndEditorsValue,
+      "links",
+      "Links (optional)",
+      "1. Zeile Discord-Link, 2. Zeile externer Link",
+      [template?.discord_link, template?.link].filter(Boolean).join("\n"),
       TextInputStyle.Paragraph
+    )
+  );
+
+  return modal;
+}
+
+export async function buildEditorsModal(template, templateId) {
+  const editorIds = await getTemplateEditorIds(template);
+  const modal = new ModalBuilder()
+    .setCustomId(`event_modal_editors_${templateId}`)
+    .setTitle("Weitere Bearbeiter");
+
+  modal.addComponents(
+    new ActionRowBuilder().addComponents(
+      new TextInputBuilder()
+        .setCustomId("editor_ids")
+        .setLabel("Discord-User-IDs (max. 2)")
+        .setPlaceholder("Eine Discord-User-ID pro Zeile")
+        .setValue(editorIds.join("\n"))
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(false)
     )
   );
 
