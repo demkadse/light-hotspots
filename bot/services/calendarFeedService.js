@@ -90,6 +90,10 @@ function getEventImageUrl(event) {
   return `${SITE_URL}${normalizedPath}`;
 }
 
+function getProjectLead(event) {
+  return event?.project_lead || event?.venue_lead || event?.host || null;
+}
+
 async function readJson(filePath, fallback) {
   try {
     const raw = await fs.readFile(filePath, "utf-8");
@@ -157,7 +161,7 @@ function formatFeedTime(event) {
   }
 
   if (event.start_time) {
-    return `${event.start_time}`;
+    return event.start_time;
   }
 
   if (event.end_time) {
@@ -181,7 +185,7 @@ function createSummary(groups, startDate, endDate) {
   if (totalEvents === 0) {
     return {
       title: `Wochenvorschau ${startLabel} bis ${endLabel}: keine geplanten Events`,
-      intro: `Für den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
+      intro: `Fuer den Zeitraum ${startLabel} bis ${endLabel} sind aktuell keine Events im Kalender eingetragen.`,
       lines: []
     };
   }
@@ -193,7 +197,7 @@ function createSummary(groups, startDate, endDate) {
       buildFeedEventTitle(event),
       event.venue ? `in ${event.venue}` : null,
       event.server ? `Server: ${event.server}` : null,
-      event.host ? `Host: ${event.host}` : null
+      getProjectLead(event) ? `Projektleitung: ${getProjectLead(event)}` : null
     ].filter(Boolean);
 
     return `- ${parts.join(" | ")}`;
@@ -201,7 +205,7 @@ function createSummary(groups, startDate, endDate) {
 
   return {
     title: `Wochenvorschau ${startLabel} bis ${endLabel}: ${totalEvents} Event${totalEvents === 1 ? "" : "s"} an ${dayCount} Tag${dayCount === 1 ? "" : "en"}`,
-    intro: "Das ist die ruhige Wochenübersicht für die kommenden sieben Tage im Light Hotspots Kalender.",
+    intro: "Das ist die ruhige Wochenuebersicht fuer die kommenden sieben Tage im Light Hotspots Kalender.",
     lines
   };
 }
@@ -215,7 +219,7 @@ function createRssFeed({ generatedAt, summary, startDate }) {
   <channel>
     <title>Light Hotspots Wochenfeed</title>
     <link>${SITE_URL}/</link>
-    <description>Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.</description>
+    <description>Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.</description>
     <language>de-DE</language>
     <lastBuildDate>${pubDate}</lastBuildDate>
     <ttl>1440</ttl>
@@ -237,7 +241,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
     title: "Light Hotspots Wochenfeed",
     home_page_url: `${SITE_URL}/`,
     feed_url: `${SITE_URL}/feeds/weekly-summary.json`,
-    description: "Tägliche Wochenzusammenfassung der geplanten RP-Events für die kommenden sieben Tage.",
+    description: "Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.",
     language: "de-DE",
     generated_at: generatedAt,
     weekly_window: {
@@ -261,7 +265,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
           event.venue ? `Venue: ${event.venue}` : null,
           event.server ? `Server: ${event.server}` : null,
           event.status === "cancelled" ? "Status: Abgesagt" : null,
-          event.host ? `Host: ${event.host}` : null,
+          getProjectLead(event) ? `Projektleitung: ${getProjectLead(event)}` : null,
           event.notes ? `Hinweise: ${event.notes}` : null,
           event.description || null
         ].filter(Boolean).join("\n"),
@@ -295,17 +299,14 @@ function buildCompactWeekLines(groups) {
     const lines = [`## ${group.label}`];
 
     for (const event of group.events) {
-      const eventLine = [
+      lines.push([
         `> **${buildFeedEventTitle(event)}**`,
         `\`${formatFeedTime(event)}\``,
         event.venue ? `• *${event.venue}*` : null
-      ].filter(Boolean).join(" ");
-
-      lines.push(eventLine);
+      ].filter(Boolean).join(" "));
     }
 
     lines.push("");
-
     return lines;
   });
 }
@@ -327,8 +328,7 @@ function buildPrimaryInfo(event) {
 
 function buildSecondaryInfo(event) {
   return [
-    event.host ? `**Veranstalter**\n> ${event.host}` : null,
-    event.venue_lead ? `**Venue-Leitung**\n> ${event.venue_lead}` : null,
+    getProjectLead(event) ? `**Projektleitung**\n> ${getProjectLead(event)}` : null,
     event.notes ? `**Hinweise**\n> ${event.notes}` : null
   ].filter(Boolean);
 }
@@ -386,7 +386,6 @@ function createDiscordMessages({ groups, startDate, endDate }) {
   }
 
   const overviewEmbed = baseEmbed.setTimestamp(new Date());
-
   overviewChunks.forEach((chunk, index) => {
     overviewEmbed.addFields({
       name: index === 0 ? "Alle Events auf einen Blick" : "\u200b",
@@ -411,8 +410,7 @@ function createDiscordMessages({ groups, startDate, endDate }) {
         .setImage(getEventImageUrl(event))
         .setFooter({ text: `Light Hotspots • ${group.label}` });
 
-      const primaryInfo = buildPrimaryInfo(event);
-      primaryInfo.forEach((value, index) => {
+      buildPrimaryInfo(event).forEach((value, index) => {
         embed.addFields({
           name: index === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
@@ -420,10 +418,9 @@ function createDiscordMessages({ groups, startDate, endDate }) {
         });
       });
 
-      const secondaryInfo = buildSecondaryInfo(event);
-      secondaryInfo.forEach((value, index) => {
+      buildSecondaryInfo(event).forEach((value, index) => {
         embed.addFields({
-          name: index === 0 && primaryInfo.length === 0 ? "Eckdaten" : "\u200b",
+          name: index === 0 && buildPrimaryInfo(event).length === 0 ? "Eckdaten" : "\u200b",
           value: clampText(value, 1024),
           inline: index < 2
         });
@@ -452,8 +449,7 @@ function createDiscordMessages({ groups, startDate, endDate }) {
     })
   );
 
-  const allEmbeds = [overviewEmbed, ...eventEmbeds];
-  return chunkEmbeds(allEmbeds).map(embeds => ({ embeds }));
+  return chunkEmbeds([overviewEmbed, ...eventEmbeds]).map(embeds => ({ embeds }));
 }
 
 export function shouldRunCalendarFeedNow(date = new Date()) {
@@ -560,7 +556,7 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Date()) {
   const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
   if (!channel?.isTextBased()) {
-    const error = new Error("Kalenderfeed-Channel nicht verfügbar.");
+    const error = new Error("Kalenderfeed-Channel nicht verfuegbar.");
     error.code = "CALENDAR_FEED_CHANNEL_UNAVAILABLE";
     throw error;
   }

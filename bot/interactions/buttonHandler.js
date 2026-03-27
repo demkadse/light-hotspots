@@ -1,12 +1,8 @@
 import {
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder,
-  EmbedBuilder
+  StringSelectMenuBuilder
 } from "discord.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,26 +26,20 @@ import { cleanupBotMessages } from "../services/cleanupService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { CHANNELS } from "../config/channels.js";
 import { getTemplateOwnerId } from "../services/identityService.js";
+import { writeAndSyncWeeklyCalendarFeedFiles } from "../services/calendarFeedService.js";
 import {
-  forcePostWeeklyCalendarFeed,
-  writeAndSyncWeeklyCalendarFeedFiles
-} from "../services/calendarFeedService.js";
+  buildApprovalWaitingMessage,
+  buildBasicsModal,
+  buildExtrasModal,
+  buildPreviewEmbed,
+  buildTemplateSummary,
+  buildWizardComponents,
+  buildWizardMessage
+} from "../services/eventWizardUiService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
-
-function formatTemplateSummary(template) {
-  return [
-    `**${template.title || "Unbenannt"}**`,
-    template.category === "venue" ? "Kategorie: Venue" : "Kategorie: Event",
-    template.venue ? `Ort: ${template.venue}` : null,
-    template.server ? `Server: ${template.server}` : null,
-    template.recurrence_rule === "weekly" ? "Wiederholung: Wöchentlich" : null,
-    template.date ? `Datum: ${template.date}` : null,
-    template.time ? `Zeit: ${buildTimeLabel(template)}` : null
-  ].filter(Boolean).join("\n");
-}
 
 async function sendTemplateDm(client, userId, message) {
   if (!userId) {
@@ -64,137 +54,24 @@ async function sendTemplateDm(client, userId, message) {
   }
 }
 
-function buildStepOneModal(template = null, modalId = "event_modal_step1_create") {
-  const modal = new ModalBuilder()
-    .setCustomId(modalId)
-    .setTitle("1/3 | Basis");
+async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
+  const duplicates = await findPotentialDuplicates(template);
 
-  const createInput = (id, label, placeholder, value = "") =>
-    new ActionRowBuilder().addComponents(
-      new TextInputBuilder()
-        .setCustomId(id)
-        .setLabel(label)
-        .setPlaceholder(placeholder)
-        .setValue(value || "")
-        .setStyle(
-          id === "description"
-            ? TextInputStyle.Paragraph
-            : TextInputStyle.Short
-        )
-        .setRequired(true)
-    );
-
-  modal.addComponents(
-    createInput("title", "Titel", "z.B. Club Night", template?.title),
-    createInput("venue", "Location", "z.B. Limsa", template?.venue),
-    createInput("date", "Datum", "z.B. 20.03.2026", template?.date),
-    createInput("time", "Uhrzeit", "z.B. 20:00", template?.time),
-    createInput("description", "Beschreibung", "Worum geht es?", template?.description)
-  );
-
-  return modal;
-}
-
-function buildTimeLabel(template) {
-  if (template.time && template.end_time) {
-    return `${template.time} - ${template.end_time}`;
-  }
-
-  return template.time || "-";
-}
-
-function buildApprovalEmbed(template, duplicates) {
-  const embed = new EmbedBuilder()
-    .setTitle(template.title)
-    .setDescription(template.description)
-    .addFields(
-      { name: "Ort", value: template.venue || "-", inline: true },
-      { name: "Datum", value: template.date || "-", inline: true },
-      { name: "Zeit", value: buildTimeLabel(template), inline: true }
-    );
-
-  if (template.event_type) {
-    embed.addFields({
-      name: "Eventtyp",
-      value: template.event_type,
-      inline: true
+  if (auditAction) {
+    await recordAuditEntry(client, {
+      action: auditAction,
+      actor_id: interaction.user.id,
+      target_id: template.id,
+      summary: template.title || "Unbenannt"
     });
   }
 
-  embed.addFields({
-    name: "Kategorie",
-    value: template.category === "venue" ? "Venue" : "Event",
-    inline: true
-  });
-
-  if (template.host_display_name) {
-    embed.addFields({
-      name: "Host",
-      value: template.host_display_name,
-      inline: true
-    });
-  }
-
-  if (template.server) {
-    embed.addFields({
-      name: "Server",
-      value: template.server,
-      inline: true
-    });
-  }
-
-  if (template.recurrence_rule === "weekly") {
-    embed.addFields({
-      name: "Wiederholung",
-      value: "Wöchentlich",
-      inline: true
-    });
-  }
-
-  if (template.venue_lead) {
-    embed.addFields({
-      name: "Venue-Leitung",
-      value: template.venue_lead,
-      inline: true
-    });
-  }
-
-  if (template.link) {
-    embed.addFields({
-      name: "Link",
-      value: template.link
-    });
-  }
-
-  if (template.discord_link) {
-    embed.addFields({
-      name: "Discord",
-      value: template.discord_link
-    });
-  }
-
-  if (template.notes) {
-    embed.addFields({
-      name: "Hinweise",
-      value: template.notes.slice(0, 1024)
-    });
-  }
-
-  if (template.image) {
-    embed.setImage(template.image);
-  }
-
-  if (duplicates.length > 0) {
-    embed.addFields({
-      name: "Mögliche Duplikate",
-      value: duplicates
-        .map(entry => `${entry.title} | ${entry.venue} | ${entry.date}`)
-        .join("\n")
-        .slice(0, 1024)
-    });
-  }
-
-  return embed;
+  await replyAndExpire(interaction, {
+    content: message || buildWizardMessage(template),
+    embeds: [buildPreviewEmbed(template, duplicates)],
+    components: buildWizardComponents(template),
+    ephemeral: true
+  }, 120000);
 }
 
 export async function handleButton(interaction, client) {
@@ -208,7 +85,7 @@ export async function handleButton(interaction, client) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("admin:cleanup:confirm")
-          .setLabel("Wirklich löschen")
+          .setLabel("Wirklich loeschen")
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId("admin:cleanup:cancel")
@@ -217,7 +94,7 @@ export async function handleButton(interaction, client) {
       );
 
       await replyAndExpire(interaction, {
-        content: "Dadurch werden Bot-Nachrichten in den Log- und Approval-Channels gelöscht.",
+        content: "Dadurch werden Bot-Nachrichten in den Log- und Approval-Channels geloescht.",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -243,7 +120,7 @@ export async function handleButton(interaction, client) {
 
       const summary = await cleanupBotMessages(client);
       const summaryText = summary
-        .map(entry => `<#${entry.channelId}>: ${entry.deleted} gelöscht`)
+        .map(entry => `<#${entry.channelId}>: ${entry.deleted} geloescht`)
         .join("\n");
 
       await replyAndExpire(interaction, {
@@ -272,12 +149,12 @@ export async function handleButton(interaction, client) {
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
           .setCustomId("event:cancel")
-          .setLabel("Veröffentlichtes Event absagen")
+          .setLabel("Veroeffentlichtes Event absagen")
           .setStyle(ButtonStyle.Secondary)
       );
 
       await replyAndExpire(interaction, {
-        content: "Starte ein neues Event oder öffne ein vorhandenes, um den 3-Schritte-Ablauf fortzusetzen.",
+        content: "Starte ein neues Event oder oeffne ein bestehendes. Der Ablauf fuehrt dich erst durch die Basisdaten und danach durch klare Auswahlmenues.",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -286,8 +163,7 @@ export async function handleButton(interaction, client) {
     }
 
     if (id === "event:new") {
-      const modal = buildStepOneModal();
-      await interaction.showModal(modal);
+      await interaction.showModal(buildBasicsModal());
       return;
     }
 
@@ -303,20 +179,20 @@ export async function handleButton(interaction, client) {
       }
 
       const options = templates.slice(0, 25).map(template => ({
-        label: template.title || "Unbenannt",
+        label: (template.title || "Unbenannt").slice(0, 100),
         value: template.id,
-        description: `${template.date || "kein Datum"} | ${template.status}`
+        description: `${template.date || "kein Datum"} | ${template.status}`.slice(0, 100)
       }));
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("event:selectTemplate")
-        .setPlaceholder("Bestehendes Event auswählen")
+        .setPlaceholder("Bestehendes Event auswaehlen")
         .addOptions(options);
 
       const row = new ActionRowBuilder().addComponents(select);
 
       await replyAndExpire(interaction, {
-        content: "Wähle das Event aus, dessen 3-Schritte-Ablauf du fortsetzen möchtest:",
+        content: "Waehle das Event aus, das du weiterbearbeiten moechtest:",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -330,7 +206,7 @@ export async function handleButton(interaction, client) {
 
       if (templates.length === 0) {
         await replyAndExpire(interaction, {
-          content: "Du hast aktuell kein veröffentlichtes Event, das abgesagt werden kann.",
+          content: "Du hast aktuell kein veroeffentlichtes Event, das abgesagt werden kann.",
           ephemeral: true
         }, 45000);
         return;
@@ -344,13 +220,13 @@ export async function handleButton(interaction, client) {
 
       const select = new StringSelectMenuBuilder()
         .setCustomId("event:selectCancellationTemplate")
-        .setPlaceholder("Veröffentlichtes Event auswählen")
+        .setPlaceholder("Veroeffentlichtes Event auswaehlen")
         .addOptions(options);
 
       const row = new ActionRowBuilder().addComponents(select);
 
       await replyAndExpire(interaction, {
-        content: "Wähle das veröffentlichte Event aus, das als abgesagt markiert werden soll:",
+        content: "Waehle das veroeffentlichte Event aus, das als abgesagt markiert werden soll:",
         components: [row],
         ephemeral: true
       }, 120000);
@@ -358,132 +234,23 @@ export async function handleButton(interaction, client) {
       return;
     }
 
-    if (id.startsWith("event:details:")) {
+    if (id.startsWith("event:editBasics:")) {
       const templateId = id.split(":")[2];
       const template = await getTemplate(templateId);
-
-      const modal = new ModalBuilder()
-        .setCustomId(`event_modal_step2_${templateId}`)
-        .setTitle("2/3 | Details");
-
-      const createOptionalInput = (customId, label, placeholder, value = "") =>
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId(customId)
-            .setLabel(label)
-            .setPlaceholder(placeholder)
-            .setValue(value || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        );
-
-      modal.addComponents(
-        createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
-        createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
-        createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
-        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Käptn Mira", template?.venue_lead),
-        createOptionalInput("server", "Server", "z.B. Shiva, Odin, Twintania", template?.server)
-      );
-
-      await interaction.showModal(modal);
+      await interaction.showModal(buildBasicsModal(template, `event_modal_basics_${templateId}`));
       return;
     }
 
     if (id.startsWith("event:extras:")) {
       const templateId = id.split(":")[2];
       const template = await getTemplate(templateId);
-
-      const modal = new ModalBuilder()
-        .setCustomId(`event_modal_step3_${templateId}`)
-        .setTitle("3/3 | Extras");
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId("image")
-            .setLabel("Bild-URL (optional)")
-            .setPlaceholder("https://example.com/event.jpg")
-            .setValue(template?.image || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        ),
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId("discord_link")
-            .setLabel("Discord-Link (optional)")
-            .setPlaceholder("https://discord.gg/...")
-            .setValue(template?.discord_link || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        ),
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId("link")
-            .setLabel("Externer Link (optional)")
-            .setPlaceholder("https://...")
-            .setValue(template?.link || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        ),
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId("recurrence_rule")
-            .setLabel("Wiederholung (optional)")
-            .setPlaceholder("leer lassen oder weekly")
-            .setValue(template?.recurrence_rule || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        ),
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId("notes")
-            .setLabel("Hinweise (optional)")
-            .setPlaceholder("z.B. Walk-ins willkommen, 18+, OOC-Tell vorab")
-            .setValue(template?.notes || "")
-            .setStyle(TextInputStyle.Paragraph)
-            .setRequired(false)
-        )
-      );
-
-      await interaction.showModal(modal);
-      return;
-    }
-
-    if (id.startsWith("event:setImage:")) {
-      const templateId = id.split(":")[2];
-      const template = await getTemplate(templateId);
-
-      const modal = new ModalBuilder()
-        .setCustomId(`event_modal_step2_${templateId}`)
-        .setTitle("2/3 | Details");
-
-      const createOptionalInput = (customId, label, placeholder, value = "") =>
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId(customId)
-            .setLabel(label)
-            .setPlaceholder(placeholder)
-            .setValue(value || "")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(false)
-        );
-
-      modal.addComponents(
-        createOptionalInput("end_time", "Endzeit (optional)", "z.B. 23:30", template?.end_time),
-        createOptionalInput("event_type", "Eventtyp (optional)", "z.B. Club, Taverne, Markt", template?.event_type),
-        createOptionalInput("host_display_name", "Host-Anzeigename (optional)", "z.B. Team Rubinlotus", template?.host_display_name),
-        createOptionalInput("venue_lead", "Venue-Leitung (optional)", "z.B. Käptn Mira", template?.venue_lead),
-        createOptionalInput("server", "Server", "z.B. Shiva, Odin, Twintania", template?.server)
-      );
-
-      await interaction.showModal(modal);
+      await interaction.showModal(buildExtrasModal(template, templateId));
       return;
     }
 
     if (id.startsWith("event:submit:")) {
       const templateId = id.split(":")[2];
       await deferEphemeral(interaction);
-      const draft = await getTemplate(templateId);
       const template = await submitTemplateForApproval(templateId);
       const ownerId = await getTemplateOwnerId(template);
       const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
@@ -492,8 +259,8 @@ export async function handleButton(interaction, client) {
         throw new Error("Approval Channel nicht gefunden");
       }
 
-      const duplicates = await findPotentialDuplicates(draft);
-      const embed = buildApprovalEmbed(template, duplicates);
+      const duplicates = await findPotentialDuplicates(template);
+      const embed = buildPreviewEmbed(template, duplicates);
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -519,14 +286,10 @@ export async function handleButton(interaction, client) {
         summary: template.title || "Unbenannt"
       });
 
-      await sendTemplateDm(
-        client,
-        ownerId,
-        `Dein Event wird gerade überprüft.\n\n${formatTemplateSummary(template)}\n\nDu wirst benachrichtigt, sobald es ein Update gibt.`
-      );
+      await sendTemplateDm(client, ownerId, buildApprovalWaitingMessage(template));
 
       await replyAndExpire(interaction, {
-        content: "Event wurde zur Prüfung gesendet.",
+        content: "Event wurde zur Pruefung gesendet.",
         ephemeral: true
       });
 
@@ -545,7 +308,7 @@ export async function handleButton(interaction, client) {
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`event:unpublish:${templateId}`)
-            .setLabel("Veröffentlichung zurücknehmen")
+            .setLabel("Veroeffentlichung zuruecknehmen")
             .setStyle(ButtonStyle.Danger)
         );
 
@@ -558,9 +321,7 @@ export async function handleButton(interaction, client) {
         try {
           const logChannel = await client.channels.fetch(CHANNELS.EVENT_LOG);
           if (logChannel?.isTextBased()) {
-          await logChannel.send(
-              `Event "${template.title}" wurde freigegeben von <@${interaction.user.id}>`
-            );
+            await logChannel.send(`Event "${template.title}" wurde freigegeben von <@${interaction.user.id}>`);
           }
         } catch (error) {
           console.error("EVENT_LOG Fehler:", error);
@@ -569,7 +330,7 @@ export async function handleButton(interaction, client) {
         await sendTemplateDm(
           client,
           ownerId,
-          `Dein Event wurde bestätigt. Viel Erfolg!\n\n${formatTemplateSummary(template)}\n\nEs ist jetzt für die Community sichtbar.`
+          `Dein Event wurde bestaetigt. Viel Erfolg!\n\n${buildTemplateSummary(template)}\n\nEs ist jetzt fuer die Community sichtbar.`
         );
 
         await recordAuditEntry(client, {
@@ -586,9 +347,7 @@ export async function handleButton(interaction, client) {
           const commitChannel = await client.channels.fetch(CHANNELS.COMMIT_LOG);
 
           if (commitChannel?.isTextBased()) {
-            await commitChannel.send(
-              `Commit für "${template.title}":\n\`\`\`json\n${content}\n\`\`\``
-            );
+            await commitChannel.send(`Commit fuer "${template.title}":\n\`\`\`json\n${content}\n\`\`\``);
           }
         } catch (error) {
           console.error("COMMIT_LOG Fehler:", error);
@@ -599,9 +358,7 @@ export async function handleButton(interaction, client) {
         try {
           const errorChannel = await client.channels.fetch(CHANNELS.ERROR_LOG);
           if (errorChannel?.isTextBased()) {
-            await errorChannel.send(
-              `Fehler beim Approven:\n\`\`\`\n${error.message}\n\`\`\``
-            );
+            await errorChannel.send(`Fehler beim Approven:\n\`\`\`\n${error.message}\n\`\`\``);
           }
         } catch (logError) {
           console.error("ERROR_LOG Fehler:", logError);
@@ -622,6 +379,7 @@ export async function handleButton(interaction, client) {
       assertAdminUser(interaction);
       assertActionCooldown(interaction.user.id, `reject:${id}`, 10000);
       const templateId = id.split(":")[2];
+      const { ModalBuilder, TextInputBuilder, TextInputStyle } = await import("discord.js");
 
       const modal = new ModalBuilder()
         .setCustomId(`reject_modal_${templateId}`)
@@ -648,7 +406,7 @@ export async function handleButton(interaction, client) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`event:unpublish_confirm:${templateId}`)
-          .setLabel("Ja, wirklich zurücknehmen")
+          .setLabel("Ja, wirklich zuruecknehmen")
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`event:unpublish_cancel:${templateId}`)
@@ -689,7 +447,7 @@ export async function handleButton(interaction, client) {
       });
 
       await replyAndExpire(interaction, {
-        content: `Veröffentlichung zurückgenommen: ${result.title}`,
+        content: `Veroeffentlichung zurueckgenommen: ${result.title}`,
         ephemeral: true
       });
 

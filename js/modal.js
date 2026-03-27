@@ -1,18 +1,8 @@
 const modal = document.getElementById("event-modal");
 const modalContent = document.getElementById("modal-content");
 
-function formatHostName(event) {
-  const host = event.host || event.host_display_name || event.created_by || "";
-
-  if (!host) {
-    return "Unbekannter Veranstalter";
-  }
-
-  if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
-  }
-
-  return host;
+function getProjectLead(event) {
+  return event.project_lead || event.venue_lead || event.host || "";
 }
 
 function formatTypeLabel(event) {
@@ -25,6 +15,22 @@ function formatCategoryLabel(event) {
 
 function isCancelled(event) {
   return event.status === "cancelled";
+}
+
+function formatRecurrenceLabel(event) {
+  if (event.recurrence_rule === "weekly") {
+    return "Woechentlich";
+  }
+
+  if (event.recurrence_rule === "biweekly") {
+    return "Zweiwoechig";
+  }
+
+  if (event.recurrence_rule === "triweekly") {
+    return "Dreiwoechig";
+  }
+
+  return null;
 }
 
 function formatTimeRange(event) {
@@ -92,19 +98,19 @@ function openModal(event) {
   const topChipRow = document.createElement("div");
   topChipRow.className = "modal-chip-row";
 
-  const typeChip = document.createElement("span");
-  typeChip.className = "event-chip";
-  typeChip.textContent = formatCategoryLabel(event);
+  const categoryChip = document.createElement("span");
+  categoryChip.className = "event-chip";
+  categoryChip.textContent = formatCategoryLabel(event);
 
-  const detailChip = document.createElement("span");
-  detailChip.className = "event-time-chip";
-  detailChip.textContent = formatTypeLabel(event);
+  const typeChip = document.createElement("span");
+  typeChip.className = "event-time-chip";
+  typeChip.textContent = formatTypeLabel(event);
 
   const timeChip = document.createElement("span");
   timeChip.className = "event-time-chip";
   timeChip.textContent = formatTimeRange(event);
 
-  topChipRow.append(typeChip, detailChip, timeChip);
+  topChipRow.append(categoryChip, typeChip, timeChip);
   topRow.appendChild(topChipRow);
 
   if (isCancelled(event)) {
@@ -113,6 +119,7 @@ function openModal(event) {
     statusChip.textContent = "Abgesagt";
     topRow.appendChild(statusChip);
   }
+
   modalContent.appendChild(topRow);
 
   const title = document.createElement("h2");
@@ -126,9 +133,8 @@ function openModal(event) {
   appendDetailItem(details, "Typ", formatTypeLabel(event));
   appendDetailItem(details, "Venue", event.venue || "Ort offen");
   appendDetailItem(details, "Server", event.server);
-  appendDetailItem(details, "Veranstalter", formatHostName(event));
-  appendDetailItem(details, "Venue-Leitung", event.venue_lead);
-  appendDetailItem(details, "Wiederholung", event.recurrence_rule === "weekly" ? "Wöchentlich" : null);
+  appendDetailItem(details, "Projektleitung", getProjectLead(event));
+  appendDetailItem(details, "Wiederholung", formatRecurrenceLabel(event));
   appendDetailItem(details, "Zeit", formatTimeRange(event));
   modalContent.appendChild(details);
 
@@ -163,7 +169,7 @@ function openModal(event) {
     cta.href = event.discord_link;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Discord-Server öffnen";
+    cta.textContent = "Discord-Server oeffnen";
     linkRow.appendChild(cta);
   }
 
@@ -177,7 +183,7 @@ function openModal(event) {
     cta.href = externalLink;
     cta.target = "_blank";
     cta.rel = "noreferrer noopener";
-    cta.textContent = "Externe Infos öffnen";
+    cta.textContent = "Externe Infos oeffnen";
     linkRow.appendChild(cta);
   }
 
@@ -199,7 +205,7 @@ function openModal(event) {
       const pill = document.createElement("button");
       pill.type = "button";
       pill.className = "modal-related-pill";
-      pill.textContent = `${entry.title} · ${entry.start_time || entry.time || "Zeit offen"}`;
+      pill.textContent = `${entry.title} • ${entry.start_time || entry.time || "Zeit offen"}`;
       pill.addEventListener("click", () => openModal(entry));
       list.appendChild(pill);
     });

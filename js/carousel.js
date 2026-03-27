@@ -1,15 +1,5 @@
-function formatHostName(event) {
-  const host = event.host || event.host_display_name || event.created_by || "";
-
-  if (!host) {
-    return "Unbekannter Veranstalter";
-  }
-
-  if (/^\d{17,20}$/.test(host)) {
-    return event.venue ? `Veranstalter von ${event.venue}` : "Discord-Veranstalter";
-  }
-
-  return host;
+function getProjectLead(event) {
+  return event.project_lead || event.venue_lead || event.host || "";
 }
 
 function formatTypeLabel(event) {
@@ -223,10 +213,8 @@ function buildCard(event) {
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
   appendMetaItem(meta, "Server", event.server);
-  appendMetaItem(meta, "Veranstalter", formatHostName(event));
-
-  if (event.venue_lead) {
-    appendMetaItem(meta, "Leitung", event.venue_lead);
+  if (getProjectLead(event)) {
+    appendMetaItem(meta, "Projektleitung", getProjectLead(event));
   }
 
   const description = document.createElement("p");

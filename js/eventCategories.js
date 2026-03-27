@@ -34,6 +34,11 @@ function includesKeyword(source, keywords) {
 }
 
 function classifyEventCategory(event) {
+  const explicitCategory = normalizeCategorySource(event?.category);
+  if (explicitCategory === "event" || explicitCategory === "venue") {
+    return explicitCategory;
+  }
+
   const source = [
     event?.category,
     event?.type,

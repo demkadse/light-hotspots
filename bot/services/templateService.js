@@ -9,6 +9,11 @@ import {
   rememberTemplateOwner,
   sanitizeTemplatesForStorage
 } from "./identityService.js";
+import {
+  isTypeValidForCategory,
+  normalizeCategory,
+  normalizeRecurrence
+} from "../config/eventFormOptions.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,6 +89,11 @@ function normalizeTemplateField(value) {
 }
 
 function detectCategoryFromTemplateLike(data) {
+  const explicitCategory = normalizeCategory(data.category);
+  if (explicitCategory) {
+    return explicitCategory;
+  }
+
   const source = [data.category, data.event_type, data.type, data.venue]
     .map(normalizeTemplateField)
     .filter(Boolean)
@@ -105,10 +115,13 @@ function applyDerivedCategory(data, fallback = {}) {
     ...fallback,
     ...data
   };
+  const category = normalizeCategory(base.category) || detectCategoryFromTemplateLike(base);
+  const preferredType = data.event_type ?? data.type ?? base.event_type ?? base.type ?? null;
 
   return {
     ...data,
-    category: detectCategoryFromTemplateLike(base)
+    category,
+    event_type: isTypeValidForCategory(preferredType, category) ? preferredType : null
   };
 }
 
@@ -204,17 +217,36 @@ function parseTemplateDateToUtc(dateStr) {
   return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
 }
 
+function getRecurrenceIntervalWeeks(rule) {
+  const normalizedRule = normalizeRecurrence(rule);
+
+  if (normalizedRule === "weekly") {
+    return 1;
+  }
+
+  if (normalizedRule === "biweekly") {
+    return 2;
+  }
+
+  if (normalizedRule === "triweekly") {
+    return 3;
+  }
+
+  return 0;
+}
+
 function getOccurrenceDates(template) {
   const startDate = parseTemplateDateToUtc(template.date);
   const dates = [startDate];
+  const recurrenceIntervalWeeks = getRecurrenceIntervalWeeks(template.recurrence_rule);
 
-  if (template.recurrence_rule !== "weekly") {
+  if (recurrenceIntervalWeeks === 0) {
     return dates;
   }
 
   for (let index = 1; index < RECURRING_WEEKS; index += 1) {
     const nextDate = new Date(startDate);
-    nextDate.setUTCDate(startDate.getUTCDate() + index * 7);
+    nextDate.setUTCDate(startDate.getUTCDate() + index * recurrenceIntervalWeeks * 7);
     dates.push(nextDate);
   }
 
@@ -225,7 +257,9 @@ function buildPublishedFileInfo(template, occurrenceDate = parseTemplateDateToUt
   const { day, month, year } = formatDateParts(occurrenceDate);
   const slug = slugify(template.title);
   const templateSuffix = template.id ? `-${template.id.slice(0, 8)}` : "";
-  const recurringSuffix = template.recurrence_rule === "weekly" ? `-${String(occurrenceIndex + 1).padStart(2, "0")}` : "";
+  const recurringSuffix = getRecurrenceIntervalWeeks(template.recurrence_rule) > 0
+    ? `-${String(occurrenceIndex + 1).padStart(2, "0")}`
+    : "";
   const fileName = `${slug}-${year}-${month}-${day}${templateSuffix}${recurringSuffix}.json`;
   const file = `${year}/${month}/${fileName}`;
   const filePath = path.join(EVENTS_BASE_PATH, file);
@@ -492,8 +526,16 @@ export async function submitTemplateForApproval(templateId) {
     throw new Error("Template nicht gefunden");
   }
 
+  if (!normalizeCategory(templates[index].category)) {
+    throw new Error("Kategorie fehlt. Bitte waehle zuerst per Dropdown, ob es ein Event oder eine Venue ist.");
+  }
+
+  if (!templates[index].event_type?.trim()) {
+    throw new Error("Typ fehlt. Bitte waehle zuerst den passenden Typ per Dropdown.");
+  }
+
   if (!templates[index].server?.trim()) {
-    throw new Error("Server fehlt. Bitte ergänze den Server in den Details, bevor du das Event einreichst.");
+    throw new Error("Server fehlt. Bitte waehle zuerst den passenden Server per Dropdown.");
   }
 
   templates[index] = {
@@ -566,17 +608,18 @@ export async function approveTemplate(templateId) {
     await fs.mkdir(dirPath, { recursive: true });
 
     const eventData = {
-      id: template.recurrence_rule === "weekly" ? `${slug}-${year}${month}${day}` : slug,
-      series_id: template.recurrence_rule === "weekly" ? `${template.id}:weekly` : null,
-      occurrence_index: template.recurrence_rule === "weekly" ? occurrenceIndex : 0,
-      recurrence_rule: template.recurrence_rule || null,
-      category: detectCategoryFromTemplateLike(template),
+      id: getRecurrenceIntervalWeeks(template.recurrence_rule) > 0 ? `${slug}-${year}${month}${day}` : slug,
+      series_id: getRecurrenceIntervalWeeks(template.recurrence_rule) > 0 ? `${template.id}:${normalizeRecurrence(template.recurrence_rule)}` : null,
+      occurrence_index: getRecurrenceIntervalWeeks(template.recurrence_rule) > 0 ? occurrenceIndex : 0,
+      recurrence_rule: normalizeRecurrence(template.recurrence_rule) || null,
+      category: normalizeCategory(template.category) || detectCategoryFromTemplateLike(template),
       title: template.title,
-      type: template.event_type || template.type || "event",
+      type: template.event_type || template.type || "Event",
       venue: template.venue,
       server: template.server || null,
-      host: template.host_display_name || template.host || "Unbekannt",
-      venue_lead: template.venue_lead || null,
+      host: template.project_lead || template.venue_lead || template.host_display_name || template.host || null,
+      project_lead: template.project_lead || template.venue_lead || template.host_display_name || null,
+      venue_lead: template.project_lead || template.venue_lead || template.host_display_name || null,
       date: `${year}-${month}-${day}`,
       start_time: template.time,
       end_time: template.end_time || null,

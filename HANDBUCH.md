@@ -159,7 +159,7 @@ Eine Karte kann unter anderem enthalten:
 - Uhrzeit
 - Venue
 - Server
-- Veranstalter
+- Projektleitung
 - kurze Beschreibung
 - Hinweise darauf, ob ein Discord-Link oder externer Link vorhanden ist
 
@@ -192,8 +192,7 @@ Dort koennen Nutzer alle verfuegbaren Informationen sehen:
 - Datum und Uhrzeit
 - Venue
 - Server
-- Veranstalter
-- Venue-Leitung
+- Projektleitung
 - Wiederholungsinformation
 - Beschreibung
 - Hinweise
@@ -227,6 +226,10 @@ Hier wird offengelegt, dass fuer die technische Umsetzung KI-Unterstuetzung verw
 ### 8.3 Hinweis zu Events und Venues
 
 Ein zusaetzlicher Infodialog erklaert den Unterschied zwischen klassischen Events und Venues, damit Nutzer die Kategorisierung besser verstehen.
+
+### 8.4 Datenschutzerklaerung
+
+Die Website bietet ausserdem eine eigene Datenschutzerklaerung sowie einen Erstbesuch-Hinweis, der erklaert, welche Daten gespeichert werden und warum aktuell keine klassische Cookie-Abfrage verwendet wird.
 
 ## 9. Mobile Nutzung
 
@@ -278,38 +281,38 @@ Im ersten Formular werden die Pflichtangaben abgefragt:
 
 Ohne diese Angaben kann das Event nicht gespeichert werden.
 
-### 12.2 Schritt 2 von 3: Details
+### 12.2 Schritt 2 von 3: Auswahlmenues
 
-Im zweiten Schritt werden weitere Informationen erfasst. Einige davon sind optional, ein Teil ist aber fuer die spaetere Freigabe wichtig.
+Nach den Basisdaten fuehrt der Bot durch klare Dropdown-Menues. Dort werden die vordefinierten Angaben ausgewaehlt, damit Nutzer so wenig wie moeglich frei tippen muessen.
 
 Moegliche Angaben:
 
-- Endzeit
-- Eventtyp
-- Host-Anzeigename
-- Venue-Leitung
+- Kategorie `Event` oder `Venue`
+- Typ passend zur Kategorie
 - Server
+- Wiederholung
 
 Wichtig:
 
-- Der `Server` ist spaetestens vor dem Einreichen zur Pruefung erforderlich.
-- Die Endzeit muss, falls angegeben, ebenfalls im Format `HH:MM` eingetragen werden.
+- Die Einordnung als `Event` oder `Venue` wird aktiv vom Nutzer ausgewaehlt.
+- `Kategorie`, `Typ` und `Server` muessen vor der Einreichung gesetzt sein.
 
-### 12.3 Schritt 3 von 3: Extras
+### 12.3 Schritt 3 von 3: Zusatzangaben
 
 Im dritten Schritt koennen weitere optionale Informationen hinterlegt werden:
 
+- Endzeit
+- Projektleitung
 - Bild-URL
 - Discord-Link
 - externer Link
-- Wiederholung
 - Hinweise
 
 #### Regeln fuer Extras
 
 - Die Bild-URL muss mit `http://` oder `https://` beginnen und auf eine Bilddatei zeigen.
 - Der Discord-Link muss auf `discord.gg` oder `discord.com` verweisen.
-- Die Wiederholung darf leer bleiben oder als `weekly` eingetragen werden.
+- Falls eine Endzeit eingetragen wird, muss sie im Format `HH:MM` angegeben werden.
 
 ### 12.4 Vorschau nach jedem Schritt
 

@@ -60,8 +60,20 @@ export function validateEventInput(event) {
 
   if ("recurrence_rule" in event && event.recurrence_rule) {
     const recurrenceRule = event.recurrence_rule.trim().toLowerCase();
-    if (!["weekly", "wöchentlich", "woechentlich"].includes(recurrenceRule)) {
-      errors.push("Wiederholung muss leer bleiben oder `weekly` sein.");
+    if (![
+      "weekly",
+      "wöchentlich",
+      "woechentlich",
+      "biweekly",
+      "zweiwöchig",
+      "zweiwoechig",
+      "14tägig",
+      "14taegig",
+      "triweekly",
+      "dreiwöchig",
+      "dreiwoechig"
+    ].includes(recurrenceRule)) {
+      errors.push("Wiederholung muss leer bleiben oder eine gueltige Wiederholungsoption verwenden.");
     }
   }
 

@@ -112,7 +112,7 @@ client.on("interactionCreate", async (interaction) => {
     }
 
     if (interaction.isStringSelectMenu()) {
-      return await handleSelect(interaction);
+      return await handleSelect(interaction, client);
     }
 
     if (interaction.isModalSubmit()) {
