@@ -21,13 +21,25 @@ export async function execute(interaction) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId("event:start")
-      .setLabel("Event-Flow oeffnen")
-      .setStyle(ButtonStyle.Primary)
+      .setCustomId("event:new:event")
+      .setLabel("Event erstellen")
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("event:new:venue")
+      .setLabel("Venue erstellen")
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("event:edit")
+      .setLabel("Event bearbeiten")
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId("event:cancel")
+      .setLabel("Event absagen")
+      .setStyle(ButtonStyle.Secondary)
   );
 
-  await upsertPanelMessage(targetChannel, interaction.client.user.id, ["event:start", "event:create"], {
-    content: "**Event-System**\nOeffne hier den Event-Flow fuer Erstellung, Bearbeitung oder Absage.",
+  await upsertPanelMessage(targetChannel, interaction.client.user.id, ["event:start", "event:new:event", "event:new:venue", "event:edit", "event:cancel"], {
+    content: "**Event-System**\nWaehle hier direkt, ob du ein Event oder eine Venue erstellen, ein bestehendes Event bearbeiten oder ein veroefentlichtes Event absagen moechtest.",
     components: [row]
   });
 

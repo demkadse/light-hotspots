@@ -182,7 +182,23 @@ export async function handleSelect(interaction, client) {
   if (interaction.customId === "event:selectTemplate") {
     const value = interaction.values[0];
     const template = await getTemplate(value);
-    await interaction.showModal(buildBasicsModal(template, `event_modal_basics_${value}`));
+
+    if (!template) {
+      await replyAndExpire(interaction, {
+        content: "Das ausgewaehlte Event wurde nicht gefunden.",
+        ephemeral: true
+      });
+      return;
+    }
+
+    await deferEphemeral(interaction);
+    await replyWithWizardPreview(
+      interaction,
+      template,
+      client,
+      "template.opened",
+      "Event geladen. Du kannst jetzt Basisdaten, Dropdown-Angaben oder Zusatzangaben gezielt bearbeiten."
+    );
     return;
   }
 
