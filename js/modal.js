@@ -131,7 +131,7 @@ function openModal(event) {
   details.className = "modal-details-grid";
   appendDetailItem(details, "Kategorie", formatCategoryLabel(event));
   appendDetailItem(details, "Typ", formatTypeLabel(event));
-  appendDetailItem(details, "Venue", event.venue || "Ort offen");
+  appendDetailItem(details, "Ort", event.venue || "Ort offen");
   appendDetailItem(details, "Server", event.server);
   appendDetailItem(details, "Projektleitung", getProjectLead(event));
   appendDetailItem(details, "Wiederholung", formatRecurrenceLabel(event));

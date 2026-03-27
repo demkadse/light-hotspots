@@ -211,7 +211,7 @@ function buildCard(event) {
 
   const meta = document.createElement("div");
   meta.className = "event-meta";
-  appendMetaItem(meta, "Venue", event.venue || "Ort offen");
+  appendMetaItem(meta, "Ort", event.venue || "Ort offen");
   info.append(headerRow, meta);
 
   card.append(media, titleBanner, info);

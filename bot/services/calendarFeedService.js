@@ -262,7 +262,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
         content_text: [
           group.label,
           event.start_time ? `Start: ${event.start_time} Uhr` : "Start: offen",
-          event.venue ? `Venue: ${event.venue}` : null,
+          event.venue ? `Ort: ${event.venue}` : null,
           event.server ? `Server: ${event.server}` : null,
           event.status === "cancelled" ? "Status: Abgesagt" : null,
           getProjectLead(event) ? `Projektleitung: ${getProjectLead(event)}` : null,
@@ -321,7 +321,7 @@ function buildEventSummaryLine(event, groupLabel) {
 function buildPrimaryInfo(event) {
   return [
     event.type || event.event_type ? `**Typ**\n> ${event.type || event.event_type}` : null,
-    event.venue ? `**Venue**\n> ${event.venue}` : null,
+    event.venue ? `**Ort**\n> ${event.venue}` : null,
     event.server ? `**Server**\n> ${event.server}` : null
   ].filter(Boolean);
 }
