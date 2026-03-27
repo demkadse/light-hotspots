@@ -546,7 +546,7 @@ export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Da
 }
 
 async function readFeedState() {
-  return readJson(PRIVATE_STATE_PATH, { last_posted_on: null, last_posted_slot: null });
+  return readJson(PRIVATE_STATE_PATH, { last_posted_on: null, last_posted_slot: null, last_message_ids: [] });
 }
 
 async function writeFeedState(state) {
@@ -584,6 +584,29 @@ async function deleteTrackedFeedMessages(channel, messageIds = []) {
   return deletedMessageIds;
 }
 
+function isCalendarFeedMessage(message) {
+  if (!message?.author?.bot || !Array.isArray(message.embeds) || message.embeds.length === 0) {
+    return false;
+  }
+
+  return message.embeds.every(embed => {
+    const footerText = embed?.footer?.text;
+    return footerText === "Light Hotspots Kalender" || footerText?.startsWith("Light Hotspots - ");
+  });
+}
+
+async function resolvePreviousFeedMessageIds(channel, state) {
+  const trackedMessageIds = Array.isArray(state?.last_message_ids) ? state.last_message_ids.filter(Boolean) : [];
+  if (trackedMessageIds.length > 0) {
+    return trackedMessageIds;
+  }
+
+  const recentMessages = await channel.messages.fetch({ limit: 100 });
+  return Array.from(recentMessages.values())
+    .filter(isCalendarFeedMessage)
+    .map(message => message.id);
+}
+
 async function postDigestToChannel(channel, digest) {
   const postedMessageIds = [];
 
@@ -613,13 +636,15 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
   }
 
   const digest = await buildWeeklyCalendarDigest(referenceDate);
+  const previousMessageIds = await resolvePreviousFeedMessageIds(channel, state);
+  let deletedMessageIds = [];
+  let postedMessageIds = [];
 
   try {
-    for (const message of digest.discordMessages) {
-      await channel.send(message);
-    }
+    deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
+    postedMessageIds = await postDigestToChannel(channel, digest);
   } catch (error) {
-    if (error?.code === 50013) {
+    if (error?.code === 50013 || error?.code === "CALENDAR_FEED_DELETE_MISSING_PERMISSIONS") {
       return { posted: false, reason: "missing_permissions" };
     }
 
@@ -631,11 +656,13 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
     last_posted_slot: currentSlotKey,
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
-    last_generated_at: digest.generatedAt
+    last_generated_at: digest.generatedAt,
+    last_message_ids: postedMessageIds
   });
 
   return {
     posted: true,
+    replacedMessageCount: deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
     endDate: digest.endDate
@@ -652,7 +679,7 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
 
   const digest = await writeAndSyncWeeklyCalendarFeedFiles(referenceDate);
   const previousState = await readFeedState();
-  const previousMessageIds = Array.isArray(previousState.last_message_ids) ? previousState.last_message_ids : [];
+  const previousMessageIds = await resolvePreviousFeedMessageIds(channel, previousState);
   let deletedMessageIds = [];
   let postedMessageIds = [];
 
