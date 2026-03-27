@@ -752,8 +752,14 @@ function bindFilterControls() {
 }
 
 function bindNavigationControls() {
+  const timelineContainer = document.getElementById("timeline-container");
+
   document.addEventListener("wheel", event => {
     if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    if (!timelineContainer?.contains(event.target)) {
       return;
     }
 

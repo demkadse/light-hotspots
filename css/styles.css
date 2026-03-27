@@ -733,8 +733,8 @@ display: none;
 
 .event-card {
 position: relative;
-width: clamp(280px, 24vw, 344px);
-min-width: clamp(280px, 24vw, 344px);
+width: clamp(286px, 22vw, 348px);
+min-width: clamp(286px, 22vw, 348px);
 height: auto;
 max-height: none;
 align-self: flex-start;
@@ -758,9 +758,9 @@ box-shadow: 0 32px 80px rgba(0, 0, 0, 0.44);
 
 .event-media {
 position: relative;
-height: 24%;
-min-height: 88px;
-max-height: 124px;
+height: clamp(96px, 11vh, 132px);
+min-height: 96px;
+max-height: 132px;
 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 overflow: hidden;
 }
@@ -941,6 +941,68 @@ opacity: 0.9;
 .event-card-expand-toggle:hover {
 color: #ffe4be;
 opacity: 1;
+}
+
+@media (min-width: 769px) and (max-height: 980px) {
+.event-card {
+width: clamp(268px, 20vw, 318px);
+min-width: clamp(268px, 20vw, 318px);
+}
+
+.event-media {
+height: clamp(86px, 9.4vh, 108px);
+min-height: 86px;
+max-height: 108px;
+}
+
+.event-title-banner {
+min-height: 42px;
+padding: 8px 14px;
+}
+
+.event-title-banner h3 {
+font-size: 0.96rem;
+}
+
+.event-info {
+gap: 6px;
+padding: 8px 12px 10px;
+}
+
+.event-chip,
+.event-time-chip,
+.event-status-chip {
+font-size: 0.64rem;
+padding: 4px 7px;
+}
+}
+
+@media (min-width: 769px) and (min-aspect-ratio: 21/10) and (max-height: 1080px) {
+.event-card {
+width: clamp(272px, 18vw, 324px);
+min-width: clamp(272px, 18vw, 324px);
+}
+}
+
+@media (min-width: 1600px) and (min-height: 1000px) {
+.event-card {
+width: clamp(304px, 20vw, 388px);
+min-width: clamp(304px, 20vw, 388px);
+}
+
+.event-media {
+height: clamp(108px, 12vh, 148px);
+min-height: 108px;
+max-height: 148px;
+}
+
+.event-title-banner {
+padding: 11px 18px;
+}
+
+.event-title-banner h3 {
+font-size: 1.08rem;
+}
 }
 
 .event-card-expand-toggle span {
