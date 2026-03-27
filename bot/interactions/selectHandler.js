@@ -9,7 +9,10 @@ import {
   findPotentialDuplicates,
   getTemplate
 } from "../services/templateService.js";
-import { replyAndExpire } from "../services/interactionResponseService.js";
+import {
+  deferEphemeral,
+  replyAndExpire
+} from "../services/interactionResponseService.js";
 import { assertAdminUser } from "../services/permissionService.js";
 import {
   buildBasicsModal,
@@ -84,6 +87,7 @@ export async function handleSelect(interaction, client) {
   if (!interaction.isStringSelectMenu()) return;
 
   if (interaction.customId === "event:selectCancellationTemplate") {
+    await deferEphemeral(interaction);
     const templateId = interaction.values[0];
     const template = await getTemplate(templateId);
 
@@ -116,6 +120,7 @@ export async function handleSelect(interaction, client) {
 
   if (interaction.customId === "admin:selectUnpublishEvent") {
     assertAdminUser(interaction);
+    await deferEphemeral(interaction);
 
     const templateId = interaction.values[0];
     const template = await getTemplate(templateId);
@@ -155,7 +160,13 @@ export async function handleSelect(interaction, client) {
   }
 
   const selectionValue = normalizeOptionalField(interaction.values[0]);
-  const update = buildSelectionUpdate(interaction.customId, selectionValue, await getTemplate(interaction.customId.split(":")[2]));
+  await deferEphemeral(interaction);
+
+  const update = buildSelectionUpdate(
+    interaction.customId,
+    selectionValue,
+    await getTemplate(interaction.customId.split(":")[2])
+  );
 
   if (!update) {
     return;
