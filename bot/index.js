@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits } from "discord.js";
 
 import { handleModal } from "./interactions/modalHandler.js";
 import { handleButton } from "./interactions/buttonHandler.js";
@@ -26,6 +26,16 @@ const client = new Client({
 });
 
 client.once("clientReady", () => {
+  client.user?.setPresence({
+    status: "online",
+    activities: [
+      {
+        name: "light-hotspots.talaani.de",
+        type: ActivityType.Watching
+      }
+    ]
+  });
+
   console.log(`Bot online: ${client.user.tag}`);
 });
 
@@ -85,6 +95,10 @@ async function runCalendarFeedCheck() {
 
 client.on("interactionCreate", async (interaction) => {
   try {
+    if (!interaction.inGuild()) {
+      return;
+    }
+
     if (interaction.isChatInputCommand()) {
       if (interaction.commandName === "setup-events") {
         return await setupEvents(interaction);

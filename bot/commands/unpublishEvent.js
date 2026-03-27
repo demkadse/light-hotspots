@@ -11,6 +11,7 @@ import { getPublishedTemplates } from "../services/templateService.js";
 
 export const data = new SlashCommandBuilder()
   .setName("unpublish-event")
+  .setDMPermission(false)
   .setDescription("Wählt ein veröffentlichtes Event zum Zurücknehmen aus");
 
 export async function execute(interaction) {

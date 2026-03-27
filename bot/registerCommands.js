@@ -8,9 +8,11 @@ validateConfig();
 const commands = [
   new SlashCommandBuilder()
     .setName("setup-events")
+    .setDMPermission(false)
     .setDescription("Erstellt das Event Panel"),
   new SlashCommandBuilder()
     .setName("setup-cleanup")
+    .setDMPermission(false)
     .setDescription("Erstellt das Cleanup Panel")
     .addChannelOption(option =>
       option
@@ -21,6 +23,7 @@ const commands = [
     ),
   new SlashCommandBuilder()
     .setName("resync-events")
+    .setDMPermission(false)
     .setDescription("Prüft oder repariert events/data/index.json")
     .addBooleanOption(option =>
       option
@@ -30,18 +33,18 @@ const commands = [
     ),
   new SlashCommandBuilder()
     .setName("unpublish-event")
+    .setDMPermission(false)
     .setDescription("Wählt ein veröffentlichtes Event zum Zurücknehmen aus"),
   new SlashCommandBuilder()
     .setName("force-calendar-feed")
+    .setDMPermission(false)
     .setDescription("Postet die Wochenvorschau sofort in den Kalenderfeed")
 ];
 
 const rest = new REST({ version: "10" }).setToken(CONFIG.DISCORD_TOKEN);
 
 async function register() {
-
   try {
-
     console.log("Registriere Guild Commands...");
 
     const result = await rest.put(
@@ -50,13 +53,9 @@ async function register() {
     );
 
     console.log("RESULT:", result);
-
   } catch (error) {
-
     console.error("FEHLER:", error);
-
   }
-
 }
 
 register();

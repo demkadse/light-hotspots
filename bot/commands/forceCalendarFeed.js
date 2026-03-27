@@ -8,7 +8,8 @@ import { forcePostWeeklyCalendarFeed } from "../services/calendarFeedService.js"
 
 export const data = new SlashCommandBuilder()
   .setName("force-calendar-feed")
-  .setDescription("Postet die Wochenvorschau sofort in den Kalenderfeed");
+  .setDescription("Postet die Wochenvorschau sofort in den Kalenderfeed")
+  .setDMPermission(false);
 
 export async function execute(interaction) {
   assertAdminUser(interaction);

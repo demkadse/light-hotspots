@@ -13,6 +13,7 @@ import { upsertPanelMessage } from "../services/panelService.js";
 
 export const data = new SlashCommandBuilder()
   .setName("setup-cleanup")
+  .setDMPermission(false)
   .setDescription("Erstellt das Cleanup-Panel für Bot-Nachrichten")
   .addChannelOption(option =>
     option
