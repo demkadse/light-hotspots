@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Handbuch | Light Hotspots</title>
 <meta name="description" content="Benutzerhandbuch fuer den Light Hotspots Kalender und den Event-Bot auf Discord.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="handbook-page">
@@ -114,7 +111,7 @@ und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
 <h3>Events und Venues</h3>
 <p>Die Anzeige kann auf klassische Events, auf Venues oder auf beides gleichzeitig begrenzt werden.</p>
 <div class="handbook-note">
-<p>Der Kalender merkt sich den zuletzt genutzten Zustand, darunter Filter, Kategorien und aktiven Tag.</p>
+<p>Der Kalender merkt sich lokal den zuletzt genutzten Zustand, darunter Filter, Kategorien und den aktiven Tag.</p>
 </div>
 </section>
 
@@ -127,10 +124,8 @@ und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
 <li>Titel des Events</li>
 <li>Kategorie und Typ</li>
 <li>Uhrzeit</li>
-<li>Ort und Server</li>
-<li>Projektleitung</li>
-<li>Kurzbeschreibung</li>
-<li>Hinweis auf vorhandene Links</li>
+<li>Ort</li>
+<li>eine aufklappbare Erweiterung fuer weitere Informationen</li>
 </ul>
 <p>Wird kein Banner angegeben, verwendet die Seite automatisch das Platzhalterbild, damit jede Karte vollstaendig aussieht.</p>
 <p>Abgesagte Events bleiben sichtbar, werden aber klar als abgesagt markiert.</p>
@@ -176,9 +171,10 @@ und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
 <section id="discord-start" class="handbook-section">
 <span class="panel-label">7. Discord-Bot</span>
 <h2>So beginnt der Event-Prozess auf Discord</h2>
-<p>Im Discord-Server gibt es ein Event-Panel mit einer Start-Schaltflaeche. Nach dem Klick darauf sehen Nutzer normalerweise drei Wege:</p>
+<p>Im Discord-Server gibt es ein Event-Panel mit einer Start-Schaltflaeche. Nach dem Klick darauf sehen Nutzer die moeglichen Wege fuer ihre eigenen Eintraege:</p>
 <ul>
-<li><code>Neues Event erstellen</code></li>
+<li><code>Event erstellen</code></li>
+<li><code>Venue erstellen</code></li>
 <li><code>Bestehendes Event bearbeiten</code></li>
 <li><code>Veroeffentlichtes Event absagen</code></li>
 </ul>
@@ -194,16 +190,16 @@ und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
 <span class="handbook-step-number">1</span>
 <div>
 <h3>Basisdaten</h3>
-<p>Pflichtfelder sind Titel, Ort, Datum, Uhrzeit und Beschreibung.</p>
-<p>Formatregeln: Datum im Format <code>TT.MM.JJJJ</code>, Uhrzeit im Format <code>HH:MM</code>.</p>
+<p>Pflichtfelder sind Titel, Datum, Startzeit und Beschreibung.</p>
+<p>Formatregeln: Datum im Format <code>TT.MM.JJJJ</code>, Startzeit im Format <code>HH:MM</code>.</p>
 </div>
 </div>
 <div class="handbook-step">
 <span class="handbook-step-number">2</span>
 <div>
 <h3>Auswahlmenues</h3>
-<p>Danach werden Kategorie, Typ, Server und Wiederholung ueber klare Dropdown-Menues ausgewaehlt. Dadurch muss so wenig wie moeglich frei eingetippt werden.</p>
-<p>Ob ein Eintrag als <code>Event</code> oder <code>Venue</code> gefuehrt wird, entscheidet der Nutzer dabei selbst aktiv.</p>
+<p>Danach werden Wohngebiet, Hausnummer, Typ, Server und Wiederholung ueber klare Dropdown-Menues ausgewaehlt. Dadurch muss so wenig wie moeglich frei eingetippt werden.</p>
+<p>Ob ein Eintrag als <code>Event</code> oder <code>Venue</code> gefuehrt wird, entscheidet der Nutzer bereits beim Einstieg selbst aktiv.</p>
 </div>
 </div>
 <div class="handbook-step">
@@ -218,6 +214,9 @@ und alle wichtigen Informationen zu einer Veranstaltung an einem Ort zu sehen.
 <div class="handbook-callout">
 <strong>Vorschau nach jedem Schritt</strong>
 <p>Nach jedem Schritt zeigt der Bot eine Vorschau des aktuellen Events. So lassen sich Eingaben kontrollieren und bei Bedarf noch vor dem Absenden korrigieren.</p>
+</div>
+<div class="handbook-note">
+<p>Eigene Events werden erst nach einer Freigabe oeffentlich sichtbar. Entwuerfe und laufende Bearbeitungen bleiben Teil des Bot-Prozesses.</p>
 </div>
 </section>
 

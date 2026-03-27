@@ -4,7 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { CHANNELS } from "../config/channels.js";
-import { syncRepoFiles } from "./gitSyncService.js";
 import { sanitizeAuditEntriesForStorage } from "./identityService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,10 +48,6 @@ export async function recordAuditEntry(client, entry) {
   const entries = await readAuditLog();
   entries.push(auditEntry);
   await writeAuditLog(entries);
-  await syncRepoFiles(
-    [AUDIT_LOG_PATH],
-    `Audit log ${auditEntry.action}`
-  );
 
   try {
     const channel = await client.channels.fetch(CHANNELS.EVENT_LOG);

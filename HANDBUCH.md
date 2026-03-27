@@ -100,9 +100,9 @@ Ueber den Typ-Filter koennen Nutzer gezielt nach Eventarten filtern. Je nach ein
 
 Zusatzlich gibt es kleine Schnellfilter-Chips fuer haeufige Typen.
 
-### 4.4 Venue-Filter
+### 4.4 Ortsfilter
 
-Ueber den Venue-Filter kann die Anzeige auf einen bestimmten Ort beschraenkt werden.
+Ueber den Ortsfilter kann die Anzeige auf einen bestimmten Ort beschraenkt werden.
 
 ### 4.5 Kategorien: Events und Venues
 
@@ -150,18 +150,16 @@ Ein Tag kann eine oder mehrere Event-Karten enthalten. Diese Karten sind die kom
 
 ### 6.1 Was auf einer Event-Karte steht
 
-Eine Karte kann unter anderem enthalten:
+Die kompakte Karte zeigt bewusst nur die wichtigsten Angaben:
 
 - Bannerbild oder Platzhalterbild
 - Titel des Events
 - Kategorie
 - Typ
 - Uhrzeit
-- Venue
-- Server
-- Projektleitung
-- kurze Beschreibung
-- Hinweise darauf, ob ein Discord-Link oder externer Link vorhanden ist
+- Ort
+
+Je nach Karte kann zusaetzlich ein kleiner Aufklappbereich verfuegbar sein, ueber den weitere Informationen sichtbar werden.
 
 ### 6.2 Banner und Platzhalter
 
@@ -229,7 +227,7 @@ Ein zusaetzlicher Infodialog erklaert den Unterschied zwischen klassischen Event
 
 ### 8.4 Datenschutzerklaerung
 
-Die Website bietet ausserdem eine eigene Datenschutzerklaerung sowie einen Erstbesuch-Hinweis, der erklaert, welche Daten gespeichert werden und warum aktuell keine klassische Cookie-Abfrage verwendet wird.
+Die Website bietet ausserdem eine eigene Datenschutzerklaerung sowie einen Erstbesuch-Hinweis zum Datenschutz.
 
 ## 9. Mobile Nutzung
 
@@ -252,11 +250,12 @@ Nutzer sehen auf dem Discord-Server ein Event-System mit einer Start-Schaltflaec
 
 Im Discord-Server gibt es ein Event-Panel mit einer Start-Schaltflaeche.
 
-Nach dem Klick auf `Start` stehen fuer normale Nutzer typischerweise drei Wege offen:
+Nach dem Klick auf `Start` stehen fuer normale Nutzer typischerweise diese Wege offen:
 
-- `Neues Event erstellen`
+- `Event erstellen`
+- `Venue erstellen`
 - `Bestehendes Event bearbeiten`
-- `Veröffentlichtes Event absagen`
+- `Veroeffentlichtes Event absagen`
 
 Damit deckt der Bot den kompletten normalen Nutzerprozess ab.
 
@@ -269,15 +268,14 @@ Die Event-Erstellung ist als klarer 3-Schritte-Ablauf aufgebaut.
 Im ersten Formular werden die Pflichtangaben abgefragt:
 
 - Titel
-- Ort
 - Datum
-- Uhrzeit
+- Startzeit
 - Beschreibung
 
 #### Wichtige Formatregeln
 
 - Das Datum muss im Format `TT.MM.JJJJ` eingegeben werden.
-- Die Uhrzeit muss im Format `HH:MM` eingegeben werden.
+- Die Startzeit muss im Format `HH:MM` eingegeben werden.
 
 Ohne diese Angaben kann das Event nicht gespeichert werden.
 
@@ -287,15 +285,16 @@ Nach den Basisdaten fuehrt der Bot durch klare Dropdown-Menues. Dort werden die 
 
 Moegliche Angaben:
 
-- Kategorie `Event` oder `Venue`
+- Wohngebiet
+- Hausnummer
 - Typ passend zur Kategorie
 - Server
 - Wiederholung
 
 Wichtig:
 
-- Die Einordnung als `Event` oder `Venue` wird aktiv vom Nutzer ausgewaehlt.
-- `Kategorie`, `Typ` und `Server` muessen vor der Einreichung gesetzt sein.
+- Die Einordnung als `Event` oder `Venue` wird bereits vor dem ersten Formular aktiv vom Nutzer ausgewaehlt.
+- `Ort`, `Typ` und `Server` muessen vor der Einreichung gesetzt sein.
 
 ### 12.3 Schritt 3 von 3: Zusatzangaben
 
@@ -336,7 +335,7 @@ Ab diesem Punkt:
 - wird es intern zur Freigabe weitergegeben
 - erhaelt der Nutzer eine Rueckmeldung, dass die Einreichung eingegangen ist
 
-Falls der Server noch fehlt, verweigert der Bot die Einreichung mit einem Hinweis, dass dieser zuerst nachgetragen werden muss.
+Falls Ort, Typ oder Server noch fehlen, verweigert der Bot die Einreichung mit einem klaren Hinweis, was zuerst noch ausgewaehlt werden muss.
 
 ## 13. Was nach dem Einreichen passiert
 

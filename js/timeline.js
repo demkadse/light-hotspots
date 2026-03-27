@@ -1,5 +1,4 @@
 const STORAGE_KEY = "light-hotspots.timeline-state";
-const FEATURED_PRIORITY_TITLES = ["futomaki", "noxis"];
 
 const state = {
   slideIndex: 0,
@@ -118,11 +117,11 @@ function getDayMarker(day) {
 
 function getDaySubtitle(eventsForDay) {
   if (eventsForDay.length === 1) {
-    return "Ein sichtbares Event für diesen Tag.";
+    return "Ein sichtbares Event fuer diesen Tag.";
   }
 
   if (eventsForDay.length > 1) {
-    return `${eventsForDay.length} sichtbare Events für diesen Tag.`;
+    return `${eventsForDay.length} sichtbare Events fuer diesen Tag.`;
   }
 
   return "";
@@ -130,7 +129,7 @@ function getDaySubtitle(eventsForDay) {
 
 function getMonthTransitionLabel(day, index, days) {
   if (index === 0) {
-    return `Monatsübersicht für ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
+    return `Monatsuebersicht fuer ${day.toLocaleDateString("de-DE", { month: "long", year: "numeric" })}`;
   }
 
   const previousDay = days[index - 1];
@@ -161,12 +160,6 @@ function compareEvents(a, b) {
   return timeA.localeCompare(timeB) || (a.title || "").localeCompare(b.title || "");
 }
 
-function getFeaturedPriority(event) {
-  const title = (event.title || "").trim().toLowerCase();
-  const priorityIndex = FEATURED_PRIORITY_TITLES.indexOf(title);
-  return priorityIndex >= 0 ? priorityIndex : Number.POSITIVE_INFINITY;
-}
-
 function getCurrentWeekRange() {
   const today = startOfDay(new Date());
   const day = today.getDay();
@@ -194,11 +187,6 @@ function isEventInCurrentWeekUpcoming(event) {
 }
 
 function compareFeaturedEvents(a, b) {
-  const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
-  if (priorityDiff !== 0) {
-    return priorityDiff;
-  }
-
   const dateDiff = normalizeDateKey(a.date).localeCompare(normalizeDateKey(b.date));
   if (dateDiff !== 0) {
     return dateDiff;
@@ -310,7 +298,7 @@ function restoreState() {
     const storedRaw = localStorage.getItem(STORAGE_KEY);
     stored = storedRaw ? JSON.parse(storedRaw) : null;
   } catch (error) {
-    console.warn("Gespeicherter Timeline-State ist ungültig und wird verworfen.", error);
+    console.warn("Gespeicherter Timeline-State ist ungueltig und wird verworfen.", error);
 
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -372,7 +360,7 @@ function renderTimelineDots(dayCounts) {
   });
 }
 
-function updateFeaturedEvent(activeDayEvents) {
+function updateFeaturedEvent() {
   const title = document.getElementById("featured-event-title");
   const copy = document.getElementById("featured-event-copy");
   const button = document.getElementById("featured-event-open");
@@ -385,7 +373,7 @@ function updateFeaturedEvent(activeDayEvents) {
   if (!featured) {
     title.textContent = "";
     title.hidden = true;
-    copy.textContent = "Für den Rest dieser Woche steht aktuell kein Event im Fokus.";
+    copy.textContent = "Fuer den Rest dieser Woche steht aktuell kein Event im Fokus.";
     button.hidden = true;
     return;
   }
@@ -417,7 +405,7 @@ function updateActiveDayMeta() {
   });
   document.getElementById("active-day-subtitle").textContent = getDaySubtitle(eventsForDay);
   document.getElementById("slide-position").textContent = `${state.slideIndex + 1} / ${renderedDays.length}`;
-  updateFeaturedEvent(eventsForDay);
+  updateFeaturedEvent();
 }
 
 function syncDesktopSlideHeights() {

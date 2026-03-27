@@ -360,10 +360,6 @@ export async function processPendingReminders({
   }
 
   await writeTemplates(templates);
-  await syncRepoFiles(
-    [TEMPLATE_PATH],
-    `Update pending reminders ${new Date(now).toISOString()}`
-  );
 
   return reminded;
 }
@@ -467,10 +463,6 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
     await writeTemplates(templates);
     await rememberTemplateOwner(templates[index].id, userId);
-    await syncRepoFiles(
-      [TEMPLATE_PATH],
-      `Update event template ${templates[index].id}`
-    );
     return templates[index];
   }
 
@@ -487,10 +479,6 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   templates.push(newTemplate);
   await writeTemplates(templates);
   await rememberTemplateOwner(newTemplate.id, userId);
-  await syncRepoFiles(
-    [TEMPLATE_PATH],
-    `Create event template ${newTemplate.id}`
-  );
 
   return newTemplate;
 }
@@ -557,10 +545,6 @@ export async function submitTemplateForApproval(templateId) {
   };
 
   await writeTemplates(templates);
-  await syncRepoFiles(
-    [TEMPLATE_PATH],
-    `Submit event template ${templates[index].id}`
-  );
   return templates[index];
 }
 
@@ -580,10 +564,6 @@ export async function rejectTemplate(templateId, reason) {
   };
 
   await writeTemplates(templates);
-  await syncRepoFiles(
-    [TEMPLATE_PATH],
-    `Reject event template ${templates[index].id}`
-  );
   return templates[index];
 }
 
@@ -643,7 +623,6 @@ export async function approveTemplate(templateId) {
       links: [template.discord_link, template.link].filter(Boolean),
       notes: template.notes || null,
       status: "scheduled",
-      created_by_hash: template.created_by_hash || null,
       created_at: new Date().toISOString(),
       file
     };
@@ -679,7 +658,7 @@ export async function approveTemplate(templateId) {
 
   await writeTemplates(templates);
   await syncRepoFiles(
-    [TEMPLATE_PATH, indexPath, ...syncedPaths],
+    [indexPath, ...syncedPaths],
     `Publish event ${publishedFiles[0]}`
   );
 
@@ -728,7 +707,7 @@ export async function unpublishTemplate(templateId) {
 
   await writeTemplates(templates);
   await syncRepoFiles(
-    [TEMPLATE_PATH, indexPath, ...changedPaths],
+    [indexPath, ...changedPaths],
     `Unpublish event ${publishedFiles[0]}`
   );
 
@@ -775,7 +754,7 @@ export async function cancelPublishedTemplate(templateId) {
 
   await writeTemplates(templates);
   await syncRepoFiles(
-    [TEMPLATE_PATH, ...changedPaths],
+    [...changedPaths],
     `Cancel event ${publishedFiles[0]}`
   );
 

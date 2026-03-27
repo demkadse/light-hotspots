@@ -9,9 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const ALLOWED_FILE_PATTERNS = [
-  /^bot\/data\/templates\.json$/,
-  /^bot\/data\/audit-log\.json$/,
-  /^bot\/data\/events\.json$/,
   /^feeds\/weekly-summary\.xml$/,
   /^feeds\/weekly-summary\.json$/,
   /^events\/data\/index\.json$/,

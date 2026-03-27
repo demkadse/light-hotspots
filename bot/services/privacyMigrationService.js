@@ -118,12 +118,12 @@ export async function migratePublishedEventsPrivacyData() {
       }
 
       const event = await readJson(fullPath, null);
-      if (!event?.created_by || event.created_by_hash) {
+      if (!event || (!event.created_by && !event.created_by_hash)) {
         continue;
       }
 
-      event.created_by_hash = buildOwnerHash(event.created_by);
       delete event.created_by;
+      delete event.created_by_hash;
       await writeJson(fullPath, event);
       changedFiles.push(fullPath);
     }
@@ -146,6 +146,7 @@ export async function migrateAllPrivacyData() {
 
 export async function migrateAllPrivacyDataAndSync() {
   const changedFiles = await migrateAllPrivacyData();
+  const syncableFiles = changedFiles.filter(filePath => filePath.startsWith(EVENTS_BASE_PATH));
 
   if (changedFiles.length === 0) {
     return {
@@ -155,10 +156,12 @@ export async function migrateAllPrivacyDataAndSync() {
     };
   }
 
-  const syncResult = await syncRepoFiles(
-    changedFiles,
-    "Migrate privacy-sensitive user identifiers"
-  );
+  const syncResult = syncableFiles.length > 0
+    ? await syncRepoFiles(
+        syncableFiles,
+        "Remove public user identifiers from published events"
+      )
+    : null;
 
   return {
     changed: true,
