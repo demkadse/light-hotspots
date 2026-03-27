@@ -163,7 +163,32 @@ export async function handleButton(interaction, client) {
     }
 
     if (id === "event:new") {
-      await interaction.showModal(buildBasicsModal());
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("event:new:event")
+          .setLabel("Als Event erstellen")
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("event:new:venue")
+          .setLabel("Als Venue erstellen")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await replyAndExpire(interaction, {
+        content: "Was moechtest du anlegen?",
+        components: [row],
+        ephemeral: true
+      }, 120000);
+      return;
+    }
+
+    if (id === "event:new:event") {
+      await interaction.showModal(buildBasicsModal(null, "event_modal_basics_create_event"));
+      return;
+    }
+
+    if (id === "event:new:venue") {
+      await interaction.showModal(buildBasicsModal(null, "event_modal_basics_create_venue"));
       return;
     }
 

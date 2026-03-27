@@ -17,7 +17,11 @@ import {
 } from "../services/eventWizardUiService.js";
 
 function getTemplateIdFromModal(customId) {
-  if (customId === "event_modal_basics_create") {
+  if (
+    customId === "event_modal_basics_create" ||
+    customId === "event_modal_basics_create_event" ||
+    customId === "event_modal_basics_create_venue"
+  ) {
     return null;
   }
 
@@ -27,6 +31,18 @@ function getTemplateIdFromModal(customId) {
 
   if (customId.startsWith("event_modal_extras_")) {
     return customId.replace("event_modal_extras_", "");
+  }
+
+  return null;
+}
+
+function getInitialCategoryFromModal(customId) {
+  if (customId === "event_modal_basics_create_event") {
+    return "event";
+  }
+
+  if (customId === "event_modal_basics_create_venue") {
+    return "venue";
   }
 
   return null;
@@ -60,6 +76,7 @@ export async function handleModal(interaction, client) {
       date: interaction.fields.getTextInputValue("date").trim(),
       time: interaction.fields.getTextInputValue("time").trim(),
       description: interaction.fields.getTextInputValue("description").trim(),
+      category: getInitialCategoryFromModal(interaction.customId),
       status: "draft"
     };
 

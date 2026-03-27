@@ -212,25 +212,7 @@ function buildCard(event) {
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Venue", event.venue || "Ort offen");
-  appendMetaItem(meta, "Server", event.server);
-  if (getProjectLead(event)) {
-    appendMetaItem(meta, "Projektleitung", getProjectLead(event));
-  }
-
-  const description = document.createElement("p");
-  description.className = "event-summary";
-  description.textContent = isCancelled(event)
-    ? `Dieses Event wurde abgesagt.${event.description ? ` ${event.description}` : ""}`
-    : (event.description || "Keine Beschreibung vorhanden.");
-
-  info.append(headerRow, meta, description);
-
-  if (event.discord_link || event.link) {
-    const linkHint = document.createElement("span");
-    linkHint.className = "event-link-hint";
-    linkHint.textContent = event.discord_link ? "Mit Discord-Server" : "Mit externem Link";
-    info.appendChild(linkHint);
-  }
+  info.append(headerRow, meta);
 
   card.append(media, titleBanner, info);
   card.addEventListener("click", () => openModal(event));
