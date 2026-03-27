@@ -140,9 +140,13 @@ export async function handleButton(interaction, client) {
     if (id === "event:start") {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId("event:new")
-          .setLabel("Neues Event erstellen")
+          .setCustomId("event:new:event")
+          .setLabel("Event erstellen")
           .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("event:new:venue")
+          .setLabel("Venue erstellen")
+          .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
           .setCustomId("event:edit")
           .setLabel("Bestehendes Event bearbeiten")
@@ -154,7 +158,7 @@ export async function handleButton(interaction, client) {
       );
 
       await replyAndExpire(interaction, {
-        content: "Starte ein neues Event oder oeffne ein bestehendes. Der Ablauf fuehrt dich erst durch die Basisdaten und danach durch klare Auswahlmenues.",
+        content: "Waehle direkt, ob du ein Event oder eine Venue anlegen, ein bestehendes Event bearbeiten oder ein veroeffentlichtes Event absagen moechtest.",
         components: [row],
         ephemeral: true
       }, 120000);

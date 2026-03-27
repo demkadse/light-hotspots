@@ -19,15 +19,15 @@ export async function execute(interaction) {
   assertActionCooldown(interaction.user.id, "setup-events", 10000);
   const targetChannel = interaction.channel;
 
-  const button = new ButtonBuilder()
-    .setCustomId("event:start")
-    .setLabel("Start")
-    .setStyle(ButtonStyle.Primary);
-
-  const row = new ActionRowBuilder().addComponents(button);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("event:start")
+      .setLabel("Event-Flow oeffnen")
+      .setStyle(ButtonStyle.Primary)
+  );
 
   await upsertPanelMessage(targetChannel, interaction.client.user.id, ["event:start", "event:create"], {
-    content: "**Event-System**\nStarte hier den Event-Flow.",
+    content: "**Event-System**\nOeffne hier den Event-Flow fuer Erstellung, Bearbeitung oder Absage.",
     components: [row]
   });
 
