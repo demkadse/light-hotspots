@@ -5,30 +5,15 @@
   "feed_url": "https://light-hotspots.talaani.de/feeds/weekly-summary.json",
   "description": "Regelmaessig aktualisierte Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.",
   "language": "de-DE",
-  "generated_at": "2026-03-27T20:10:54.645Z",
+  "generated_at": "2026-03-27T23:10:26.002Z",
   "weekly_window": {
-    "start_date": "2026-03-27",
-    "end_date": "2026-04-02"
+    "start_date": "2026-03-28",
+    "end_date": "2026-04-03"
   },
   "summary": {
-    "title": "Wochenvorschau 27.03. bis 02.04.: 1 Event an 1 Tag",
-    "intro": "Das ist die ruhige Wochenuebersicht fuer die kommenden sieben Tage im Light Hotspots Kalender.",
-    "sections": [
-      "Freitag, 27.03.:\n- 20:00 Uhr | Meerjungfrau | in The Goblet | Bezirk 21 | Haus 35 | Server: Twintania | Projektleitung: Nyee Fuyu"
-    ]
+    "title": "Wochenvorschau 28.03. bis 03.04.: keine geplanten Events",
+    "intro": "Fuer den Zeitraum 28.03. bis 03.04. sind aktuell keine Events im Kalender eingetragen.",
+    "sections": []
   },
-  "items": [
-    {
-      "id": "2026-03-27:meerjungfrau",
-      "url": "https://light-hotspots.talaani.de/?event=meerjungfrau",
-      "title": "Meerjungfrau",
-      "image": "https://cdn.discordapp.com/attachments/1100546332495728803/1486826957919224033/Logo1.0.png?ex=69c793c2&is=69c64242&hm=ed8bd3526cd8b04d2e21a8d9d55be7c14607b5f60d3add6ebf74d80ac6c63c7d&",
-      "content_text": "Freitag, 27.03.\nStart: 20:00 Uhr\nOrt: The Goblet | Bezirk 21 | Haus 35\nServer: Twintania\nProjektleitung: Nyee Fuyu\nHinweise: Warnungen: Alkohol, Nacktheit\nDie Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.",
-      "date_published": "2026-03-27T20:10:54.645Z",
-      "tags": [
-        "Badehaus",
-        "The Goblet | Bezirk 21 | Haus 35"
-      ]
-    }
-  ]
+  "items": []
 }
