@@ -840,6 +840,10 @@ padding-bottom: 4px;
 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.event-meta-item-expanded {
+display: none;
+}
+
 .event-meta-label {
 font-size: 0.64rem;
 letter-spacing: 0.12em;
@@ -858,21 +862,67 @@ overflow: hidden;
 }
 
 .event-summary {
+display: none;
 color: rgba(245, 241, 232, 0.78);
 line-height: 1.45;
-display: -webkit-box;
--webkit-line-clamp: 2;
--webkit-box-orient: vertical;
-overflow: hidden;
-font-size: 0.96rem;
+font-size: 0.92rem;
 }
 
 .event-link-hint {
-display: inline-flex;
+display: none;
 width: fit-content;
 font-size: 0.76rem;
 letter-spacing: 0.05em;
 color: #ffe4be;
+}
+
+@media (min-width: 1360px) and (min-height: 820px) {
+.event-card {
+width: clamp(340px, 26vw, 410px);
+min-width: clamp(340px, 26vw, 410px);
+}
+
+.event-media {
+min-height: 122px;
+max-height: 156px;
+}
+
+.event-title-banner {
+min-height: 56px;
+padding: 12px 18px;
+}
+
+.event-title-banner h3 {
+font-size: 1.1rem;
+}
+
+.event-info {
+gap: 10px;
+padding: 12px 16px 16px;
+}
+
+.event-meta {
+gap: 6px;
+}
+
+.event-meta-item {
+padding-bottom: 6px;
+}
+
+.event-meta-item-expanded {
+display: flex;
+}
+
+.event-summary {
+display: -webkit-box;
+-webkit-line-clamp: 3;
+-webkit-box-orient: vertical;
+overflow: hidden;
+}
+
+.event-link-hint {
+display: inline-flex;
+}
 }
 
 .carousel-hint {

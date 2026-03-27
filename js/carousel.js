@@ -25,11 +25,14 @@ function formatTimeRange(event) {
   return start || "Zeit offen";
 }
 
-function appendMetaItem(parent, label, value) {
+function appendMetaItem(parent, label, value, className = "") {
   if (!value) return;
 
   const item = document.createElement("div");
   item.className = "event-meta-item";
+  if (className) {
+    item.classList.add(className);
+  }
 
   const labelNode = document.createElement("span");
   labelNode.className = "event-meta-label";
@@ -41,6 +44,18 @@ function appendMetaItem(parent, label, value) {
 
   item.append(labelNode, valueNode);
   parent.appendChild(item);
+}
+
+function getSupportingLinkLabel(event) {
+  if (event.discord_link) {
+    return "Discord-Infos verfuegbar";
+  }
+
+  if (event.link || (Array.isArray(event.links) && event.links.length > 0)) {
+    return "Weitere Infos verfuegbar";
+  }
+
+  return "";
 }
 
 function scrollCarousel(track, direction) {
@@ -212,7 +227,22 @@ function buildCard(event) {
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Ort", event.venue || "Ort offen");
-  info.append(headerRow, meta);
+  appendMetaItem(meta, "Server", event.server, "event-meta-item-expanded");
+  appendMetaItem(meta, "Projektleitung", getProjectLead(event), "event-meta-item-expanded");
+
+  const summary = document.createElement("p");
+  summary.className = "event-summary";
+  summary.textContent = event.description || "Keine Beschreibung vorhanden.";
+
+  const linkHint = document.createElement("span");
+  linkHint.className = "event-link-hint";
+  linkHint.textContent = getSupportingLinkLabel(event);
+
+  if (!linkHint.textContent) {
+    linkHint.hidden = true;
+  }
+
+  info.append(headerRow, meta, summary, linkHint);
 
   card.append(media, titleBanner, info);
   card.addEventListener("click", () => openModal(event));
