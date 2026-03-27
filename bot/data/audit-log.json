@@ -507,5 +507,21 @@
     "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
     "summary": "Bot-Umzug",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "de2fb9de-6f35-452a-b181-21fd114d5a71",
+    "created_at": "2026-03-27T18:11:29.819Z",
+    "action": "template.opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "003e00b0-f921-4277-90d5-5429f2a6a578",
+    "created_at": "2026-03-27T18:11:32.259Z",
+    "action": "template.details_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
