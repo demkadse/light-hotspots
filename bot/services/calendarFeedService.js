@@ -19,6 +19,8 @@ const SITE_URL = "https://light-hotspots.talaani.de";
 const FEED_URL = `${SITE_URL}/feeds/weekly-summary.xml`;
 const PLACEHOLDER_IMAGE_URL = `${SITE_URL}/placeholder.png`;
 const TIME_ZONE = "Europe/Berlin";
+const FEED_UPDATE_HOURS = new Set([0, 3, 6, 9, 12, 15, 18, 21]);
+const FEED_DESCRIPTION = "Regelmaessig aktualisierte Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.";
 
 function formatDateInBerlin(date, options) {
   return new Intl.DateTimeFormat("de-DE", {
@@ -218,10 +220,10 @@ function createRssFeed({ generatedAt, summary, startDate }) {
   <channel>
     <title>Light Hotspots Wochenfeed</title>
     <link>${SITE_URL}/</link>
-    <description>Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.</description>
+    <description>${escapeXml(FEED_DESCRIPTION)}</description>
     <language>de-DE</language>
     <lastBuildDate>${pubDate}</lastBuildDate>
-    <ttl>1440</ttl>
+    <ttl>180</ttl>
     <item>
       <title>${escapeXml(summary.title)}</title>
       <link>${SITE_URL}/</link>
@@ -240,7 +242,7 @@ function createJsonFeed({ generatedAt, summary, groups, startDate, endDate }) {
     title: "Light Hotspots Wochenfeed",
     home_page_url: `${SITE_URL}/`,
     feed_url: `${SITE_URL}/feeds/weekly-summary.json`,
-    description: "Taegliche Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.",
+    description: FEED_DESCRIPTION,
     language: "de-DE",
     generated_at: generatedAt,
     weekly_window: {
@@ -491,7 +493,12 @@ function createDiscordMessages({ groups, startDate, endDate }) {
 }
 
 export function shouldRunCalendarFeedNow(date = new Date()) {
-  return getBerlinDateParts(date).hour === 4;
+  return FEED_UPDATE_HOURS.has(getBerlinDateParts(date).hour);
+}
+
+function getBerlinFeedSlotKey(date = new Date()) {
+  const { year, month, day, hour } = getBerlinDateParts(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}`;
 }
 
 export async function buildWeeklyCalendarDigest(referenceDate = new Date()) {
@@ -539,7 +546,7 @@ export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Da
 }
 
 async function readFeedState() {
-  return readJson(PRIVATE_STATE_PATH, { last_posted_on: null });
+  return readJson(PRIVATE_STATE_PATH, { last_posted_on: null, last_posted_slot: null });
 }
 
 async function writeFeedState(state) {
@@ -594,8 +601,9 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
   }
 
   const todayKey = getBerlinDateKey(referenceDate);
+  const currentSlotKey = getBerlinFeedSlotKey(referenceDate);
   const state = await readFeedState();
-  if (state.last_posted_on === todayKey) {
+  if (state.last_posted_slot === currentSlotKey) {
     return { posted: false, reason: "already_posted" };
   }
 
@@ -620,6 +628,7 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 
   await writeFeedState({
     last_posted_on: todayKey,
+    last_posted_slot: currentSlotKey,
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt
@@ -663,6 +672,7 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
 
   await writeFeedState({
     last_posted_on: getBerlinDateKey(referenceDate),
+    last_posted_slot: getBerlinFeedSlotKey(referenceDate),
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
