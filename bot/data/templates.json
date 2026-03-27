@@ -27,5 +27,19 @@
     "published_files": [
       "2026/03/meerjungfrau-2026-03-27-45742dc7.json"
     ]
+  },
+  {
+    "id": "f85e5d81-1854-407e-933d-9476adf91e59",
+    "title": "Funktions-Test",
+    "venue": "Test-Location",
+    "date": "27.03.2026",
+    "time": "20:00",
+    "description": "Dies ist ein Test",
+    "category": "event",
+    "status": "draft",
+    "event_type": null,
+    "recurrence_rule": null,
+    "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e",
+    "created_at": "2026-03-27T08:58:45.125Z"
   }
 ]
