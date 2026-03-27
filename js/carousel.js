@@ -63,8 +63,8 @@ function setCardExpandedState(card, toggle, expanded) {
   toggle.setAttribute("aria-expanded", String(expanded));
   toggle.setAttribute("aria-label", expanded ? "Karte einklappen" : "Karte aufklappen");
   toggle.innerHTML = expanded
-    ? "<span aria-hidden=\"true\">&#9650;</span>"
-    : "<span aria-hidden=\"true\">&#9660;</span>";
+    ? "<span aria-hidden=\"true\">&#65124;</span>"
+    : "<span aria-hidden=\"true\">&#65125;</span>";
 }
 
 function scrollCarousel(track, direction) {
@@ -238,12 +238,15 @@ function buildCard(event) {
   expandToggle.className = "event-card-expand-toggle";
   expandToggle.setAttribute("title", "Weitere Infos anzeigen");
 
+  const expandedContent = document.createElement("div");
+  expandedContent.className = "event-card-expanded-content";
+
+  const compactFooter = document.createElement("div");
+  compactFooter.className = "event-card-compact-footer";
+
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Ort", event.venue || "Ort offen");
-
-  const expandedContent = document.createElement("div");
-  expandedContent.className = "event-card-expanded-content";
 
   const expandedMeta = document.createElement("div");
   expandedMeta.className = "event-meta event-meta-expanded";
@@ -262,8 +265,9 @@ function buildCard(event) {
     linkHint.hidden = true;
   }
 
+  compactFooter.append(meta, expandToggle);
   expandedContent.append(expandedMeta, summary, linkHint);
-  info.append(headerRow, meta, expandToggle, expandedContent);
+  info.append(headerRow, compactFooter, expandedContent);
 
   card.append(media, titleBanner, info);
   card.addEventListener("click", () => openModal(event));
