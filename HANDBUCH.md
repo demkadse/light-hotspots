@@ -225,9 +225,9 @@ Hier wird offengelegt, dass fuer die technische Umsetzung KI-Unterstuetzung verw
 
 Ein zusaetzlicher Infodialog erklaert den Unterschied zwischen klassischen Events und Venues, damit Nutzer die Kategorisierung besser verstehen.
 
-### 8.4 Datenschutzerklaerung
+### 8.4 Datenschutzerklaerung und Impressum
 
-Die Website bietet ausserdem eine eigene Datenschutzerklaerung sowie einen Erstbesuch-Hinweis zum Datenschutz.
+Die Website bietet ausserdem eine eigene Datenschutzerklaerung, einen Erstbesuch-Hinweis zum Datenschutz sowie ein Impressum mit aktueller Kontaktstelle fuer rechtliche Rueckfragen.
 
 ## 9. Mobile Nutzung
 
