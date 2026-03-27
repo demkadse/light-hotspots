@@ -403,5 +403,77 @@
     "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
     "summary": "Meerjungfrau",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "24472544-ad37-4a90-a9b5-fc8cb02a577f",
+    "created_at": "2026-03-27T15:10:41.702Z",
+    "action": "template.created",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "c2e9e0f0-dbe0-4d30-9b24-3395fe464246",
+    "created_at": "2026-03-27T15:10:46.103Z",
+    "action": "template.selection_updated",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "b8b40ffe-e47a-4e38-bc0c-d9f055be7203",
+    "created_at": "2026-03-27T15:10:49.307Z",
+    "action": "template.selection_updated",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "65293b92-d400-4d49-993f-70da8ebf3d8d",
+    "created_at": "2026-03-27T15:10:56.574Z",
+    "action": "template.selection_updated",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "6ddf3638-1121-466e-be74-ba8a09e25b48",
+    "created_at": "2026-03-27T15:11:05.562Z",
+    "action": "template.details_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "3fd7d897-8f04-4bfa-8082-0fcbac37edcb",
+    "created_at": "2026-03-27T15:11:09.285Z",
+    "action": "template.selection_updated",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "5518a883-cd7e-4cf1-b565-e67d958f9909",
+    "created_at": "2026-03-27T15:11:12.724Z",
+    "action": "template.selection_updated",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "0e572f73-3ee3-4058-9638-caffcf332b8c",
+    "created_at": "2026-03-27T15:11:16.550Z",
+    "action": "template.submitted",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "07579882-a4ab-408e-b717-be3495e97441",
+    "created_at": "2026-03-27T15:11:29.003Z",
+    "action": "template.rejected",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug | Dingeldong",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
