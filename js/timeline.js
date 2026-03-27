@@ -503,7 +503,7 @@ function populateFilterOptions() {
   const uniqueVenues = [...new Set(state.allEvents.map(event => event.venue).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
   typeSelect.innerHTML = '<option value="">Alle Typen</option>';
-  venueSelect.innerHTML = '<option value="">Alle Venues</option>';
+  venueSelect.innerHTML = '<option value="">Alle Plots</option>';
 
   uniqueTypes.forEach(type => {
     const option = document.createElement("option");
