@@ -69,7 +69,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   }
 
   await replyAndExpire(interaction, {
-    content: message || buildWizardMessage(template),
+    content: message || buildWizardMessage(template, options),
     embeds: [buildPreviewEmbed(template, duplicates)],
     components: buildWizardComponents(template, options),
     ephemeral: true
@@ -279,6 +279,40 @@ export async function handleButton(interaction, client) {
       return;
     }
 
+    if (id.startsWith("event:viewAddress:")) {
+      const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewählte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(interaction, template, client, "template.address_view_opened", null, { mode: "address" });
+      return;
+    }
+
+    if (id.startsWith("event:viewDetails:")) {
+      const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewählte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(interaction, template, client, "template.details_view_opened", null, { mode: "details" });
+      return;
+    }
+
     if (id.startsWith("event:recurrenceCycle:")) {
       const templateId = id.split(":")[2];
       await deferEphemeral(interaction);
@@ -312,7 +346,8 @@ export async function handleButton(interaction, client) {
         "template.recurrence_updated",
         nextValue === "none"
           ? "Wiederholung gespeichert: Keine Wiederholung."
-          : `Wiederholung gespeichert: ${getRecurrenceLabel(nextValue)}.`
+          : `Wiederholung gespeichert: ${getRecurrenceLabel(nextValue)}.`,
+        { mode: "details" }
       );
       return;
     }
@@ -336,7 +371,31 @@ export async function handleButton(interaction, client) {
         client,
         "template.plot_page_opened",
         "Hausnummernbereich gewechselt. Du kannst jetzt den passenden Plot auswählen.",
-        { plotPage: Number(rawPage) || 0 }
+        { mode: "address", plotPage: Number(rawPage) || 0 }
+      );
+      return;
+    }
+
+    if (id.startsWith("event:wardPage:")) {
+      const [, , templateId, rawPage] = id.split(":");
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewählte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.ward_page_opened",
+        null,
+        { mode: "address", wardPage: Number(rawPage) || 0 }
       );
       return;
     }

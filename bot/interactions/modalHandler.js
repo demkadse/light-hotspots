@@ -103,7 +103,7 @@ export async function handleModal(interaction, client) {
       template,
       client,
       templateId ? "template.updated" : "template.created",
-      "Basisdaten gespeichert. Waehle jetzt Wohngebiet, Hausnummer, Typ und Server ueber die Menues darunter."
+      "Basisdaten gespeichert. Vervollständige jetzt im Schritt 2/3 die Adresse."
     );
     return;
   }

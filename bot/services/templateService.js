@@ -450,6 +450,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
     const nextData = applyDerivedCategory(data, templates[index]);
     const nextVenue = nextData.venue ?? buildVenueLabel(
       nextData.housing_district ?? templates[index].housing_district,
+      nextData.housing_ward ?? templates[index].housing_ward,
       nextData.housing_plot ?? templates[index].housing_plot
     );
 
@@ -469,7 +470,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const newTemplate = {
     id: crypto.randomUUID(),
     ...applyDerivedCategory(data),
-    venue: data.venue ?? buildVenueLabel(data.housing_district, data.housing_plot),
+    venue: data.venue ?? buildVenueLabel(data.housing_district, data.housing_ward, data.housing_plot),
     recurrence_rule: data.recurrence_rule ?? null,
     ...buildUserIdentityFields(userId),
     status: "draft",
@@ -530,7 +531,7 @@ export async function submitTemplateForApproval(templateId) {
   }
 
   if (!templates[index].venue?.trim()) {
-    throw new Error("Ort fehlt. Bitte waehle zuerst Wohngebiet und Hausnummer per Dropdown.");
+    throw new Error("Ort fehlt. Bitte wähle zuerst Wohngebiet, Bezirk und Hausnummer per Dropdown.");
   }
 
   if (!templates[index].server?.trim()) {
@@ -608,6 +609,7 @@ export async function approveTemplate(templateId) {
       type: template.event_type || template.type || "Event",
       venue: template.venue,
       housing_district: template.housing_district || null,
+      housing_ward: template.housing_ward || null,
       housing_plot: template.housing_plot || null,
       server: template.server || null,
       host: template.project_lead || template.venue_lead || template.host_display_name || template.host || null,

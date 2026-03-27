@@ -30,6 +30,10 @@ import {
 import { recordAuditEntry } from "../services/auditService.js";
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
+  return replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message);
+}
+
+async function replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message = null, options = {}) {
   const duplicates = await findPotentialDuplicates(template);
 
   await recordAuditEntry(client, {
@@ -40,34 +44,39 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   });
 
   await replyAndExpire(interaction, {
-    content: message || buildWizardMessage(template),
+    content: message || buildWizardMessage(template, options),
     embeds: [buildPreviewEmbed(template, duplicates)],
-    components: buildWizardComponents(template),
+    components: buildWizardComponents(template, options),
     ephemeral: true
   }, null);
 }
 
 function buildHousingUpdate(customId, value, template) {
   const existingDistrict = normalizeOptionalField(template?.housing_district) || parseVenueSelection(template?.venue).district;
+  const existingWard = normalizeOptionalField(template?.housing_ward) || parseVenueSelection(template?.venue).ward;
   const existingPlot = normalizeOptionalField(template?.housing_plot) || parseVenueSelection(template?.venue).plot;
 
   const district = customId.startsWith("event:district:") ? value : existingDistrict;
+  const ward = customId.startsWith("event:ward:") ? value : existingWard;
   const plot = customId.startsWith("event:house:") ? value : existingPlot;
 
   return {
     data: {
       housing_district: district,
+      housing_ward: ward,
       housing_plot: plot,
-      venue: buildVenueLabel(district, plot)
+      venue: buildVenueLabel(district, ward, plot)
     },
     message: customId.startsWith("event:district:")
       ? "Wohngebiet gespeichert."
+      : customId.startsWith("event:ward:")
+        ? "Bezirk gespeichert."
       : "Hausnummer gespeichert."
   };
 }
 
 function buildSelectionUpdate(customId, value, template) {
-  if (customId.startsWith("event:district:") || customId.startsWith("event:house:")) {
+  if (customId.startsWith("event:district:") || customId.startsWith("event:ward:") || customId.startsWith("event:house:")) {
     return buildHousingUpdate(customId, value, template);
   }
 
@@ -214,5 +223,15 @@ export async function handleSelect(interaction, client) {
   }
 
   const nextTemplate = await createOrUpdateTemplate(update.data, interaction.user.id, templateId);
-  await replyWithWizardPreview(interaction, nextTemplate, client, "template.selection_updated", update.message);
+  const mode = (
+    interaction.customId.startsWith("event:type:") || interaction.customId.startsWith("event:server:")
+  ) ? "details" : "address";
+  await replyWithWizardPreviewWithOptions(
+    interaction,
+    nextTemplate,
+    client,
+    "template.selection_updated",
+    update.message,
+    { mode }
+  );
 }

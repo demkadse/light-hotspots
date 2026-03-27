@@ -11,6 +11,15 @@ export const HOUSING_DISTRICT_OPTIONS = [
   { label: "Empyreum", value: "Empyreum", description: "Ishgard Wohngebiet." }
 ];
 
+export const HOUSING_WARD_OPTIONS = Array.from({ length: 30 }, (_, index) => {
+  const number = String(index + 1);
+  return {
+    label: `Bezirk ${number}`,
+    value: number,
+    description: `Wohnbezirk ${number}.`
+  };
+});
+
 export const HOUSING_PLOT_OPTIONS = Array.from({ length: 60 }, (_, index) => {
   const number = String(index + 1);
   return {
@@ -135,42 +144,66 @@ export function isTypeValidForCategory(type, category) {
   return getTypeOptions(category).some(option => option.value === normalizedType);
 }
 
-export function buildVenueLabel(district, plot) {
+export function buildVenueLabel(district, ward, plot) {
   const normalizedDistrict = String(district || "").trim();
+  const normalizedWard = String(ward || "").trim();
   const normalizedPlot = String(plot || "").trim();
 
-  if (!normalizedDistrict && !normalizedPlot) {
+  if (!normalizedDistrict && !normalizedWard && !normalizedPlot) {
     return null;
   }
 
-  if (!normalizedDistrict || !normalizedPlot) {
-    return normalizedDistrict || `Haus ${normalizedPlot}`;
+  const parts = [];
+  if (normalizedDistrict) {
+    parts.push(normalizedDistrict);
+  }
+  if (normalizedWard) {
+    parts.push(`Bezirk ${normalizedWard}`);
+  }
+  if (normalizedPlot) {
+    parts.push(`Haus ${normalizedPlot}`);
   }
 
-  return `${normalizedDistrict} | Haus ${normalizedPlot}`;
+  return parts.join(" | ");
 }
 
 export function parseVenueSelection(value) {
   const input = String(value || "").trim();
   const districtMatch = HOUSING_DISTRICT_OPTIONS.find(option => option.value === input);
   if (districtMatch) {
-    return { district: districtMatch.value, plot: null };
+    return { district: districtMatch.value, ward: null, plot: null };
+  }
+
+  const wardMatch = /^bezirk\s*(\d{1,2})$/i.exec(input);
+  if (wardMatch) {
+    const ward = wardMatch[1];
+    if (Number(ward) >= 1 && Number(ward) <= 30) {
+      return { district: null, ward: String(Number(ward)), plot: null };
+    }
   }
 
   const houseMatch = /^haus\s*(\d{1,2})$/i.exec(input) || /^(\d{1,2})$/.exec(input);
   if (houseMatch) {
     const plot = houseMatch[1];
     if (Number(plot) >= 1 && Number(plot) <= 60) {
-      return { district: null, plot: String(Number(plot)) };
+      return { district: null, ward: null, plot: String(Number(plot)) };
     }
   }
 
-  const fullMatch = /^(.*?)\s*\|\s*haus\s*(\d{1,2})$/i.exec(input);
+  const fullMatch = /^(.*?)\s*\|\s*bezirk\s*(\d{1,2})\s*\|\s*haus\s*(\d{1,2})$/i.exec(input);
   if (fullMatch) {
     const district = fullMatch[1].trim();
-    const plot = String(Number(fullMatch[2]));
-    return { district, plot };
+    const ward = String(Number(fullMatch[2]));
+    const plot = String(Number(fullMatch[3]));
+    return { district, ward, plot };
   }
 
-  return { district: null, plot: null };
+  const partialMatch = /^(.*?)\s*\|\s*haus\s*(\d{1,2})$/i.exec(input);
+  if (partialMatch) {
+    const district = partialMatch[1].trim();
+    const plot = String(Number(partialMatch[2]));
+    return { district, ward: null, plot };
+  }
+
+  return { district: null, ward: null, plot: null };
 }
