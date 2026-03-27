@@ -48,6 +48,7 @@ export async function execute(interaction) {
     content: [
       "Kalenderfeed gepostet.",
       `Zeitraum: ${result.startDate} bis ${result.endDate}`,
+      `Ersetzte Feed-Nachrichten: ${result.replacedMessageCount ?? 0}`,
       `Discord-Nachrichten: ${result.messageCount}`,
       syncLabel
     ].join("\n"),

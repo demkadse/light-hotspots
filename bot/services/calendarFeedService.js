@@ -546,6 +546,48 @@ async function writeFeedState(state) {
   await writeJson(PRIVATE_STATE_PATH, state);
 }
 
+async function deleteTrackedFeedMessages(channel, messageIds = []) {
+  const deletedMessageIds = [];
+
+  for (const messageId of messageIds) {
+    if (!messageId) {
+      continue;
+    }
+
+    try {
+      const message = await channel.messages.fetch(messageId);
+      await message.delete();
+      deletedMessageIds.push(messageId);
+    } catch (error) {
+      if (error?.code === 10008) {
+        deletedMessageIds.push(messageId);
+        continue;
+      }
+
+      if (error?.code === 50013) {
+        const wrappedError = new Error("Der Bot darf bestehende Feed-Nachrichten nicht löschen.");
+        wrappedError.code = "CALENDAR_FEED_DELETE_MISSING_PERMISSIONS";
+        throw wrappedError;
+      }
+
+      throw error;
+    }
+  }
+
+  return deletedMessageIds;
+}
+
+async function postDigestToChannel(channel, digest) {
+  const postedMessageIds = [];
+
+  for (const message of digest.discordMessages) {
+    const postedMessage = await channel.send(message);
+    postedMessageIds.push(postedMessage.id);
+  }
+
+  return postedMessageIds;
+}
+
 export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Date()) {
   if (!shouldRunCalendarFeedNow(referenceDate)) {
     return { posted: false, reason: "not_due" };
@@ -600,11 +642,14 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
   }
 
   const digest = await writeAndSyncWeeklyCalendarFeedFiles(referenceDate);
+  const previousState = await readFeedState();
+  const previousMessageIds = Array.isArray(previousState.last_message_ids) ? previousState.last_message_ids : [];
+  let deletedMessageIds = [];
+  let postedMessageIds = [];
 
   try {
-    for (const message of digest.discordMessages) {
-      await channel.send(message);
-    }
+    deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
+    postedMessageIds = await postDigestToChannel(channel, digest);
   } catch (error) {
     if (error?.code === 50013) {
       const wrappedError = new Error("Der Bot darf im Kalenderfeed-Channel keine Nachrichten senden.");
@@ -621,11 +666,13 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
-    last_forced_at: referenceDate.toISOString()
+    last_forced_at: referenceDate.toISOString(),
+    last_message_ids: postedMessageIds
   });
 
   return {
     posted: true,
+    replacedMessageCount: deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
     endDate: digest.endDate,
