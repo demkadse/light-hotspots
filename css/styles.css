@@ -835,7 +835,7 @@ gap: 4px;
 .event-card-compact-footer {
 display: grid;
 grid-template-columns: minmax(0, 1fr) auto;
-gap: 4px;
+gap: 6px;
 align-items: end;
 }
 
@@ -882,24 +882,24 @@ display: inline-flex;
 align-items: center;
 justify-content: center;
 align-self: end;
-width: 14px;
-height: 14px;
+width: 18px;
+height: 18px;
 padding: 0;
 border: 0;
 background: transparent;
-color: rgba(255, 241, 219, 0.54);
+color: rgba(255, 228, 190, 0.72);
 cursor: pointer;
 transition: color 0.2s ease, opacity 0.2s ease;
-opacity: 0.78;
+opacity: 0.9;
 }
 
 .event-card-expand-toggle:hover {
-color: rgba(255, 241, 219, 0.82);
+color: #ffe4be;
 opacity: 1;
 }
 
 .event-card-expand-toggle span {
-font-size: 0.62rem;
+font-size: 0.82rem;
 line-height: 1;
 transform: translateY(-1px);
 }
