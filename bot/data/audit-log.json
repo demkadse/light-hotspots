@@ -475,5 +475,21 @@
     "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
     "summary": "Bot-Umzug | Dingeldong",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "3d6943f5-ade7-45aa-b8e4-5bc1edbaca47",
+    "created_at": "2026-03-27T17:58:30.331Z",
+    "action": "template.opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "3c46060c-8f30-4f00-a7ae-8c531fc8380e",
+    "created_at": "2026-03-27T17:58:43.370Z",
+    "action": "template.details_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
