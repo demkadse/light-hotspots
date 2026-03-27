@@ -6,5 +6,77 @@
     "target_id": "ac85cbf8-d728-4f4e-99f8-25bf21dd6d31",
     "summary": "Testevent",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "b859a723-edc3-4a26-a2fc-2fe3621b80da",
+    "created_at": "2026-03-27T10:27:03.732Z",
+    "action": "template.created",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "8b5d87b8-03a6-4d30-8999-199fe6bdd549",
+    "created_at": "2026-03-27T10:27:13.537Z",
+    "action": "template.selection_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "c87ac35b-32fb-45c2-aad9-0e091c265827",
+    "created_at": "2026-03-27T10:27:20.136Z",
+    "action": "template.selection_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "0c5ad1ca-b343-4465-bc69-050c5907ca6a",
+    "created_at": "2026-03-27T10:27:25.748Z",
+    "action": "template.selection_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "d905fe93-4f8a-474c-a50c-73a167e6573c",
+    "created_at": "2026-03-27T10:27:31.015Z",
+    "action": "template.selection_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "b8f7f796-50a9-4e7d-a222-5374bc8f318e",
+    "created_at": "2026-03-27T10:27:49.426Z",
+    "action": "template.recurrence_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "5016aa6e-a60a-44e5-9ab5-26b491a25b8a",
+    "created_at": "2026-03-27T10:27:54.994Z",
+    "action": "template.recurrence_updated",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "f73bb7d0-a043-4cea-be64-69bde71b1e29",
+    "created_at": "2026-03-27T10:27:59.707Z",
+    "action": "template.submitted",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "0bebe741-0c8f-4304-8436-8afdfbb899c3",
+    "created_at": "2026-03-27T10:28:13.801Z",
+    "action": "template.approved",
+    "target_id": "1713ba31-24b6-45c5-92fa-4c071bfce4aa",
+    "summary": "Testevent",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
