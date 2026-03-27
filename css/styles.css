@@ -723,6 +723,8 @@ scrollbar-width: none;
 -ms-overflow-style: none;
 align-items: flex-start;
 scroll-snap-type: x mandatory;
+scroll-behavior: smooth;
+overscroll-behavior-x: contain;
 scroll-padding-inline: 2px;
 touch-action: pan-x;
 }
@@ -748,6 +750,7 @@ background: var(--panel-strong);
 box-shadow: var(--shadow);
 transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
 scroll-snap-align: start;
+scroll-snap-stop: always;
 }
 
 .event-card:hover {

@@ -136,6 +136,13 @@ function buildCarouselNav(track) {
   controls.className = "carousel-nav";
   let snapTimer = null;
 
+  function scheduleSnap() {
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => {
+      snapToClosestCard(track);
+    }, 140);
+  }
+
   const prevButton = document.createElement("button");
   prevButton.type = "button";
   prevButton.className = "carousel-nav-button carousel-nav-button-prev";
@@ -165,11 +172,40 @@ function buildCarouselNav(track) {
       return;
     }
 
-    clearTimeout(snapTimer);
-    snapTimer = setTimeout(() => {
-      snapToClosestCard(track);
-    }, 120);
+    scheduleSnap();
   }, { passive: true });
+
+  track.addEventListener("wheel", event => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    const primaryDelta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    if (Math.abs(primaryDelta) < 8) {
+      return;
+    }
+
+    event.preventDefault();
+    track.scrollLeft += primaryDelta;
+    updateCarouselButtons(track, prevButton, nextButton);
+    scheduleSnap();
+  }, { passive: false });
+
+  track.addEventListener("mouseleave", () => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    scheduleSnap();
+  });
+
+  track.addEventListener("pointerup", () => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      return;
+    }
+
+    scheduleSnap();
+  });
 
   requestAnimationFrame(() => {
     updateCarouselButtons(track, prevButton, nextButton);
