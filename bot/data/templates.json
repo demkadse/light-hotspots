@@ -37,10 +37,10 @@
     "description": "Dies ist ein Test",
     "category": "event",
     "status": "draft",
-    "event_type": null,
+    "event_type": "Bar",
     "recurrence_rule": null,
     "created_by_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e",
     "created_at": "2026-03-27T08:58:45.125Z",
-    "updated_at": "2026-03-27T08:58:57.654Z"
+    "updated_at": "2026-03-27T08:59:06.624Z"
   }
 ]
