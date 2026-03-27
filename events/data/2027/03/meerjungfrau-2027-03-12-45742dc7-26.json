@@ -6,9 +6,10 @@
   "category": "event",
   "title": "Meerjungfrau",
   "type": "Badehaus",
-  "venue": "The Goblet",
+  "venue": "The Goblet | Bezirk 21 | Haus 35",
   "housing_district": "The Goblet",
-  "housing_plot": null,
+  "housing_ward": "21",
+  "housing_plot": "35",
   "server": "Twintania",
   "host": "Nyee Fuyu",
   "project_lead": "Nyee Fuyu",
@@ -26,6 +27,6 @@
   ],
   "notes": "Warnungen: Alkohol, Nacktheit",
   "status": "scheduled",
-  "created_at": "2026-03-27T11:22:31.765Z",
+  "created_at": "2026-03-27T11:53:25.612Z",
   "file": "2027/03/meerjungfrau-2027-03-12-45742dc7-26.json"
 }
