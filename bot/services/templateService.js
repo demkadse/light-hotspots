@@ -4,8 +4,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { syncRepoFiles } from "./gitSyncService.js";
 import {
+  buildAdditionalEditorIdentityFields,
   buildUserIdentityFields,
+  getTemplateOwnerId,
+  isTemplateOwner,
   matchesUserHash,
+  rememberTemplateEditors,
   rememberTemplateOwner,
   sanitizeTemplatesForStorage
 } from "./identityService.js";
@@ -136,6 +140,28 @@ function hasSameCoreContent(template, data) {
     normalizeTemplateField(template.date) === normalizeTemplateField(data.date) &&
     normalizeTemplateField(template.time) === normalizeTemplateField(data.time) &&
     normalizeTemplateField(template.description) === normalizeTemplateField(data.description);
+}
+
+async function assertTemplateAccess(template, userId) {
+  if (!matchesUserHash(template, userId)) {
+    const error = new Error("Du darfst dieses Template nicht bearbeiten.");
+    error.code = "TEMPLATE_ACCESS_DENIED";
+    throw error;
+  }
+}
+
+async function applyTemplateEditors(template, editorUserIds = [], actingOwnerUserId = null) {
+  const ownerId = await getTemplateOwnerId(template) || actingOwnerUserId;
+  const normalizedEditors = [...new Set(editorUserIds.filter(Boolean))]
+    .filter(userId => userId !== ownerId)
+    .slice(0, 2);
+
+  await rememberTemplateEditors(template.id, normalizedEditors);
+
+  return {
+    ...template,
+    ...buildAdditionalEditorIdentityFields(normalizedEditors)
+  };
 }
 
 export async function getAllTemplates() {
@@ -442,12 +468,14 @@ export async function resyncEventIndex({ applyFixes = false } = {}) {
 
 export async function createOrUpdateTemplate(data, userId, templateId = null) {
   const templates = await readTemplates();
+  const { editor_user_ids: editorUserIds, ...templateData } = data;
 
   if (templateId) {
     const index = templates.findIndex(t => t.id === templateId);
     if (index === -1) throw new Error("Template nicht gefunden");
+    await assertTemplateAccess(templates[index], userId);
 
-    const nextData = applyDerivedCategory(data, templates[index]);
+    const nextData = applyDerivedCategory(templateData, templates[index]);
     const nextVenue = nextData.venue ?? buildVenueLabel(
       nextData.housing_district ?? templates[index].housing_district,
       nextData.housing_ward ?? templates[index].housing_ward,
@@ -462,6 +490,16 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
       updated_at: new Date().toISOString()
     };
 
+    if ("editor_user_ids" in data) {
+      if (!isTemplateOwner(templates[index], userId)) {
+        const error = new Error("Nur der Urheber darf weitere Bearbeiter festlegen.");
+        error.code = "TEMPLATE_EDITOR_MANAGEMENT_DENIED";
+        throw error;
+      }
+
+      templates[index] = await applyTemplateEditors(templates[index], editorUserIds, userId);
+    }
+
     await writeTemplates(templates);
     await rememberTemplateOwner(templates[index].id, userId);
     return templates[index];
@@ -469,10 +507,11 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
 
   const newTemplate = {
     id: crypto.randomUUID(),
-    ...applyDerivedCategory(data),
-    venue: data.venue ?? buildVenueLabel(data.housing_district, data.housing_ward, data.housing_plot),
-    recurrence_rule: data.recurrence_rule ?? null,
+    ...applyDerivedCategory(templateData),
+    venue: templateData.venue ?? buildVenueLabel(templateData.housing_district, templateData.housing_ward, templateData.housing_plot),
+    recurrence_rule: templateData.recurrence_rule ?? null,
     ...buildUserIdentityFields(userId),
+    ...buildAdditionalEditorIdentityFields(editorUserIds ?? []),
     status: "draft",
     created_at: new Date().toISOString()
   };
@@ -480,6 +519,7 @@ export async function createOrUpdateTemplate(data, userId, templateId = null) {
   templates.push(newTemplate);
   await writeTemplates(templates);
   await rememberTemplateOwner(newTemplate.id, userId);
+  await rememberTemplateEditors(newTemplate.id, editorUserIds ?? []);
 
   return newTemplate;
 }

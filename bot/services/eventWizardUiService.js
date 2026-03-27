@@ -23,6 +23,7 @@ import {
   normalizeRecurrence,
   parseVenueSelection
 } from "../config/eventFormOptions.js";
+import { getTemplateEditorIds } from "./identityService.js";
 
 const WARD_PAGE_SIZE = 15;
 const PLOT_PAGE_SIZE = 20;
@@ -342,7 +343,8 @@ export function buildBasicsModal(template = null, modalId = "event_modal_basics_
   return modal;
 }
 
-export function buildExtrasModal(template, templateId) {
+export async function buildExtrasModal(template, templateId) {
+  const editorIds = await getTemplateEditorIds(template);
   const modal = new ModalBuilder()
     .setCustomId(`event_modal_extras_${templateId}`)
     .setTitle("Zusatzangaben");
@@ -374,6 +376,13 @@ export function buildExtrasModal(template, templateId) {
       "Hinweise (optional)",
       "z.B. Walk-ins willkommen, 18+, OOC-Tell vorab",
       template?.notes,
+      TextInputStyle.Paragraph
+    ),
+    createInput(
+      "editor_ids",
+      "Weitere Bearbeiter (max. 2 IDs)",
+      "Eine Discord-User-ID pro Zeile",
+      editorIds.join("\n"),
       TextInputStyle.Paragraph
     )
   );

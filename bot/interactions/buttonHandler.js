@@ -275,7 +275,7 @@ export async function handleButton(interaction, client) {
     if (id.startsWith("event:extras:")) {
       const templateId = id.split(":")[2];
       const template = await getTemplate(templateId);
-      await interaction.showModal(buildExtrasModal(template, templateId));
+      await interaction.showModal(await buildExtrasModal(template, templateId));
       return;
     }
 
