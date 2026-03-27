@@ -840,10 +840,6 @@ padding-bottom: 4px;
 border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.event-meta-item-expanded {
-display: none;
-}
-
 .event-meta-label {
 font-size: 0.64rem;
 letter-spacing: 0.12em;
@@ -862,67 +858,70 @@ overflow: hidden;
 }
 
 .event-summary {
-display: none;
 color: rgba(245, 241, 232, 0.78);
 line-height: 1.45;
 font-size: 0.92rem;
 }
 
 .event-link-hint {
-display: none;
 width: fit-content;
 font-size: 0.76rem;
 letter-spacing: 0.05em;
 color: #ffe4be;
 }
 
-@media (min-width: 1360px) and (min-height: 820px) {
-.event-card {
-width: clamp(340px, 26vw, 410px);
-min-width: clamp(340px, 26vw, 410px);
+.event-card-expand-toggle {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+align-self: center;
+width: 34px;
+height: 34px;
+margin-top: 2px;
+border-radius: 999px;
+border: 1px solid rgba(243, 186, 108, 0.22);
+background: rgba(243, 186, 108, 0.08);
+color: #ffe4be;
+cursor: pointer;
+transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-.event-media {
-min-height: 122px;
-max-height: 156px;
+.event-card-expand-toggle:hover {
+transform: translateY(-1px);
+border-color: rgba(243, 186, 108, 0.38);
+background: rgba(243, 186, 108, 0.14);
 }
 
-.event-title-banner {
-min-height: 56px;
-padding: 12px 18px;
+.event-card-expand-toggle span {
+font-size: 0.86rem;
+line-height: 1;
 }
 
-.event-title-banner h3 {
-font-size: 1.1rem;
+.event-card-expanded-content {
+display: none;
+padding-top: 4px;
+border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.event-info {
-gap: 10px;
-padding: 12px 16px 16px;
+.event-meta-expanded {
+margin-bottom: 8px;
 }
 
-.event-meta {
-gap: 6px;
-}
-
-.event-meta-item {
-padding-bottom: 6px;
-}
-
-.event-meta-item-expanded {
+.event-card-expanded .event-card-expanded-content {
 display: flex;
+flex-direction: column;
+gap: 8px;
 }
 
-.event-summary {
+.event-card-expanded .event-summary {
 display: -webkit-box;
 -webkit-line-clamp: 3;
 -webkit-box-orient: vertical;
 overflow: hidden;
 }
 
-.event-link-hint {
+.event-card-expanded .event-link-hint {
 display: inline-flex;
-}
 }
 
 .carousel-hint {

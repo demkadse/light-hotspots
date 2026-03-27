@@ -58,6 +58,15 @@ function getSupportingLinkLabel(event) {
   return "";
 }
 
+function setCardExpandedState(card, toggle, expanded) {
+  card.classList.toggle("event-card-expanded", expanded);
+  toggle.setAttribute("aria-expanded", String(expanded));
+  toggle.setAttribute("aria-label", expanded ? "Karte einklappen" : "Karte aufklappen");
+  toggle.innerHTML = expanded
+    ? "<span aria-hidden=\"true\">&#9650;</span>"
+    : "<span aria-hidden=\"true\">&#9660;</span>";
+}
+
 function scrollCarousel(track, direction) {
   const cards = [...track.querySelectorAll(".event-card")];
   if (cards.length === 0) {
@@ -224,11 +233,22 @@ function buildCard(event) {
     headerRow.appendChild(statusChip);
   }
 
+  const expandToggle = document.createElement("button");
+  expandToggle.type = "button";
+  expandToggle.className = "event-card-expand-toggle";
+  expandToggle.setAttribute("title", "Weitere Infos anzeigen");
+
   const meta = document.createElement("div");
   meta.className = "event-meta";
   appendMetaItem(meta, "Ort", event.venue || "Ort offen");
-  appendMetaItem(meta, "Server", event.server, "event-meta-item-expanded");
-  appendMetaItem(meta, "Projektleitung", getProjectLead(event), "event-meta-item-expanded");
+
+  const expandedContent = document.createElement("div");
+  expandedContent.className = "event-card-expanded-content";
+
+  const expandedMeta = document.createElement("div");
+  expandedMeta.className = "event-meta event-meta-expanded";
+  appendMetaItem(expandedMeta, "Server", event.server);
+  appendMetaItem(expandedMeta, "Projektleitung", getProjectLead(event));
 
   const summary = document.createElement("p");
   summary.className = "event-summary";
@@ -242,10 +262,23 @@ function buildCard(event) {
     linkHint.hidden = true;
   }
 
-  info.append(headerRow, meta, summary, linkHint);
+  expandedContent.append(expandedMeta, summary, linkHint);
+  info.append(headerRow, meta, expandToggle, expandedContent);
 
   card.append(media, titleBanner, info);
   card.addEventListener("click", () => openModal(event));
+
+  expandToggle.addEventListener("click", clickEvent => {
+    clickEvent.stopPropagation();
+    const expanded = !card.classList.contains("event-card-expanded");
+    setCardExpandedState(card, expandToggle, expanded);
+  });
+
+  expandedContent.addEventListener("click", clickEvent => {
+    clickEvent.stopPropagation();
+  });
+
+  setCardExpandedState(card, expandToggle, false);
 
   return card;
 }
