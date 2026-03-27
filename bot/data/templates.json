@@ -1,1 +1,31 @@
-[]
+[
+  {
+    "id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
+    "title": "Meerjungfrau",
+    "date": "27.03.2026",
+    "time": "20:00",
+    "description": "Die Meerjungfrau lädt in ihr Badehaus ein. Ob sie an der Strandbar, bei schmackhaften Drinks und Speisen, in der Sauna oder in einem unserer Bäder entspannen wollt. Ihr habt die Wahl. Unsere Becken sind unterschiedlich temperiert, um das Feeling des ausgewählten Zimmers besser genießen zu können. Sie können aber auch unser großzügiges Massageangebot in Anspruch nehmen, seid euch gewiss, dass ihr in wohligen Händen seid. Im Außenbereich findet ihr neben Sitzmöglichkeiten auch einen versteckten Onsen der ebenso zum Entspannen einlädt. Im Barbereich und dem Erdgeschoss ist eine Fußbodenheizung vorhanden, dies sorgt für wohlige Füße. Der Eintritt kostet 50 Gil inklusive Handtuch, Getränke und Snacks.\nFreuen sie sich zudem auf unser baldiges widerkehrendes \"Sirenen-See\" Bad mit den zauberhaften Sirenen.",
+    "category": "event",
+    "status": "approved",
+    "event_type": "Badehaus",
+    "venue": "The Goblet | Bezirk 21 | Haus 35",
+    "recurrence_rule": null,
+    "created_by_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03",
+    "created_at": "2026-03-27T12:16:01.751Z",
+    "housing_district": "The Goblet",
+    "housing_ward": "21",
+    "housing_plot": "35",
+    "updated_at": "2026-03-27T12:19:29.013Z",
+    "server": "Twintania",
+    "end_time": null,
+    "project_lead": "Nyee Fuyu",
+    "image": "https://cdn.discordapp.com/attachments/1100546332495728803/1486826957919224033/Logo1.0.png?ex=69c793c2&is=69c64242&hm=ed8bd3526cd8b04d2e21a8d9d55be7c14607b5f60d3add6ebf74d80ac6c63c7d&",
+    "discord_link": "https://discord.gg/RqEdSu8hdD",
+    "link": "https://mermaidproject.carrd.co/#",
+    "notes": "Warnungen: Alkohol, Nacktheit",
+    "rejection_reason": null,
+    "published_files": [
+      "2026/03/meerjungfrau-2026-03-27-ed9eff28.json"
+    ]
+  }
+]
