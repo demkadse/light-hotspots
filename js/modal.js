@@ -1,5 +1,14 @@
 const modal = document.getElementById("event-modal");
 const modalContent = document.getElementById("modal-content");
+const modalWindow = modal?.querySelector(".modal-window");
+
+function lockBackgroundScroll() {
+  document.body.classList.add("event-modal-open");
+}
+
+function unlockBackgroundScroll() {
+  document.body.classList.remove("event-modal-open");
+}
 
 function getProjectLead(event) {
   return event.project_lead || event.venue_lead || event.host || "";
@@ -205,7 +214,7 @@ function openModal(event) {
       const pill = document.createElement("button");
       pill.type = "button";
       pill.className = "modal-related-pill";
-      pill.textContent = `${entry.title} • ${entry.start_time || entry.time || "Zeit offen"}`;
+      pill.textContent = `${entry.title} - ${entry.start_time || entry.time || "Zeit offen"}`;
       pill.addEventListener("click", () => openModal(entry));
       list.appendChild(pill);
     });
@@ -216,11 +225,13 @@ function openModal(event) {
 
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
+  lockBackgroundScroll();
 }
 
 function closeModal() {
   modal.classList.remove("active");
   modal.setAttribute("aria-hidden", "true");
+  unlockBackgroundScroll();
 }
 
 document.getElementById("modal-close").onclick = closeModal;
@@ -230,3 +241,11 @@ document.addEventListener("keydown", event => {
     closeModal();
   }
 });
+
+modalWindow?.addEventListener("wheel", event => {
+  event.stopPropagation();
+}, { passive: true });
+
+modalWindow?.addEventListener("touchmove", event => {
+  event.stopPropagation();
+}, { passive: true });

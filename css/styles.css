@@ -1024,6 +1024,7 @@ z-index: 2;
 width: min(860px, calc(100vw - 32px));
 max-height: 90vh;
 overflow: auto;
+overscroll-behavior: contain;
 padding: 28px;
 border-radius: 30px;
 border: 1px solid var(--line);
@@ -1037,11 +1038,18 @@ z-index: 2;
 width: min(760px, calc(100vw - 32px));
 max-height: 86vh;
 overflow: auto;
+overscroll-behavior: contain;
 padding: 28px;
 border-radius: 30px;
 border: 1px solid var(--line);
 background: var(--panel-strong);
 box-shadow: var(--shadow);
+}
+
+body.event-modal-open .day-body,
+body.event-modal-open .timeline-viewport,
+body.event-modal-open .carousel-track {
+overflow: hidden;
 }
 
 .legal-modal-window h2 {
