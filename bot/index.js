@@ -125,7 +125,7 @@ client.on("interactionCreate", async (interaction) => {
       return await handleButton(interaction, client);
     }
 
-    if (interaction.isStringSelectMenu()) {
+    if (interaction.isAnySelectMenu()) {
       return await handleSelect(interaction, client);
     }
 
