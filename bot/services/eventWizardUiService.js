@@ -6,7 +6,8 @@ import {
   ModalBuilder,
   StringSelectMenuBuilder,
   TextInputBuilder,
-  TextInputStyle
+  TextInputStyle,
+  UserSelectMenuBuilder
 } from "discord.js";
 
 import {
@@ -23,7 +24,6 @@ import {
   normalizeRecurrence,
   parseVenueSelection
 } from "../config/eventFormOptions.js";
-import { getTemplateEditorIds } from "./identityService.js";
 
 const WARD_PAGE_SIZE = 15;
 const PLOT_PAGE_SIZE = 20;
@@ -321,6 +321,31 @@ function buildDetailRows(template) {
   ];
 }
 
+function buildEditorRows(template) {
+  const editorIds = Array.isArray(template?.editor_ids_for_display) ? template.editor_ids_for_display : [];
+
+  return [
+    new ActionRowBuilder().addComponents(
+      new UserSelectMenuBuilder()
+        .setCustomId(`event:editorsSelect:${template.id}`)
+        .setPlaceholder(editorIds.length > 0 ? "Mitbearbeiter anpassen" : "Bis zu 2 Mitbearbeiter waehlen")
+        .setMinValues(1)
+        .setMaxValues(2)
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`event:editorsClear:${template.id}`)
+        .setLabel("Bearbeiter entfernen")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(editorIds.length === 0),
+      new ButtonBuilder()
+        .setCustomId(`event:viewDetails:${template.id}`)
+        .setLabel("Zurueck zu den Details")
+        .setStyle(ButtonStyle.Secondary)
+    )
+  ];
+}
+
 export function buildBasicsModal(template = null, modalId = "event_modal_basics_create") {
   const modal = new ModalBuilder()
     .setCustomId(modalId)
@@ -386,27 +411,6 @@ export async function buildExtrasModal(template, templateId) {
   return modal;
 }
 
-export async function buildEditorsModal(template, templateId) {
-  const editorIds = await getTemplateEditorIds(template);
-  const modal = new ModalBuilder()
-    .setCustomId(`event_modal_editors_${templateId}`)
-    .setTitle("Weitere Bearbeiter");
-
-  modal.addComponents(
-    new ActionRowBuilder().addComponents(
-      new TextInputBuilder()
-        .setCustomId("editor_ids")
-        .setLabel("Discord-User-IDs (max. 2)")
-        .setPlaceholder("Eine Discord-User-ID pro Zeile")
-        .setValue(editorIds.join("\n"))
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(false)
-    )
-  );
-
-  return modal;
-}
-
 export function buildPreviewEmbed(template, duplicates = []) {
   const embed = new EmbedBuilder()
     .setTitle(template?.title || "Unbenannt")
@@ -422,6 +426,14 @@ export function buildPreviewEmbed(template, duplicates = []) {
   addFieldIfValue(embed, "Server", template?.server, true);
   addFieldIfValue(embed, "Projektleitung", resolveProjectLead(template), true);
   addFieldIfValue(embed, "Wiederholung", formatRecurrenceLabel(template), true);
+  addFieldIfValue(
+    embed,
+    "Mitbearbeiter",
+    Array.isArray(template?.editor_mentions_for_display) && template.editor_mentions_for_display.length > 0
+      ? template.editor_mentions_for_display.join("\n")
+      : null,
+    false
+  );
   addFieldIfValue(embed, "Discord", template?.discord_link, false);
   addFieldIfValue(embed, "Externer Link", template?.link, false);
   addFieldIfValue(embed, "Hinweise", template?.notes?.slice(0, 1024), false);
@@ -454,12 +466,20 @@ export function buildPreviewEmbed(template, duplicates = []) {
 }
 
 export function buildWizardComponents(template, options = {}) {
+  if (options.mode === "editors") {
+    return buildEditorRows(template);
+  }
+
   return options.mode === "details"
     ? buildDetailRows(template)
     : buildAddressRows(template, options);
 }
 
 export function buildWizardMessage(template, options = {}) {
+  if (options.mode === "editors") {
+    return "Waehle hier bis zu zwei Mitbearbeiter direkt aus dem Server aus. Die Auswahl bleibt intern und erscheint nicht in den oeffentlichen Event-Daten.";
+  }
+
   const missing = buildMissingRequirementLines(template);
 
   if (missing.length === 0) {

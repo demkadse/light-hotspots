@@ -16,26 +16,7 @@ import {
   buildWizardMessage,
   normalizeOptionalField
 } from "../services/eventWizardUiService.js";
-import { getTemplateEditorIds, getTemplateOwnerId, isTemplateOwner, matchesUserHash } from "../services/identityService.js";
-
-function parseEditorIds(rawValue) {
-  const entries = String(rawValue || "")
-    .split(/\r?\n/)
-    .map(entry => entry.trim())
-    .filter(Boolean);
-
-  const invalidEntry = entries.find(entry => !/^\d{17,20}$/.test(entry));
-  if (invalidEntry) {
-    return { error: "Weitere Bearbeiter muessen gueltige Discord-User-IDs sein." };
-  }
-
-  const uniqueEntries = [...new Set(entries)];
-  if (uniqueEntries.length > 2) {
-    return { error: "Es duerfen maximal zwei weitere Bearbeiter hinterlegt werden." };
-  }
-
-  return { value: uniqueEntries };
-}
+import { getTemplateEditorIds, matchesUserHash } from "../services/identityService.js";
 
 function getTemplateIdFromModal(customId) {
   if (
@@ -54,10 +35,6 @@ function getTemplateIdFromModal(customId) {
     return customId.replace("event_modal_extras_", "");
   }
 
-  if (customId.startsWith("event_modal_editors_")) {
-    return customId.replace("event_modal_editors_", "");
-  }
-
   return null;
 }
 
@@ -74,6 +51,12 @@ function getInitialCategoryFromModal(customId) {
 }
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
+  const editorIds = await getTemplateEditorIds(template);
+  const displayTemplate = {
+    ...template,
+    editor_ids_for_display: editorIds,
+    editor_mentions_for_display: editorIds.map(userId => `<@${userId}>`)
+  };
   const duplicates = await findPotentialDuplicates(template);
 
   await recordAuditEntry(client, {
@@ -84,9 +67,9 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   });
 
   await replyAndExpire(interaction, {
-    content: message || buildWizardMessage(template),
-    embeds: [buildPreviewEmbed(template, duplicates)],
-    components: buildWizardComponents(template),
+    content: message || buildWizardMessage(displayTemplate),
+    embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
+    components: buildWizardComponents(displayTemplate),
     ephemeral: true
   }, null);
 }
@@ -199,75 +182,4 @@ export async function handleModal(interaction, client) {
     return;
   }
 
-  if (interaction.customId.startsWith("event_modal_editors_")) {
-    await deferEphemeral(interaction);
-
-    const templateId = getTemplateIdFromModal(interaction.customId);
-    const templateBeforeUpdate = await getTemplate(templateId);
-    if (!templateBeforeUpdate || !matchesUserHash(templateBeforeUpdate, interaction.user.id)) {
-      await replyAndExpire(interaction, {
-        content: "Du darfst dieses Event nicht bearbeiten.",
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    const parsedEditors = parseEditorIds(interaction.fields.getTextInputValue("editor_ids"));
-    if (parsedEditors.error) {
-      await replyAndExpire(interaction, {
-        content: parsedEditors.error,
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    const ownerId = await getTemplateOwnerId(templateBeforeUpdate);
-    const canManageEditors = ownerId === interaction.user.id || (!ownerId && isTemplateOwner(templateBeforeUpdate, interaction.user.id));
-    const existingEditorIds = await getTemplateEditorIds(templateBeforeUpdate);
-    const requestedEditorIds = parsedEditors.value || [];
-
-    if ((ownerId && requestedEditorIds.includes(ownerId)) || (!ownerId && requestedEditorIds.includes(interaction.user.id))) {
-      await replyAndExpire(interaction, {
-        content: "Der Urheber muss nicht erneut als weiterer Bearbeiter eingetragen werden.",
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    const editorIdsChanged = requestedEditorIds.length !== existingEditorIds.length ||
-      requestedEditorIds.some((value, index) => value !== existingEditorIds[index]);
-
-    if (editorIdsChanged && !canManageEditors) {
-      await replyAndExpire(interaction, {
-        content: "Nur der Urheber darf die Liste der weiteren Bearbeiter aendern.",
-        ephemeral: true
-      }, 45000);
-      return;
-    }
-
-    let template;
-    try {
-      template = await createOrUpdateTemplate({
-        editor_user_ids: requestedEditorIds
-      }, interaction.user.id, templateId);
-    } catch (error) {
-      if (error?.code === "TEMPLATE_EDITOR_MANAGEMENT_DENIED" || error?.code === "TEMPLATE_ACCESS_DENIED") {
-        await replyAndExpire(interaction, {
-          content: error.message,
-          ephemeral: true
-        }, 45000);
-        return;
-      }
-
-      throw error;
-    }
-
-    await replyWithWizardPreview(
-      interaction,
-      template,
-      client,
-      "template.editors_updated",
-      "Weitere Bearbeiter gespeichert."
-    );
-  }
 }
