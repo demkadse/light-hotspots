@@ -1,4 +1,3 @@
-import { ChannelType } from "discord.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -22,6 +21,7 @@ const PLACEHOLDER_IMAGE_URL = `${SITE_URL}/placeholder.png`;
 const TIME_ZONE = "Europe/Berlin";
 const FEED_UPDATE_HOURS = new Set([0, 3, 6, 9, 12, 15, 18, 21]);
 const FEED_DESCRIPTION = "Regelmaessig aktualisierte Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.";
+const GUILD_ANNOUNCEMENT_CHANNEL_TYPE = 5;
 
 function formatDateInBerlin(date, options) {
   return new Intl.DateTimeFormat("de-DE", {
@@ -502,14 +502,30 @@ function getBerlinFeedSlotKey(date = new Date()) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}`;
 }
 
-export async function buildWeeklyCalendarDigest(referenceDate = new Date()) {
+export async function buildWeeklyCalendarFeedData(referenceDate = new Date()) {
   const startDate = getBerlinDateKey(referenceDate);
   const endDate = addDays(startDate, 6);
   const events = await getPublishedEvents();
   const weeklyEvents = events.filter(event => event.date >= startDate && event.date <= endDate);
   const groups = groupEventsByDate(weeklyEvents);
   const summary = createSummary(groups, startDate, endDate);
+
+  return {
+    startDate,
+    endDate,
+    groups,
+    summary
+  };
+}
+
+export function renderWeeklyCalendarFeedOutputs(feedData, referenceDate = new Date()) {
   const generatedAt = referenceDate.toISOString();
+  const {
+    startDate,
+    endDate,
+    groups,
+    summary
+  } = feedData;
 
   return {
     generatedAt,
@@ -523,6 +539,11 @@ export async function buildWeeklyCalendarDigest(referenceDate = new Date()) {
   };
 }
 
+export async function buildWeeklyCalendarDigest(referenceDate = new Date()) {
+  const feedData = await buildWeeklyCalendarFeedData(referenceDate);
+  return renderWeeklyCalendarFeedOutputs(feedData, referenceDate);
+}
+
 export async function writeWeeklyCalendarFeedFiles(referenceDate = new Date()) {
   const digest = await buildWeeklyCalendarDigest(referenceDate);
 
@@ -533,8 +554,7 @@ export async function writeWeeklyCalendarFeedFiles(referenceDate = new Date()) {
   return digest;
 }
 
-export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Date()) {
-  const digest = await writeWeeklyCalendarFeedFiles(referenceDate);
+export async function syncWeeklyCalendarFeedFiles(digest) {
   const syncResult = await syncRepoFiles(
     [RSS_PATH, JSON_PATH],
     `Update weekly feed ${digest.startDate}`
@@ -544,6 +564,11 @@ export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Da
     ...digest,
     syncResult
   };
+}
+
+export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Date()) {
+  const digest = await writeWeeklyCalendarFeedFiles(referenceDate);
+  return syncWeeklyCalendarFeedFiles(digest);
 }
 
 async function readFeedState() {
@@ -613,13 +638,41 @@ async function postDigestToChannel(channel, digest) {
 
   for (const message of digest.discordMessages) {
     const postedMessage = await channel.send(message);
-    if (channel.type === ChannelType.GuildAnnouncement) {
+    if (channel.type === GUILD_ANNOUNCEMENT_CHANNEL_TYPE) {
       await postedMessage.crosspost();
     }
     postedMessageIds.push(postedMessage.id);
   }
 
   return postedMessageIds;
+}
+
+async function publishDigestToFeedChannel(client, digest, state) {
+  const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
+  if (!channel?.isTextBased()) {
+    return { published: false, reason: "channel_unavailable" };
+  }
+
+  const previousMessageIds = await resolvePreviousFeedMessageIds(channel, state);
+  let deletedMessageIds = [];
+  let postedMessageIds = [];
+
+  try {
+    deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
+    postedMessageIds = await postDigestToChannel(channel, digest);
+  } catch (error) {
+    if (error?.code === 50013 || error?.code === "CALENDAR_FEED_DELETE_MISSING_PERMISSIONS") {
+      return { published: false, reason: "missing_permissions" };
+    }
+
+    throw error;
+  }
+
+  return {
+    published: true,
+    deletedMessageIds,
+    postedMessageIds
+  };
 }
 
 export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Date()) {
@@ -634,25 +687,10 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
     return { posted: false, reason: "already_posted" };
   }
 
-  const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
-  if (!channel?.isTextBased()) {
-    return { posted: false, reason: "channel_unavailable" };
-  }
-
   const digest = await buildWeeklyCalendarDigest(referenceDate);
-  const previousMessageIds = await resolvePreviousFeedMessageIds(channel, state);
-  let deletedMessageIds = [];
-  let postedMessageIds = [];
-
-  try {
-    deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
-    postedMessageIds = await postDigestToChannel(channel, digest);
-  } catch (error) {
-    if (error?.code === 50013 || error?.code === "CALENDAR_FEED_DELETE_MISSING_PERMISSIONS") {
-      return { posted: false, reason: "missing_permissions" };
-    }
-
-    throw error;
+  const publishResult = await publishDigestToFeedChannel(client, digest, state);
+  if (!publishResult.published) {
+    return { posted: false, reason: publishResult.reason };
   }
 
   await writeFeedState({
@@ -661,12 +699,12 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
-    last_message_ids: postedMessageIds
+    last_message_ids: publishResult.postedMessageIds
   });
 
   return {
     posted: true,
-    replacedMessageCount: deletedMessageIds.length,
+    replacedMessageCount: publishResult.deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
     endDate: digest.endDate
@@ -674,30 +712,21 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
 }
 
 export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Date()) {
-  const channel = await client.channels.fetch(CHANNELS.CALENDAR_FEED);
-  if (!channel?.isTextBased()) {
-    const error = new Error("Kalenderfeed-Channel nicht verfuegbar.");
-    error.code = "CALENDAR_FEED_CHANNEL_UNAVAILABLE";
-    throw error;
-  }
-
-  const digest = await writeAndSyncWeeklyCalendarFeedFiles(referenceDate);
   const previousState = await readFeedState();
-  const previousMessageIds = await resolvePreviousFeedMessageIds(channel, previousState);
-  let deletedMessageIds = [];
-  let postedMessageIds = [];
+  const digest = await writeAndSyncWeeklyCalendarFeedFiles(referenceDate);
+  const publishResult = await publishDigestToFeedChannel(client, digest, previousState);
 
-  try {
-    deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
-    postedMessageIds = await postDigestToChannel(channel, digest);
-  } catch (error) {
-    if (error?.code === 50013) {
-      const wrappedError = new Error("Der Bot darf im Kalenderfeed-Channel keine Nachrichten senden.");
-      wrappedError.code = "CALENDAR_FEED_MISSING_PERMISSIONS";
-      wrappedError.digest = digest;
-      throw wrappedError;
-    }
-
+  if (!publishResult.published) {
+    const isPermissionError = publishResult.reason === "missing_permissions";
+    const error = new Error(
+      isPermissionError
+        ? "Der Bot darf im Kalenderfeed-Channel keine Nachrichten verwalten oder senden."
+        : "Kalenderfeed-Channel nicht verfuegbar."
+    );
+    error.code = isPermissionError
+      ? "CALENDAR_FEED_MISSING_PERMISSIONS"
+      : "CALENDAR_FEED_CHANNEL_UNAVAILABLE";
+    error.digest = digest;
     throw error;
   }
 
@@ -708,12 +737,12 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
     last_forced_at: referenceDate.toISOString(),
-    last_message_ids: postedMessageIds
+    last_message_ids: publishResult.postedMessageIds
   });
 
   return {
     posted: true,
-    replacedMessageCount: deletedMessageIds.length,
+    replacedMessageCount: publishResult.deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
     endDate: digest.endDate,

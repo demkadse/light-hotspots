@@ -3,6 +3,9 @@ name: Initialize Repository Structure
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   create-structure:
     runs-on: ubuntu-latest
