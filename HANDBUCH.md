@@ -313,7 +313,39 @@ Im dritten Schritt koennen weitere optionale Informationen hinterlegt werden:
 - Der Discord-Link muss auf `discord.gg` oder `discord.com` verweisen.
 - Falls eine Endzeit eingetragen wird, muss sie im Format `HH:MM` angegeben werden.
 
-### 12.4 Vorschau nach jedem Schritt
+### 12.4 Weitere Bearbeiter hinzufuegen
+
+Wenn der Urheber moechte, kann er fuer ein Event bis zu zwei weitere Discord-Nutzer als Mitbearbeiter hinterlegen.
+
+Wichtig dabei:
+
+- Die Bearbeiter werden nicht in den oeffentlichen Event-Daten angezeigt.
+- Sie dienen nur dazu, dass diese Personen das Template im Bot mitbearbeiten duerfen.
+- Die Liste der Bearbeiter darf nur vom Urheber des Events geaendert werden.
+
+Im Bot gibt es dafuer im Event-Prozess eine eigene Schaltflaeche `Bearbeiter`.
+
+Dort gilt:
+
+- maximal 2 weitere Personen
+- die Auswahl erfolgt direkt ueber eine Discord-Nutzerauswahl
+- es muessen keine IDs kopiert oder manuell eingetippt werden
+- nur Mitglieder des aktuellen Discord-Servers koennen ausgewaehlt werden
+
+### 12.5 Woher man eine Discord-User-ID bekommt
+
+Fuer den neuen Bearbeiter-Ablauf ist das im Normalfall nicht mehr noetig.
+
+Der Bot verwendet jetzt eine direkte Discord-Nutzerauswahl. Das bedeutet:
+
+1. Der Urheber klickt im Event-Prozess auf `Bearbeiter`.
+2. Discord zeigt direkt eine Auswahl mit Mitgliedern des aktuellen Servers.
+3. Dort koennen bis zu zwei Personen angeklickt werden.
+4. Der Bot speichert diese Auswahl intern als Mitbearbeiter.
+
+Ein manuelles Kopieren von User-IDs ist dafuer nicht mehr erforderlich.
+
+### 12.6 Vorschau nach jedem Schritt
 
 Nach jedem Schritt zeigt der Bot eine Vorschau des aktuellen Events.
 
@@ -325,7 +357,7 @@ Diese Vorschau hilft dabei:
 
 Zwischen den Schritten kann man gezielt wieder zu `Details` oder `Extras` zurueckspringen und Dinge aendern.
 
-### 12.5 Zur Pruefung senden
+### 12.7 Zur Pruefung senden
 
 Wenn alle gewuenschten Angaben eingetragen wurden, kann das Event ueber die entsprechende Schaltflaeche zur Pruefung gesendet werden.
 
@@ -371,6 +403,7 @@ Der Bearbeitungsablauf ist derselbe wie bei einer Neuerstellung:
 - Basisdaten bearbeiten
 - Details bearbeiten
 - Extras bearbeiten
+- Bearbeiter verwalten, falls noetig
 - erneut zur Pruefung senden
 
 Der grosse Vorteil: Man muss das Event nicht komplett neu anlegen.
@@ -429,6 +462,17 @@ Er wird fuer die naechsten sieben Tage erstellt und steht in mehreren Formen ber
 - als Discord-Feed
 - als RSS-Feed
 - als JSON-Feed
+
+Die Aktualisierung erfolgt in `Europe/Berlin` alle drei Stunden um:
+
+- `00:00`
+- `03:00`
+- `06:00`
+- `09:00`
+- `12:00`
+- `15:00`
+- `18:00`
+- `21:00`
 
 Der Feed zeigt:
 

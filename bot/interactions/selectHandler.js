@@ -27,6 +27,7 @@ import {
   normalizeOptionalField,
   shouldResetTypeForCategory
 } from "../services/eventWizardUiService.js";
+import { getTemplateEditorIds, getTemplateOwnerId, isTemplateOwner } from "../services/identityService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
@@ -34,6 +35,12 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
 }
 
 async function replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message = null, options = {}) {
+  const editorIds = await getTemplateEditorIds(template);
+  const displayTemplate = {
+    ...template,
+    editor_ids_for_display: editorIds,
+    editor_mentions_for_display: editorIds.map(userId => `<@${userId}>`)
+  };
   const duplicates = await findPotentialDuplicates(template);
 
   await recordAuditEntry(client, {
@@ -44,9 +51,9 @@ async function replyWithWizardPreviewWithOptions(interaction, template, client, 
   });
 
   await replyAndExpire(interaction, {
-    content: message || buildWizardMessage(template, options),
-    embeds: [buildPreviewEmbed(template, duplicates)],
-    components: buildWizardComponents(template, options),
+    content: message || buildWizardMessage(displayTemplate, options),
+    embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
+    components: buildWizardComponents(displayTemplate, options),
     ephemeral: true
   }, null);
 }
@@ -120,6 +127,49 @@ function buildSelectionUpdate(customId, value, template) {
 }
 
 export async function handleSelect(interaction, client) {
+  if (!interaction.isStringSelectMenu() && !interaction.isUserSelectMenu()) return;
+
+  if (interaction.isUserSelectMenu() && interaction.customId.startsWith("event:editorsSelect:")) {
+    await deferEphemeral(interaction);
+    const templateId = interaction.customId.split(":")[2];
+    const template = await getTemplate(templateId);
+
+    if (!template) {
+      await replyAndExpire(interaction, {
+        content: "Das ausgewaehlte Event wurde nicht gefunden.",
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    const ownerId = await getTemplateOwnerId(template);
+    if (ownerId !== interaction.user.id && !(!ownerId && isTemplateOwner(template, interaction.user.id))) {
+      await replyAndExpire(interaction, {
+        content: "Nur der Urheber darf Mitbearbeiter aendern.",
+        ephemeral: true
+      }, 45000);
+      return;
+    }
+
+    const selectedUserIds = [...new Set(interaction.values)].slice(0, 2);
+    const sanitizedUserIds = selectedUserIds.filter(userId => userId !== interaction.user.id);
+    const updatedTemplate = await createOrUpdateTemplate({
+      editor_user_ids: sanitizedUserIds
+    }, interaction.user.id, templateId);
+
+    await replyWithWizardPreviewWithOptions(
+      interaction,
+      updatedTemplate,
+      client,
+      "template.editors_updated",
+      sanitizedUserIds.length !== selectedUserIds.length
+        ? "Mitbearbeiter gespeichert. Der Urheber wird nicht zusaetzlich als Mitbearbeiter eingetragen."
+        : "Mitbearbeiter gespeichert.",
+      { mode: "editors" }
+    );
+    return;
+  }
+
   if (!interaction.isStringSelectMenu()) return;
 
   if (interaction.customId === "event:selectCancellationTemplate") {

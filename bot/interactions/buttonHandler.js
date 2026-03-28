@@ -26,12 +26,11 @@ import { assertActionCooldown } from "../services/cooldownService.js";
 import { cleanupBotMessages } from "../services/cleanupService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { CHANNELS } from "../config/channels.js";
-import { getTemplateOwnerId } from "../services/identityService.js";
+import { getTemplateEditorIds, getTemplateOwnerId, isTemplateOwner } from "../services/identityService.js";
 import { writeAndSyncWeeklyCalendarFeedFiles } from "../services/calendarFeedService.js";
 import {
   buildApprovalWaitingMessage,
   buildBasicsModal,
-  buildEditorsModal,
   buildExtrasModal,
   buildPreviewEmbed,
   buildTemplateSummary,
@@ -58,6 +57,12 @@ async function sendTemplateDm(client, userId, message) {
 }
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null, options = {}) {
+  const editorIds = await getTemplateEditorIds(template);
+  const displayTemplate = {
+    ...template,
+    editor_ids_for_display: editorIds,
+    editor_mentions_for_display: editorIds.map(userId => `<@${userId}>`)
+  };
   const duplicates = await findPotentialDuplicates(template);
 
   if (auditAction) {
@@ -70,9 +75,9 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
   }
 
   await replyAndExpire(interaction, {
-    content: message || buildWizardMessage(template, options),
-    embeds: [buildPreviewEmbed(template, duplicates)],
-    components: buildWizardComponents(template, options),
+    content: message || buildWizardMessage(displayTemplate, options),
+    embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
+    components: buildWizardComponents(displayTemplate, options),
     ephemeral: true
   }, null);
 }
@@ -282,8 +287,61 @@ export async function handleButton(interaction, client) {
 
     if (id.startsWith("event:editors:")) {
       const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
       const template = await getTemplate(templateId);
-      await interaction.showModal(await buildEditorsModal(template, templateId));
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewÃ¤hlte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.editors_view_opened",
+        "Hier kannst du Mitbearbeiter direkt aus dem Server waehlen.",
+        { mode: "editors" }
+      );
+      return;
+    }
+
+    if (id.startsWith("event:editorsClear:")) {
+      const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewÃ¤hlte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      const ownerId = await getTemplateOwnerId(template);
+      if (ownerId !== interaction.user.id && !(!ownerId && isTemplateOwner(template, interaction.user.id))) {
+        await replyAndExpire(interaction, {
+          content: "Nur der Urheber darf Mitbearbeiter aendern.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      const updatedTemplate = await createOrUpdateTemplate({
+        editor_user_ids: []
+      }, interaction.user.id, templateId);
+
+      await replyWithWizardPreview(
+        interaction,
+        updatedTemplate,
+        client,
+        "template.editors_cleared",
+        "Mitbearbeiter wurden entfernt.",
+        { mode: "editors" }
+      );
       return;
     }
 
