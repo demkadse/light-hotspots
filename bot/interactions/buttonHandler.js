@@ -42,6 +42,7 @@ import { getRecurrenceLabel, normalizeRecurrence } from "../config/eventFormOpti
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
+const EVENT_FLOW_EXPIRY_MS = 10 * 60 * 1000;
 
 async function sendTemplateDm(client, userId, message) {
   if (!userId) {
@@ -116,7 +117,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
     embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
     components: buildWizardComponents(displayTemplate, options),
     ephemeral: true
-  }, null);
+  }, EVENT_FLOW_EXPIRY_MS);
 }
 
 export async function handleButton(interaction, client) {
@@ -206,7 +207,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle direkt, ob du ein Event oder eine Venue anlegen, ein bestehendes Event bearbeiten oder ein veroeffentlichtes Event absagen moechtest.",
         components: [row],
         ephemeral: true
-      }, null);
+      }, EVENT_FLOW_EXPIRY_MS);
 
       return;
     }
@@ -227,7 +228,7 @@ export async function handleButton(interaction, client) {
         content: "Was moechtest du anlegen?",
         components: [row],
         ephemeral: true
-      }, null);
+      }, EVENT_FLOW_EXPIRY_MS);
       return;
     }
 
@@ -269,7 +270,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle das Event aus, das du weiterbearbeiten moechtest:",
         components: [row],
         ephemeral: true
-      }, null);
+      }, EVENT_FLOW_EXPIRY_MS);
 
       return;
     }
@@ -303,7 +304,7 @@ export async function handleButton(interaction, client) {
         content: "Waehle das veroeffentlichte Event aus, das als abgesagt markiert werden soll:",
         components: [row],
         ephemeral: true
-      }, null);
+      }, EVENT_FLOW_EXPIRY_MS);
 
       return;
     }

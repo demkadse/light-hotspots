@@ -29,6 +29,7 @@ import {
 } from "../services/eventWizardUiService.js";
 import { getTemplateEditorIds, getTemplateOwnerId, isTemplateOwner } from "../services/identityService.js";
 import { recordAuditEntry } from "../services/auditService.js";
+const EVENT_FLOW_EXPIRY_MS = 10 * 60 * 1000;
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
   return replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message);
@@ -55,7 +56,7 @@ async function replyWithWizardPreviewWithOptions(interaction, template, client, 
     embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
     components: buildWizardComponents(displayTemplate, options),
     ephemeral: true
-  }, null);
+  }, EVENT_FLOW_EXPIRY_MS);
 }
 
 function buildHousingUpdate(customId, value, template) {

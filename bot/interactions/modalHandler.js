@@ -17,6 +17,7 @@ import {
   normalizeOptionalField
 } from "../services/eventWizardUiService.js";
 import { getTemplateEditorIds, matchesUserHash } from "../services/identityService.js";
+const EVENT_FLOW_EXPIRY_MS = 10 * 60 * 1000;
 
 function getTemplateIdFromModal(customId) {
   if (
@@ -71,7 +72,7 @@ async function replyWithWizardPreview(interaction, template, client, auditAction
     embeds: [buildPreviewEmbed(displayTemplate, duplicates)],
     components: buildWizardComponents(displayTemplate),
     ephemeral: true
-  }, null);
+  }, EVENT_FLOW_EXPIRY_MS);
 }
 
 export async function handleModal(interaction, client) {
