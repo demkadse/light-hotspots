@@ -1,3 +1,4 @@
+import { ChannelType } from "discord.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -612,6 +613,9 @@ async function postDigestToChannel(channel, digest) {
 
   for (const message of digest.discordMessages) {
     const postedMessage = await channel.send(message);
+    if (channel.type === ChannelType.GuildAnnouncement) {
+      await postedMessage.crosspost();
+    }
     postedMessageIds.push(postedMessage.id);
   }
 
