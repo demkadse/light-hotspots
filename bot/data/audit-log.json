@@ -539,5 +539,37 @@
     "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
     "summary": "Bot-Umzug",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "231c98cf-07fe-4a4c-976a-314201436f24",
+    "created_at": "2026-03-28T11:40:14.440Z",
+    "action": "template.opened",
+    "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "9cd30248-cc04-4a52-8cf3-07e3744f9917",
+    "created_at": "2026-03-28T11:40:55.410Z",
+    "action": "template.opened",
+    "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "182b9271-8fd0-4916-bfc0-0e40da430387",
+    "created_at": "2026-03-28T11:44:52.776Z",
+    "action": "template.opened",
+    "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "2adfa938-675a-4288-bc1f-47038884b3b7",
+    "created_at": "2026-03-28T11:45:22.316Z",
+    "action": "template.details_view_opened",
+    "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
+    "summary": "Meerjungfrau",
+    "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
   }
 ]
