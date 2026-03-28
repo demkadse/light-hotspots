@@ -20,7 +20,7 @@ import {
 } from "../services/interactionResponseService.js";
 import { assertAdminUser } from "../services/permissionService.js";
 import {
-  buildBasicsModal,
+  buildFlowConfirmation,
   buildPreviewEmbed,
   buildWizardComponents,
   buildWizardMessage,
@@ -29,7 +29,30 @@ import {
 } from "../services/eventWizardUiService.js";
 import { getTemplateEditorIds, getTemplateOwnerId, isTemplateOwner } from "../services/identityService.js";
 import { recordAuditEntry } from "../services/auditService.js";
+
 const EVENT_FLOW_EXPIRY_MS = 10 * 60 * 1000;
+
+async function sendEditorAssignmentDm(client, userId, template, actorId) {
+  if (!userId || userId === actorId) {
+    return false;
+  }
+
+  try {
+    const user = await client.users.fetch(userId);
+    await user.send([
+      "Du wurdest als Mitbearbeiter fuer ein Event eingetragen.",
+      "",
+      `Titel: ${template?.title || "Unbenannt"}`,
+      template?.date ? `Datum: ${template.date}` : null,
+      template?.time ? `Zeit: ${template.time}` : null,
+      "Du kannst das Template jetzt im Bot ueber `Bestehendes Event bearbeiten` mit bearbeiten."
+    ].filter(Boolean).join("\n"));
+    return true;
+  } catch (error) {
+    console.warn("Mitbearbeiter-DM fehlgeschlagen:", error.message);
+    return false;
+  }
+}
 
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
   return replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message);
@@ -75,11 +98,16 @@ function buildHousingUpdate(customId, value, template) {
       housing_plot: plot,
       venue: buildVenueLabel(district, ward, plot)
     },
-    message: customId.startsWith("event:district:")
-      ? "Wohngebiet gespeichert."
-      : customId.startsWith("event:ward:")
-        ? "Bezirk gespeichert."
-      : "Hausnummer gespeichert."
+    confirmation: {
+      action: "address_saved",
+      label: customId.startsWith("event:district:")
+        ? "Wohngebiet"
+        : customId.startsWith("event:ward:")
+          ? "Bezirk"
+          : "Hausnummer",
+      value
+    },
+    mode: "address"
   };
 }
 
@@ -91,21 +119,24 @@ function buildSelectionUpdate(customId, value, template) {
   if (customId.startsWith("event:type:")) {
     return {
       data: { event_type: value },
-      message: "Typ gespeichert."
+      confirmation: { action: "detail_saved", label: "Typ", value },
+      mode: "details"
     };
   }
 
   if (customId.startsWith("event:server:")) {
     return {
       data: { server: value },
-      message: "Server gespeichert."
+      confirmation: { action: "detail_saved", label: "Server", value },
+      mode: "details"
     };
   }
 
   if (customId.startsWith("event:recurrence:")) {
     return {
       data: { recurrence_rule: normalizeRecurrence(value) },
-      message: "Wiederholung gespeichert."
+      confirmation: { action: "detail_saved", label: "Wiederholung", value },
+      mode: "details"
     };
   }
 
@@ -120,7 +151,14 @@ function buildSelectionUpdate(customId, value, template) {
 
     return {
       data: update,
-      message: "Kategorie gespeichert. Bitte pruefe jetzt den Typ, damit er zur gewaehlten Kategorie passt."
+      confirmation: {
+        action: "detail_saved",
+        label: "Kategorie",
+        value: shouldResetTypeForCategory(template?.event_type || template?.type, value)
+          ? `${value} (Typ bitte neu pruefen)`
+          : value
+      },
+      mode: "details"
     };
   }
 
@@ -152,20 +190,37 @@ export async function handleSelect(interaction, client) {
       return;
     }
 
+    const previousEditorIds = await getTemplateEditorIds(template);
     const selectedUserIds = [...new Set(interaction.values)].slice(0, 2);
     const sanitizedUserIds = selectedUserIds.filter(userId => userId !== interaction.user.id);
     const updatedTemplate = await createOrUpdateTemplate({
       editor_user_ids: sanitizedUserIds
     }, interaction.user.id, templateId);
 
+    const newlyAddedUserIds = sanitizedUserIds.filter(userId => !previousEditorIds.includes(userId));
+    let notifiedCount = 0;
+    for (const userId of newlyAddedUserIds) {
+      if (await sendEditorAssignmentDm(client, userId, updatedTemplate, interaction.user.id)) {
+        notifiedCount += 1;
+      }
+    }
+
+    const updatedEditorIds = await getTemplateEditorIds(updatedTemplate);
+    const displayTemplate = {
+      ...updatedTemplate,
+      editor_ids_for_display: updatedEditorIds,
+      editor_mentions_for_display: updatedEditorIds.map(userId => `<@${userId}>`)
+    };
+
     await replyWithWizardPreviewWithOptions(
       interaction,
-      updatedTemplate,
+      displayTemplate,
       client,
       "template.editors_updated",
-      sanitizedUserIds.length !== selectedUserIds.length
-        ? "Mitbearbeiter gespeichert. Der Urheber wird nicht zusaetzlich als Mitbearbeiter eingetragen."
-        : "Mitbearbeiter gespeichert.",
+      buildFlowConfirmation("editors_saved", displayTemplate, {
+        ownerSkipped: sanitizedUserIds.length !== selectedUserIds.length,
+        notifiedCount
+      }),
       { mode: "editors" }
     );
     return;
@@ -257,7 +312,7 @@ export async function handleSelect(interaction, client) {
       template,
       client,
       "template.opened",
-      "Event geladen. Du kannst jetzt Basisdaten, Dropdown-Angaben oder Zusatzangaben gezielt bearbeiten."
+      `Event geladen: **${template.title || "Unbenannt"}**. Du kannst jetzt Basisdaten, Dropdown-Angaben, Zusatzangaben und Mitbearbeiter gezielt bearbeiten.`
     );
     return;
   }
@@ -274,15 +329,12 @@ export async function handleSelect(interaction, client) {
   }
 
   const nextTemplate = await createOrUpdateTemplate(update.data, interaction.user.id, templateId);
-  const mode = (
-    interaction.customId.startsWith("event:type:") || interaction.customId.startsWith("event:server:")
-  ) ? "details" : "address";
   await replyWithWizardPreviewWithOptions(
     interaction,
     nextTemplate,
     client,
     "template.selection_updated",
-    update.message,
-    { mode }
+    buildFlowConfirmation(update.confirmation.action, nextTemplate, update.confirmation),
+    { mode: update.mode }
   );
 }

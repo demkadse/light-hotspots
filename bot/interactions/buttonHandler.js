@@ -32,6 +32,7 @@ import {
   buildApprovalWaitingMessage,
   buildBasicsModal,
   buildExtrasModal,
+  buildFlowConfirmation,
   buildPreviewEmbed,
   buildTemplateSummary,
   buildWizardComponents,
@@ -340,7 +341,10 @@ export async function handleButton(interaction, client) {
         template,
         client,
         "template.editors_view_opened",
-        "Hier kannst du Mitbearbeiter direkt aus dem Server waehlen.",
+        buildFlowConfirmation("editors_opened", {
+          ...template,
+          editor_mentions_for_display: (await getTemplateEditorIds(template)).map(userId => `<@${userId}>`)
+        }),
         { mode: "editors" }
       );
       return;
@@ -377,8 +381,32 @@ export async function handleButton(interaction, client) {
         updatedTemplate,
         client,
         "template.editors_cleared",
-        "Mitbearbeiter wurden entfernt.",
+        buildFlowConfirmation("editors_cleared", updatedTemplate),
         { mode: "editors" }
+      );
+      return;
+    }
+
+    if (id.startsWith("event:editorsDone:")) {
+      const templateId = id.split(":")[2];
+      await deferEphemeral(interaction);
+      const template = await getTemplate(templateId);
+
+      if (!template) {
+        await replyAndExpire(interaction, {
+          content: "Das ausgewaehlte Event wurde nicht gefunden.",
+          ephemeral: true
+        }, 45000);
+        return;
+      }
+
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.details_view_opened",
+        buildFlowConfirmation("details_opened", template),
+        { mode: "details" }
       );
       return;
     }
@@ -396,7 +424,14 @@ export async function handleButton(interaction, client) {
         return;
       }
 
-      await replyWithWizardPreview(interaction, template, client, "template.address_view_opened", null, { mode: "address" });
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.address_view_opened",
+        buildFlowConfirmation("address_opened", template),
+        { mode: "address" }
+      );
       return;
     }
 
@@ -413,7 +448,14 @@ export async function handleButton(interaction, client) {
         return;
       }
 
-      await replyWithWizardPreview(interaction, template, client, "template.details_view_opened", null, { mode: "details" });
+      await replyWithWizardPreview(
+        interaction,
+        template,
+        client,
+        "template.details_view_opened",
+        buildFlowConfirmation("details_opened", template),
+        { mode: "details" }
+      );
       return;
     }
 
@@ -448,9 +490,9 @@ export async function handleButton(interaction, client) {
         nextTemplate,
         client,
         "template.recurrence_updated",
-        nextValue === "none"
-          ? "Wiederholung gespeichert: Keine Wiederholung."
-          : `Wiederholung gespeichert: ${getRecurrenceLabel(nextValue)}.`,
+        buildFlowConfirmation("recurrence_saved", nextTemplate, {
+          value: nextValue === "none" ? null : getRecurrenceLabel(nextValue)
+        }),
         { mode: "details" }
       );
       return;
@@ -545,7 +587,7 @@ export async function handleButton(interaction, client) {
       await sendTemplateDm(client, ownerId, buildApprovalWaitingMessage(template));
 
       await replyAndExpire(interaction, {
-        content: "Event wurde zur Pruefung gesendet.",
+        content: buildFlowConfirmation("submitted", template),
         ephemeral: true
       });
 

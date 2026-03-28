@@ -33,6 +33,14 @@ function normalizeOptional(value) {
   return trimmed || null;
 }
 
+function formatMentionList(values = []) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return "keine";
+  }
+
+  return values.join(", ");
+}
+
 function formatTimeLabel(template) {
   if (template?.time && template?.end_time) {
     return `${template.time} - ${template.end_time}`;
@@ -339,8 +347,8 @@ function buildEditorRows(template) {
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(editorIds.length === 0),
       new ButtonBuilder()
-        .setCustomId(`event:viewDetails:${template.id}`)
-        .setLabel("Zurueck zu den Details")
+        .setCustomId(`event:editorsDone:${template.id}`)
+        .setLabel("Fertig / Details")
         .setStyle(ButtonStyle.Secondary)
     )
   ];
@@ -477,7 +485,15 @@ export function buildWizardComponents(template, options = {}) {
 
 export function buildWizardMessage(template, options = {}) {
   if (options.mode === "editors") {
-    return "Waehle hier bis zu zwei Mitbearbeiter direkt aus dem Server aus. Die Auswahl bleibt intern und erscheint nicht in den oeffentlichen Event-Daten.";
+    const editorMentions = Array.isArray(template?.editor_mentions_for_display)
+      ? template.editor_mentions_for_display
+      : [];
+
+    return [
+      "Waehle hier bis zu zwei Mitbearbeiter direkt aus dem Server aus.",
+      `Aktuell gespeichert: ${formatMentionList(editorMentions)}.`,
+      "Die Auswahl wird sofort gespeichert, bleibt intern und erscheint nicht in den oeffentlichen Event-Daten."
+    ].join(" ");
   }
 
   const missing = buildMissingRequirementLines(template);
@@ -501,6 +517,51 @@ export function buildWizardMessage(template, options = {}) {
   }
 
   return `Bitte vervollständige jetzt die Adresse per Dropdown: ${addressMissing.join(", ")}.`;
+}
+
+export function buildFlowConfirmation(action, template, options = {}) {
+  const title = template?.title || "Unbenannt";
+  const editorMentions = Array.isArray(template?.editor_mentions_for_display)
+    ? template.editor_mentions_for_display
+    : [];
+
+  switch (action) {
+    case "basics_saved":
+      return `Basisdaten gespeichert: **${title}** am ${template?.date || "-"} um ${template?.time || "-"}. Weiter geht es mit Schritt 2/3 Adresse.`;
+    case "extras_saved":
+      return "Zusatzangaben gespeichert. Banner, Hinweise und Links wurden aktualisiert. Wenn alles passt, kannst du das Event jetzt direkt zur Pruefung senden.";
+    case "address_saved":
+      return `${options.label || "Adresse"} gespeichert: ${options.value || "-"}.`;
+    case "detail_saved":
+      return `${options.label || "Angabe"} gespeichert: ${options.value || "-"}.`;
+    case "editors_saved":
+      return [
+        `Mitbearbeiter gespeichert: ${formatMentionList(editorMentions)}.`,
+        options.ownerSkipped ? "Der Urheber wurde dabei nicht doppelt eingetragen." : null,
+        options.notifiedCount > 0 ? "Neu hinzugefuegte Mitbearbeiter wurden direkt benachrichtigt." : null,
+        "Mit `Fertig / Details` kommst du zur Event-Ansicht zurueck."
+      ].filter(Boolean).join(" ");
+    case "editors_cleared":
+      return "Mitbearbeiter wurden entfernt. Das Event kann jetzt nur noch vom Urheber bearbeitet werden.";
+    case "editors_opened":
+      return [
+        `Bearbeiter-Verwaltung fuer **${title}** geoeffnet.`,
+        `Aktuell gespeichert: ${formatMentionList(editorMentions)}.`,
+        "Aenderungen werden sofort uebernommen."
+      ].join(" ");
+    case "details_opened":
+      return `Eckdatenansicht fuer **${title}** geoeffnet. Hier pflegst du Typ, Server, Wiederholung, Zusatzangaben und Mitbearbeiter.`;
+    case "address_opened":
+      return `Adressansicht fuer **${title}** geoeffnet. Hier waehlst du Wohngebiet, Bezirk und Hausnummer.`;
+    case "recurrence_saved":
+      return options.value
+        ? `Wiederholung gespeichert: ${options.value}.`
+        : "Wiederholung gespeichert: Keine Wiederholung.";
+    case "submitted":
+      return "Event wurde zur Pruefung gesendet. Du bekommst eine Direktnachricht, sobald es angenommen oder abgelehnt wurde.";
+    default:
+      return null;
+  }
 }
 
 export function buildTemplateSummary(template) {

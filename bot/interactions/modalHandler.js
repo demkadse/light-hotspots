@@ -11,12 +11,14 @@ import {
 import { validateEventInput } from "../validators/eventValidator.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import {
+  buildFlowConfirmation,
   buildPreviewEmbed,
   buildWizardComponents,
   buildWizardMessage,
   normalizeOptionalField
 } from "../services/eventWizardUiService.js";
 import { getTemplateEditorIds, matchesUserHash } from "../services/identityService.js";
+
 const EVENT_FLOW_EXPIRY_MS = 10 * 60 * 1000;
 
 function getTemplateIdFromModal(customId) {
@@ -112,7 +114,7 @@ export async function handleModal(interaction, client) {
       template,
       client,
       templateId ? "template.updated" : "template.created",
-      "Basisdaten gespeichert. Vervollständige jetzt im Schritt 2/3 die Adresse."
+      buildFlowConfirmation("basics_saved", template)
     );
     return;
   }
@@ -173,14 +175,13 @@ export async function handleModal(interaction, client) {
 
       throw error;
     }
+
     await replyWithWizardPreview(
       interaction,
       template,
       client,
       "template.extras_updated",
-      "Zusatzangaben gespeichert. Wenn alles passt, kannst du das Event jetzt zur Pruefung senden."
+      buildFlowConfirmation("extras_saved", template)
     );
-    return;
   }
-
 }
