@@ -44,8 +44,11 @@
     "housing_district": "Mist",
     "housing_ward": "1",
     "housing_plot": "1",
-    "updated_at": "2026-03-27T15:11:28.697Z",
+    "updated_at": "2026-03-28T13:25:55.227Z",
     "server": "Alpha",
-    "rejection_reason": "Dingeldong"
+    "rejection_reason": "Dingeldong",
+    "editable_by_hashes": [
+      "0e410d7c1aec831bd35487b4fb0d578b81fda8d0a9c0447306800a428c775077"
+    ]
   }
 ]
