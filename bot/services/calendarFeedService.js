@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -526,6 +527,7 @@ export function renderWeeklyCalendarFeedOutputs(feedData, referenceDate = new Da
     groups,
     summary
   } = feedData;
+  const eventCount = groups.reduce((sum, group) => sum + group.events.length, 0);
 
   return {
     generatedAt,
@@ -533,6 +535,7 @@ export function renderWeeklyCalendarFeedOutputs(feedData, referenceDate = new Da
     endDate,
     groups,
     summary,
+    eventCount,
     rssXml: createRssFeed({ generatedAt, summary, startDate }),
     jsonFeed: createJsonFeed({ generatedAt, summary, groups, startDate, endDate }),
     discordMessages: createDiscordMessages({ groups, startDate, endDate })
@@ -572,7 +575,12 @@ export async function writeAndSyncWeeklyCalendarFeedFiles(referenceDate = new Da
 }
 
 async function readFeedState() {
-  return readJson(PRIVATE_STATE_PATH, { last_posted_on: null, last_posted_slot: null, last_message_ids: [] });
+  return readJson(PRIVATE_STATE_PATH, {
+    last_posted_on: null,
+    last_posted_slot: null,
+    last_message_ids: [],
+    last_crossposted_signature: null
+  });
 }
 
 async function writeFeedState(state) {
@@ -633,12 +641,54 @@ async function resolvePreviousFeedMessageIds(channel, state) {
     .map(message => message.id);
 }
 
-async function postDigestToChannel(channel, digest) {
+function buildDigestCrosspostSignature(digest) {
+  const payload = {
+    startDate: digest.startDate,
+    endDate: digest.endDate,
+    eventCount: digest.eventCount,
+    groups: digest.groups.map(group => ({
+      date: group.date,
+      events: group.events.map(event => ({
+        id: event.id || event.file || event.title,
+        title: buildFeedEventTitle(event),
+        date: event.date,
+        start_time: event.start_time || null,
+        end_time: event.end_time || null,
+        venue: event.venue || null,
+        server: event.server || null,
+        status: event.status || null,
+        project_lead: getProjectLead(event),
+        notes: event.notes || null,
+        description: event.description || null,
+        discord_link: event.discord_link || null,
+        link: event.link || null,
+        image: getEventImageUrl(event)
+      }))
+    }))
+  };
+
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(payload))
+    .digest("hex");
+}
+
+function shouldCrosspostDigest(state, digest) {
+  if ((digest.eventCount || 0) === 0) {
+    return false;
+  }
+
+  const signature = buildDigestCrosspostSignature(digest);
+  return state?.last_crossposted_signature !== signature;
+}
+
+async function postDigestToChannel(channel, digest, options = {}) {
   const postedMessageIds = [];
+  const shouldCrosspost = Boolean(options.crosspost);
 
   for (const message of digest.discordMessages) {
     const postedMessage = await channel.send(message);
-    if (channel.type === GUILD_ANNOUNCEMENT_CHANNEL_TYPE) {
+    if (shouldCrosspost && channel.type === GUILD_ANNOUNCEMENT_CHANNEL_TYPE) {
       await postedMessage.crosspost();
     }
     postedMessageIds.push(postedMessage.id);
@@ -653,13 +703,14 @@ async function publishDigestToFeedChannel(client, digest, state) {
     return { published: false, reason: "channel_unavailable" };
   }
 
+  const crosspost = shouldCrosspostDigest(state, digest);
   const previousMessageIds = await resolvePreviousFeedMessageIds(channel, state);
   let deletedMessageIds = [];
   let postedMessageIds = [];
 
   try {
     deletedMessageIds = await deleteTrackedFeedMessages(channel, previousMessageIds);
-    postedMessageIds = await postDigestToChannel(channel, digest);
+    postedMessageIds = await postDigestToChannel(channel, digest, { crosspost });
   } catch (error) {
     if (error?.code === 50013 || error?.code === "CALENDAR_FEED_DELETE_MISSING_PERMISSIONS") {
       return { published: false, reason: "missing_permissions" };
@@ -670,8 +721,10 @@ async function publishDigestToFeedChannel(client, digest, state) {
 
   return {
     published: true,
+    crossposted: crosspost,
     deletedMessageIds,
-    postedMessageIds
+    postedMessageIds,
+    crosspostSignature: crosspost ? buildDigestCrosspostSignature(digest) : state?.last_crossposted_signature || null
   };
 }
 
@@ -699,11 +752,13 @@ export async function postWeeklyCalendarFeedIfDue(client, referenceDate = new Da
     last_window_start: digest.startDate,
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
-    last_message_ids: publishResult.postedMessageIds
+    last_message_ids: publishResult.postedMessageIds,
+    last_crossposted_signature: publishResult.crosspostSignature
   });
 
   return {
     posted: true,
+    crossposted: publishResult.crossposted,
     replacedMessageCount: publishResult.deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
@@ -737,11 +792,13 @@ export async function forcePostWeeklyCalendarFeed(client, referenceDate = new Da
     last_window_end: digest.endDate,
     last_generated_at: digest.generatedAt,
     last_forced_at: referenceDate.toISOString(),
-    last_message_ids: publishResult.postedMessageIds
+    last_message_ids: publishResult.postedMessageIds,
+    last_crossposted_signature: publishResult.crosspostSignature
   });
 
   return {
     posted: true,
+    crossposted: publishResult.crossposted,
     replacedMessageCount: publishResult.deletedMessageIds.length,
     messageCount: digest.discordMessages.length,
     startDate: digest.startDate,
