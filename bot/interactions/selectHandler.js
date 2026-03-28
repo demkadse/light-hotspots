@@ -54,6 +54,16 @@ async function sendEditorAssignmentDm(client, userId, template, actorId) {
   }
 }
 
+function notifyEditorsInBackground(client, userIds, template, actorId) {
+  if (!Array.isArray(userIds) || userIds.length === 0) {
+    return;
+  }
+
+  void Promise.allSettled(
+    userIds.map(userId => sendEditorAssignmentDm(client, userId, template, actorId))
+  );
+}
+
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null) {
   return replyWithWizardPreviewWithOptions(interaction, template, client, auditAction, message);
 }
@@ -198,12 +208,6 @@ export async function handleSelect(interaction, client) {
     }, interaction.user.id, templateId);
 
     const newlyAddedUserIds = sanitizedUserIds.filter(userId => !previousEditorIds.includes(userId));
-    let notifiedCount = 0;
-    for (const userId of newlyAddedUserIds) {
-      if (await sendEditorAssignmentDm(client, userId, updatedTemplate, interaction.user.id)) {
-        notifiedCount += 1;
-      }
-    }
 
     const updatedEditorIds = await getTemplateEditorIds(updatedTemplate);
     const displayTemplate = {
@@ -219,10 +223,12 @@ export async function handleSelect(interaction, client) {
       "template.editors_updated",
       buildFlowConfirmation("editors_saved", displayTemplate, {
         ownerSkipped: sanitizedUserIds.length !== selectedUserIds.length,
-        notifiedCount
+        notifiedCount: newlyAddedUserIds.length
       }),
       { mode: "editors" }
     );
+
+    notifyEditorsInBackground(client, newlyAddedUserIds, updatedTemplate, interaction.user.id);
     return;
   }
 
