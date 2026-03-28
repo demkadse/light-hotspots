@@ -571,5 +571,21 @@
     "target_id": "ed9eff28-a0cd-48dd-8ad4-c17c85bef00c",
     "summary": "Meerjungfrau",
     "actor_hash": "4f2d837312e2e5e37ed164afa8bfcd004c8d4b91bb1edaaa4c930d0bbba63f03"
+  },
+  {
+    "id": "9294e4d7-a995-4e7b-aa4a-fd60d1944592",
+    "created_at": "2026-03-28T12:45:20.789Z",
+    "action": "template.opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "65d6c83c-9624-404e-bb18-f529a09d9550",
+    "created_at": "2026-03-28T12:45:35.544Z",
+    "action": "template.details_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
