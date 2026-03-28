@@ -56,6 +56,43 @@ async function sendTemplateDm(client, userId, message) {
   }
 }
 
+async function deleteApprovalMessage(sourceInteraction) {
+  const message = sourceInteraction?.message;
+  if (!message?.deletable) {
+    return false;
+  }
+
+  try {
+    await message.delete();
+    return true;
+  } catch (error) {
+    console.warn("Approval-Nachricht konnte nicht geloescht werden:", error.message);
+    return false;
+  }
+}
+
+async function sendActionErrorLog(client, { actionLabel, actorId, templateId, templateTitle, error }) {
+  try {
+    const errorChannel = await client.channels.fetch(CHANNELS.ERROR_LOG);
+    if (!errorChannel?.isTextBased()) {
+      return;
+    }
+
+    await errorChannel.send([
+      `Fehler bei Aktion: ${actionLabel}`,
+      `Ausgeloest von: ${actorId ? `<@${actorId}>` : "unbekannt"}`,
+      templateTitle ? `Event: ${templateTitle}` : null,
+      templateId ? `Template: \`${templateId}\`` : null,
+      "Fehlermeldung:",
+      "```",
+      error?.message || String(error),
+      "```"
+    ].filter(Boolean).join("\n"));
+  } catch (logError) {
+    console.error("ERROR_LOG Fehler:", logError);
+  }
+}
+
 async function replyWithWizardPreview(interaction, template, client, auditAction, message = null, options = {}) {
   const editorIds = await getTemplateEditorIds(template);
   const displayTemplate = {
@@ -535,15 +572,7 @@ export async function handleButton(interaction, client) {
           components: [row],
           ephemeral: true
         }, 120000);
-
-        try {
-          const logChannel = await client.channels.fetch(CHANNELS.EVENT_LOG);
-          if (logChannel?.isTextBased()) {
-            await logChannel.send(`Event "${template.title}" wurde freigegeben von <@${interaction.user.id}>`);
-          }
-        } catch (error) {
-          console.error("EVENT_LOG Fehler:", error);
-        }
+        await deleteApprovalMessage(interaction);
 
         await sendTemplateDm(
           client,
@@ -573,14 +602,12 @@ export async function handleButton(interaction, client) {
       } catch (error) {
         console.error("APPROVE ERROR:", error);
 
-        try {
-          const errorChannel = await client.channels.fetch(CHANNELS.ERROR_LOG);
-          if (errorChannel?.isTextBased()) {
-            await errorChannel.send(`Fehler beim Approven:\n\`\`\`\n${error.message}\n\`\`\``);
-          }
-        } catch (logError) {
-          console.error("ERROR_LOG Fehler:", logError);
-        }
+        await sendActionErrorLog(client, {
+          actionLabel: "Event annehmen",
+          actorId: interaction.user.id,
+          templateId,
+          error
+        });
 
         if (!interaction.replied && !interaction.deferred) {
           await replyAndExpire(interaction, {
@@ -600,7 +627,7 @@ export async function handleButton(interaction, client) {
       const { ModalBuilder, TextInputBuilder, TextInputStyle } = await import("discord.js");
 
       const modal = new ModalBuilder()
-        .setCustomId(`reject_modal_${templateId}`)
+        .setCustomId(`reject_modal_${templateId}_${interaction.message?.id || "unknown"}`)
         .setTitle("Event ablehnen");
 
       modal.addComponents(

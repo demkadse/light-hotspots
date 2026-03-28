@@ -7,6 +7,7 @@ import { assertAdminUser } from "../services/permissionService.js";
 import { assertActionCooldown } from "../services/cooldownService.js";
 import { recordAuditEntry } from "../services/auditService.js";
 import { getTemplateOwnerId } from "../services/identityService.js";
+import { CHANNELS } from "../config/channels.js";
 
 function formatRejectReason(reason) {
   const lines = reason
@@ -25,13 +26,61 @@ function formatRejectReason(reason) {
   return lines.map((line, index) => `${index + 1}. ${line}`).join("\n");
 }
 
+async function deleteApprovalMessage(client, messageId) {
+  if (!messageId || messageId === "unknown") {
+    return false;
+  }
+
+  try {
+    const channel = await client.channels.fetch(CHANNELS.APPROVAL_CHANNEL);
+    if (!channel?.isTextBased()) {
+      return false;
+    }
+
+    const message = await channel.messages.fetch(messageId);
+    if (!message?.deletable) {
+      return false;
+    }
+
+    await message.delete();
+    return true;
+  } catch (error) {
+    console.warn("Approval-Nachricht konnte nach Ablehnung nicht geloescht werden:", error.message);
+    return false;
+  }
+}
+
+async function sendRejectErrorLog(client, { actorId, templateId, templateTitle, error }) {
+  try {
+    const errorChannel = await client.channels.fetch(CHANNELS.ERROR_LOG);
+    if (!errorChannel?.isTextBased()) {
+      return;
+    }
+
+    await errorChannel.send([
+      "Fehler bei Aktion: Event ablehnen",
+      `Ausgeloest von: ${actorId ? `<@${actorId}>` : "unbekannt"}`,
+      templateTitle ? `Event: ${templateTitle}` : null,
+      templateId ? `Template: \`${templateId}\`` : null,
+      "Fehlermeldung:",
+      "```",
+      error?.message || String(error),
+      "```"
+    ].filter(Boolean).join("\n"));
+  } catch (logError) {
+    console.error("ERROR_LOG Fehler:", logError);
+  }
+}
+
 export async function handleRejectModal(interaction, client) {
   try {
     assertAdminUser(interaction);
     assertActionCooldown(interaction.user.id, `reject-modal:${interaction.customId}`, 30000);
     await deferEphemeral(interaction);
 
-    const templateId = interaction.customId.split("_").pop();
+    const customIdParts = interaction.customId.split("_");
+    const approvalMessageId = customIdParts.pop();
+    const templateId = customIdParts.pop();
     const reason = interaction.fields.getTextInputValue("reason");
     const template = await getTemplate(templateId);
     const ownerId = await getTemplateOwnerId(template);
@@ -48,6 +97,7 @@ export async function handleRejectModal(interaction, client) {
       target_id: templateId,
       summary: `${template?.title || "Unbenannt"} | ${reason}`
     });
+    await deleteApprovalMessage(client, approvalMessageId);
 
     try {
       const user = ownerId ? await client.users.fetch(ownerId) : null;
@@ -63,6 +113,13 @@ export async function handleRejectModal(interaction, client) {
     }
   } catch (error) {
     console.error("Reject Error:", error);
+    const customIdParts = interaction.customId?.split("_") || [];
+    const templateId = customIdParts.length >= 3 ? customIdParts[customIdParts.length - 2] : null;
+    await sendRejectErrorLog(client, {
+      actorId: interaction.user?.id,
+      templateId,
+      error
+    });
     throw error;
   }
 }
