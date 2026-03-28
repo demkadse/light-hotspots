@@ -651,5 +651,29 @@
     "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
     "summary": "Bot-Umzug",
     "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "a5e1eda8-96cc-435a-9656-941666029ebf",
+    "created_at": "2026-03-28T13:15:41.831Z",
+    "action": "template.opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "a02e7189-4b43-4fb8-b0c8-5ef26fa2d6b3",
+    "created_at": "2026-03-28T13:15:49.396Z",
+    "action": "template.details_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
+  },
+  {
+    "id": "5280edbd-d3d5-40e2-802c-be0081936eeb",
+    "created_at": "2026-03-28T13:15:54.421Z",
+    "action": "template.editors_view_opened",
+    "target_id": "305b9cb1-d23b-47c3-9841-925aa4017f8f",
+    "summary": "Bot-Umzug",
+    "actor_hash": "7fe0fd36ac0bad78d0931b4ba0b3ee97aa7967a68b15d0ccf42c033436065b6e"
   }
 ]
