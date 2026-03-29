@@ -5,7 +5,7 @@
   "feed_url": "https://light-hotspots.talaani.de/feeds/weekly-summary.json",
   "description": "Regelmaessig aktualisierte Wochenzusammenfassung der geplanten RP-Events fuer die kommenden sieben Tage.",
   "language": "de-DE",
-  "generated_at": "2026-03-29T04:51:16.882Z",
+  "generated_at": "2026-03-29T07:23:54.549Z",
   "weekly_window": {
     "start_date": "2026-03-29",
     "end_date": "2026-04-04"
